@@ -262,10 +262,10 @@ class DatabaseManager:
         try:
             cursor.execute('''
                 INSERT INTO Realstatspecification (
-                    Companyco, realstatecode, Rstatetcode, Yearmake, Buildtcode,
+                    Companyco, realstatecode, Rstatetcode, Yearmake, "Buildtcode ",
                     "Property-area", "Unitm-code", "Property-facade", "Property-depth",
                     "N-of-bedrooms", "N-of bathrooms", "Property-corner",
-                    "Offer-Type-Code", "Province-code", "Region-code",
+                    "Offer-Type-Code", "Province-code ", "Region-code",
                     "Property-address", Photosituation, Ownercode, Descriptions
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
@@ -456,6 +456,74 @@ class DatabaseManager:
 
         except Exception as e:
             logger.error(f"Error deleting property: {e}")
+            conn.rollback()
+            return False
+        finally:
+            conn.close()
+
+    # Photo management methods
+    def add_property_photo(self, company_code: str, photo_path: str, photo_name: str) -> bool:
+        """Add property photo"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute('''
+                INSERT INTO realstatephotos (Companyco, photo_path, photo_name)
+                VALUES (?, ?, ?)
+            ''', (company_code, photo_path, photo_name))
+            conn.commit()
+            logger.info(f"Photo added for property: {company_code}")
+            return True
+        except Exception as e:
+            logger.error(f"Error adding property photo: {e}")
+            conn.rollback()
+            return False
+        finally:
+            conn.close()
+
+    def get_property_photos(self, company_code: str) -> List[Dict]:
+        """Get property photos"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute('''
+                SELECT id, photo_path, photo_name, upload_date
+                FROM realstatephotos
+                WHERE Companyco = ?
+                ORDER BY upload_date DESC
+            ''', (company_code,))
+
+            columns = [description[0] for description in cursor.description]
+            photos = []
+            for row in cursor.fetchall():
+                photos.append(dict(zip(columns, row)))
+
+            return photos
+        except Exception as e:
+            logger.error(f"Error getting property photos: {e}")
+            return []
+        finally:
+            conn.close()
+
+    def delete_property_photo(self, photo_id: int) -> bool:
+        """Delete property photo"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute('DELETE FROM realstatephotos WHERE id = ?', (photo_id,))
+            conn.commit()
+
+            if cursor.rowcount > 0:
+                logger.info(f"Photo deleted: {photo_id}")
+                return True
+            else:
+                logger.warning(f"Photo not found for deletion: {photo_id}")
+                return False
+        except Exception as e:
+            logger.error(f"Error deleting property photo: {e}")
             conn.rollback()
             return False
         finally:
