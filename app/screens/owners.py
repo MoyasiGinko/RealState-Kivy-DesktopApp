@@ -1,7 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Real Estate Management System - Owners Management Screen
+Real Estate Ma        # Form title
+        left_panel.add_widget(BilingualLabel(
+            translation_key='owner_information',
+            font_size=dp(18),
+            bold=True,
+            size_hint_y=None,
+            height=dp(40),
+            halign='center'
+        ))ystem - Owners Management Screen
 """
 
 from kivy.uix.screenmanager import Screen, SlideTransition
@@ -158,8 +166,7 @@ class OwnersScreen(Screen):
 
         # Table title
         right_panel.add_widget(BilingualLabel(
-            text_en='Owners List',
-            text_ar='قائمة الملاك',
+            translation_key='owners_list',
             font_size=dp(18),
             bold=True,
             size_hint_y=None,

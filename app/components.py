@@ -21,8 +21,8 @@ from kivy.graphics import Color, Rectangle, Line
 from kivy.clock import Clock
 from typing import Callable, List, Dict, Optional
 import logging
-from font_manager import font_manager
-from language_manager import language_manager
+from app.font_manager import font_manager
+from app.language_manager import language_manager
 
 logger = logging.getLogger(__name__)
 
@@ -620,7 +620,7 @@ class BilingualLabel(RTLLabel):
         # Support both translation_key and direct text_en/text_ar approach
         if translation_key:
             self.translation_key = translation_key
-            kwargs['text'] = language_manager.get_bilingual_text(translation_key)
+            kwargs['text'] = language_manager.get_text(translation_key)
         elif text_en and text_ar:
             self.translation_key = None
             self.text_en = text_en
@@ -646,7 +646,7 @@ class BilingualLabel(RTLLabel):
     def on_language_changed(self):
         """Called when language changes"""
         if self.translation_key:
-            self.text = language_manager.get_bilingual_text(self.translation_key)
+            self.text = language_manager.get_text(self.translation_key)
         elif hasattr(self, 'text_en') and hasattr(self, 'text_ar'):
             if language_manager.current_language == 'en':
                 self.text = self.text_en
@@ -690,7 +690,7 @@ class BilingualButton(CustomActionButton):
         height = kwargs.pop('height', None)
 
         self.translation_key = translation_key
-        text = language_manager.get_bilingual_text(translation_key)
+        text = language_manager.get_text(translation_key)
         super().__init__(text=text, **kwargs)
 
         # Set size properties after initialization
@@ -703,7 +703,7 @@ class BilingualButton(CustomActionButton):
 
     def on_language_changed(self):
         """Called when language changes"""
-        self.text = language_manager.get_bilingual_text(self.translation_key)
+        self.text = language_manager.get_text(self.translation_key)
         self.font_name = font_manager.get_font_name(self.text)
 
 

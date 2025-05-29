@@ -71,8 +71,7 @@ class PropertiesScreen(Screen):
 
         # Form title
         left_panel.add_widget(BilingualLabel(
-            text_en='Property Information',
-            text_ar='معلومات العقار',
+            translation_key='property_information',
             font_size=dp(18),
             bold=True,
             size_hint_y=None,
@@ -236,8 +235,7 @@ class PropertiesScreen(Screen):
 
         # Table title
         right_panel.add_widget(BilingualLabel(
-            text_en='Properties List',
-            text_ar='قائمة العقارات',
+            translation_key='properties_list',
             font_size=dp(18),
             bold=True,
             size_hint_y=None,

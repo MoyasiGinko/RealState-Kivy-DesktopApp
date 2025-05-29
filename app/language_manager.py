@@ -120,12 +120,13 @@ class LanguageManager:
                 'advanced_search': 'البحث المتقدم',
                 'generate_reports': 'إنشاء التقارير',
                 'statistics': 'الإحصائيات',
-                'reports': 'التقارير',
-
-                # Screen Titles
+                'reports': 'التقارير',                # Screen Titles
                 'owners_management': 'إدارة الملاك',
-                'properties_management': 'إدارة العقارات',
-                'search_reports': 'البحث والتقارير',                # Messages
+                'properties_management': 'إدارة العقارات',                'search_reports': 'البحث والتقارير',
+                'property_information': 'معلومات العقار',
+                'owner_information': 'معلومات المالك',
+                'owners_list': 'قائمة الملاك',
+                'properties_list': 'قائمة العقارات',# Messages
                 'success': 'نجح',
                 'error': 'خطأ',
                 'warning': 'تحذير',
@@ -252,12 +253,13 @@ class LanguageManager:
                 'advanced_search': 'Advanced Search',
                 'generate_reports': 'Generate Reports',
                 'statistics': 'Statistics',
-                'reports': 'Reports',
-
-                # Screen Titles
+                'reports': 'Reports',                # Screen Titles
                 'owners_management': 'Owners Management',
-                'properties_management': 'Properties Management',
-                'search_reports': 'Search & Reports',
+                'properties_management': 'Properties Management',                'search_reports': 'Search & Reports',
+                'property_information': 'Property Information',
+                'owner_information': 'Owner Information',
+                'owners_list': 'Owners List',
+                'properties_list': 'Properties List',
 
                 # Messages                'success': 'Success',
                 'error': 'Error',
