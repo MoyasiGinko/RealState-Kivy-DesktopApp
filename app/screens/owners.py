@@ -20,6 +20,7 @@ from app.components import (RTLLabel, CustomActionButton as ActionButton, FormFi
                             ConfirmDialog, MessageDialog, SearchBox)
 from app.database import DatabaseManager
 from app.utils import DataValidator
+from app.font_manager import font_manager
 
 logger = logging.getLogger(__name__)
 

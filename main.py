@@ -29,6 +29,7 @@ from kivy.logger import Logger
 # Import our modules
 from config import config
 from database import DatabaseManager
+from font_manager import font_manager
 from screens.dashboard import DashboardScreen
 from screens.owners import OwnersScreen
 from screens.properties import PropertiesScreen
@@ -78,7 +79,8 @@ class MainMenuScreen(Screen):
         dashboard_btn = Button(
             text='لوحة التحكم\nDashboard',
             font_size='18sp',
-            background_color=config.get_color('primary')
+            background_color=config.get_color('primary'),
+            font_name=font_manager.get_font_name('لوحة التحكم\nDashboard')
         )
         dashboard_btn.bind(on_press=lambda x: self.goto_screen('dashboard'))
         buttons_layout.add_widget(dashboard_btn)
@@ -87,7 +89,8 @@ class MainMenuScreen(Screen):
         owners_btn = Button(
             text='إدارة الملاك\nOwners Management',
             font_size='18sp',
-            background_color=config.get_color('success')
+            background_color=config.get_color('success'),
+            font_name=font_manager.get_font_name('إدارة الملاك\nOwners Management')
         )
         owners_btn.bind(on_press=lambda x: self.goto_screen('owners'))
         buttons_layout.add_widget(owners_btn)
@@ -96,7 +99,8 @@ class MainMenuScreen(Screen):
         properties_btn = Button(
             text='إدارة العقارات\nProperties Management',
             font_size='18sp',
-            background_color=config.get_color('warning')
+            background_color=config.get_color('warning'),
+            font_name=font_manager.get_font_name('إدارة العقارات\nProperties Management')
         )
         properties_btn.bind(on_press=lambda x: self.goto_screen('properties'))
         buttons_layout.add_widget(properties_btn)
@@ -105,7 +109,8 @@ class MainMenuScreen(Screen):
         search_btn = Button(
             text='البحث والتقارير\nSearch & Reports',
             font_size='18sp',
-            background_color=config.get_color('error')
+            background_color=config.get_color('error'),
+            font_name=font_manager.get_font_name('البحث والتقارير\nSearch & Reports')
         )
         search_btn.bind(on_press=lambda x: self.goto_screen('search'))
         buttons_layout.add_widget(search_btn)

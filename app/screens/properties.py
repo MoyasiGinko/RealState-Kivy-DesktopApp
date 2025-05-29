@@ -25,6 +25,7 @@ from app.components import (RTLLabel, CustomActionButton as ActionButton, FormFi
 from app.database import DatabaseManager
 from app.utils import DataValidator, PhotoManager
 from app.config import config
+from app.font_manager import font_manager
 
 logger = logging.getLogger(__name__)
 
@@ -233,7 +234,8 @@ class PropertiesScreen(Screen):
         self.type_filter = Spinner(
             text='كل الأنواع',
             values=['كل الأنواع'] + [pt[1] for pt in property_types],
-            size_hint_x=0.33
+            size_hint_x=0.33,
+            font_name=font_manager.get_font_name('كل الأنواع')
         )
         self.type_filter.bind(text=self.apply_filters)
         filter_layout.add_widget(self.type_filter)
@@ -242,7 +244,8 @@ class PropertiesScreen(Screen):
         self.offer_filter = Spinner(
             text='كل العروض',
             values=['كل العروض'] + [ot[1] for ot in offer_types],
-            size_hint_x=0.33
+            size_hint_x=0.33,
+            font_name=font_manager.get_font_name('كل العروض')
         )
         self.offer_filter.bind(text=self.apply_filters)
         filter_layout.add_widget(self.offer_filter)
@@ -251,7 +254,8 @@ class PropertiesScreen(Screen):
         self.province_filter = Spinner(
             text='كل المحافظات',
             values=['كل المحافظات'] + [p[1] for p in provinces],
-            size_hint_x=0.34
+            size_hint_x=0.34,
+            font_name=font_manager.get_font_name('كل المحافظات')
         )
         self.province_filter.bind(text=self.apply_filters)
         filter_layout.add_widget(self.province_filter)
@@ -645,6 +649,7 @@ class PropertiesScreen(Screen):
                 view_btn = Button(
                     text='عرض',
                     size_hint_y=0.2,
+                    font_name=font_manager.get_font_name('عرض'),
                     on_press=lambda x, path=photo['photo_path']:
                     self._view_single_photo(path)
                 )
@@ -664,6 +669,7 @@ class PropertiesScreen(Screen):
             text='إغلاق',
             size_hint_y=None,
             height=dp(40),
+            font_name=font_manager.get_font_name('إغلاق'),
             on_press=gallery_popup.dismiss
         )
         content.add_widget(close_btn)

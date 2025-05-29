@@ -17,6 +17,7 @@ import logging
 
 from app.components import (RTLLabel, CustomActionButton as ActionButton, StatsCard)
 from app.database import DatabaseManager
+from app.font_manager import font_manager
 
 logger = logging.getLogger(__name__)
 

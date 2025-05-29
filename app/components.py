@@ -21,6 +21,7 @@ from kivy.graphics import Color, Rectangle, Line
 from kivy.clock import Clock
 from typing import Callable, List, Dict, Optional
 import logging
+from font_manager import font_manager
 
 logger = logging.getLogger(__name__)
 
@@ -29,15 +30,25 @@ class RTLLabel(Label):
     """Label with RTL text support for Arabic"""
 
     def __init__(self, **kwargs):
+        # Set font name based on text content before calling super
+        text = kwargs.get('text', '')
+        if 'font_name' not in kwargs:
+            kwargs['font_name'] = font_manager.get_font_name(text)
+
         super().__init__(**kwargs)
         self.text_size = (None, None)
         self.halign = 'right'
         self.valign = 'middle'
         self.bind(size=self.update_text_size)
+        self.bind(text=self.update_font)
 
     def update_text_size(self, *args):
         """Update text size when widget size changes"""
         self.text_size = self.size
+
+    def update_font(self, *args):
+        """Update font when text changes"""
+        self.font_name = font_manager.get_font_name(self.text)
 
 
 class FormField(BoxLayout):
@@ -61,19 +72,22 @@ class FormField(BoxLayout):
             self.input = Spinner(
                 text='اختر...',
                 values=values,
-                size_hint_x=0.7
+                size_hint_x=0.7,
+                font_name=font_manager.get_font_name('اختر...')
             )
         elif input_type == 'multiline':
             self.input = TextInput(
                 multiline=True,
                 size_hint_x=0.7,
-                height=dp(80)
+                height=dp(80),
+                font_name=font_manager.get_font_name()
             )
             self.height = dp(80)
         else:
             self.input = TextInput(
                 multiline=False,
-                size_hint_x=0.7
+                size_hint_x=0.7,
+                font_name=font_manager.get_font_name()
             )
 
         self.add_widget(self.input)
@@ -97,6 +111,10 @@ class CustomActionButton(Button):
 
     def __init__(self, text: str, icon_path: str = None,
                  action: Callable = None, button_type: str = 'primary', **kwargs):
+        # Set font name before calling super
+        if 'font_name' not in kwargs:
+            kwargs['font_name'] = font_manager.get_font_name(text)
+
         super().__init__(**kwargs)
 
         self.text = text
@@ -132,7 +150,8 @@ class SearchBox(BoxLayout):
         self.search_input = TextInput(
             hint_text='البحث...',
             multiline=False,
-            size_hint_x=0.7
+            size_hint_x=0.7,
+            font_name=font_manager.get_font_name('البحث...')
         )
         self.search_input.bind(text=self.on_search_text)
         self.add_widget(self.search_input)
@@ -195,7 +214,8 @@ class DataTable(BoxLayout):
                 text=col['title'],
                 size_hint_y=None,
                 height=dp(40),
-                background_color=[0.3, 0.3, 0.3, 1]
+                background_color=[0.3, 0.3, 0.3, 1],
+                font_name=font_manager.get_font_name(col['title'])
             )
             header_layout.add_widget(header_btn)
 
@@ -236,7 +256,8 @@ class DataTable(BoxLayout):
                     size_hint_y=None,
                     height=dp(35),
                     background_color=[1, 1, 1, 1],
-                    color=[0, 0, 0, 1]
+                    color=[0, 0, 0, 1],
+                    font_name=font_manager.get_font_name(value)
                 )
 
                 # Bind row selection

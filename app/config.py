@@ -63,6 +63,13 @@ class Config:
             'error_color': '0.7, 0.3, 0.2, 1'
         }
 
+        self.config['fonts'] = {
+            'arabic_font': 'fonts/NotoSansArabic-Regular.ttf',
+            'arabic_bold_font': 'fonts/NotoSansArabic-Bold.ttf',
+            'default_font': 'Roboto',
+            'fallback_font': 'DejaVuSans'
+        }
+
         self.save_config()
 
     def save_config(self):
@@ -154,6 +161,23 @@ class Config:
             return [float(x.strip()) for x in color_str.split(',')]
         except:
             return [0.2, 0.4, 0.8, 1]
+
+    def get_font_name(self, font_type: str = 'default') -> str:
+        """Get font name based on type"""
+        font_map = {
+            'arabic': self.get('fonts', 'arabic_font', 'fonts/NotoSansArabic-Regular.ttf'),
+            'arabic_bold': self.get('fonts', 'arabic_bold_font', 'fonts/NotoSansArabic-Bold.ttf'),
+            'default': self.get('fonts', 'default_font', 'Roboto'),
+            'fallback': self.get('fonts', 'fallback_font', 'DejaVuSans')
+        }
+        return font_map.get(font_type, font_map['default'])
+
+    def has_arabic_text(self, text: str) -> bool:
+        """Check if text contains Arabic characters"""
+        if not text:
+            return False
+        arabic_range = range(0x0600, 0x06FF)  # Arabic Unicode range
+        return any(ord(char) in arabic_range for char in text)
 
 
 # Global configuration instance

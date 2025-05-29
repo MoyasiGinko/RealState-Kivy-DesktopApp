@@ -24,6 +24,7 @@ import logging
 from app.components import (RTLLabel, CustomActionButton as ActionButton, FormField, DataTable,
                             ConfirmDialog, MessageDialog, SearchBox, StatsCard)
 from app.database import DatabaseManager
+from app.font_manager import font_manager
 from app.utils import ExportUtils
 from app.config import config
 
@@ -322,7 +323,8 @@ class SearchScreen(Screen):
         self.custom_report_spinner = Spinner(
             text='اختر...',
             values=['عقارات للبيع', 'عقارات للإيجار', 'عقارات حسب المالك', 'عقارات حسب المساحة'],
-            size_hint_x=0.4
+            size_hint_x=0.4,
+            font_name=font_manager.get_font_name('اختر...')
         )
         custom_layout.add_widget(self.custom_report_spinner)
 
