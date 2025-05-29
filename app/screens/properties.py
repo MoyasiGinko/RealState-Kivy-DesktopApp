@@ -4,7 +4,7 @@
 Real Estate Management System - Properties Management Screen
 """
 
-from kivy.uix.screenmanager import Screen
+from kivy.uix.screenmanager import Screen, SlideTransition
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
@@ -21,11 +21,13 @@ import logging
 
 from app.components import (RTLLabel, CustomActionButton as ActionButton, FormField, DataTable,
                             ConfirmDialog, MessageDialog, SearchBox,
-                            PhotoUploader, ImageViewer)
+                            PhotoUploader, ImageViewer, BilingualLabel, TranslatableButton,
+                            NavigationHeader, ResponsiveCard)
 from app.database import DatabaseManager
 from app.utils import DataValidator, PhotoManager
 from app.config import config
 from app.font_manager import font_manager
+from app.language_manager import language_manager
 
 logger = logging.getLogger(__name__)
 
@@ -45,29 +47,38 @@ class PropertiesScreen(Screen):
         self.load_properties()
 
     def build_ui(self):
-        """Build the properties management UI"""
-        main_layout = BoxLayout(orientation='horizontal', spacing=dp(10), padding=dp(10))
+        """Build the modern responsive properties management UI"""
+        # Main layout with modern spacing
+        main_layout = BoxLayout(orientation='vertical', spacing=dp(15), padding=[20, 10, 20, 20])
 
-        # Left panel - Form
-        left_panel = BoxLayout(orientation='vertical', size_hint_x=0.5, spacing=dp(10))
-
-        # Header
-        header_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(50))
-        header_layout.add_widget(RTLLabel(
-            text='إدارة العقارات',
-            font_size='24sp',
-            bold=True
-        ))
-
-        # Back button
-        back_btn = ActionButton(
-            text='العودة',
-            size_hint_x=None,
-            width=dp(80),
-            action=self.go_back
+        # Navigation header
+        nav_header = NavigationHeader(
+            screen_title_key='properties_management',
+            show_back_button=True
         )
-        header_layout.add_widget(back_btn)
-        left_panel.add_widget(header_layout)
+        main_layout.add_widget(nav_header)
+
+        # Content area
+        content_layout = BoxLayout(orientation='horizontal', spacing=dp(20))
+
+        # Left panel - Form in responsive card
+        left_panel = ResponsiveCard(
+            orientation='vertical',
+            size_hint_x=0.5,
+            spacing=dp(15),
+            padding=dp(20)
+        )
+
+        # Form title
+        left_panel.add_widget(BilingualLabel(
+            text_en='Property Information',
+            text_ar='معلومات العقار',
+            font_size=dp(18),
+            bold=True,
+            size_hint_y=None,
+            height=dp(40),
+            halign='center'
+        ))
 
         # Form scroll
         form_scroll = ScrollView()
@@ -76,13 +87,13 @@ class PropertiesScreen(Screen):
         self.form_layout.bind(minimum_height=self.form_layout.setter('height'))
 
         # Company Code (auto-generated)
-        self.company_code_field = FormField('كود الشركة', required=True)
+        self.company_code_field = FormField(language_manager.get_text('company_code'), required=True)
         self.company_code_field.input.readonly = True
         self.company_code_field.input.text = self.db.generate_company_code()
         self.form_layout.add_widget(self.company_code_field)
 
         # Real Estate Code (auto-generated)
-        self.realstate_code_field = FormField('كود العقار', required=True)
+        self.realstate_code_field = FormField(language_manager.get_text('property_code'), required=True)
         self.realstate_code_field.input.readonly = True
         self.realstate_code_field.input.text = self.db.generate_realstate_code()
         self.form_layout.add_widget(self.realstate_code_field)
@@ -90,25 +101,25 @@ class PropertiesScreen(Screen):
         # Property Type
         property_types = self.db.get_property_types()
         type_values = [f"{pt[1]} ({pt[0]})" for pt in property_types]
-        self.property_type_field = FormField('نوع العقار', 'spinner', type_values, required=True)
+        self.property_type_field = FormField(language_manager.get_text('property_type'), 'spinner', type_values, required=True)
         self.form_layout.add_widget(self.property_type_field)
 
         # Construction Year
-        self.year_field = FormField('سنة البناء')
+        self.year_field = FormField(language_manager.get_text('construction_year'))
         self.form_layout.add_widget(self.year_field)
 
         # Property Area
-        self.area_field = FormField('المساحة (م²)', required=True)
+        self.area_field = FormField(language_manager.get_text('property_area'), required=True)
         self.form_layout.add_widget(self.area_field)
 
         # Facade and Depth
         facade_depth_layout = BoxLayout(orientation='horizontal', spacing=dp(10),
                                        size_hint_y=None, height=dp(40))
 
-        self.facade_field = FormField('الواجهة (م)')
+        self.facade_field = FormField(language_manager.get_text('facade'))
         facade_depth_layout.add_widget(self.facade_field)
 
-        self.depth_field = FormField('العمق (م)')
+        self.depth_field = FormField(language_manager.get_text('depth'))
         facade_depth_layout.add_widget(self.depth_field)
 
         self.form_layout.add_widget(facade_depth_layout)
@@ -117,43 +128,43 @@ class PropertiesScreen(Screen):
         rooms_layout = BoxLayout(orientation='horizontal', spacing=dp(10),
                                 size_hint_y=None, height=dp(40))
 
-        self.bedrooms_field = FormField('غرف النوم')
+        self.bedrooms_field = FormField(language_manager.get_text('bedrooms'))
         rooms_layout.add_widget(self.bedrooms_field)
 
-        self.bathrooms_field = FormField('دورات المياه')
+        self.bathrooms_field = FormField(language_manager.get_text('bathrooms'))
         rooms_layout.add_widget(self.bathrooms_field)
 
         self.form_layout.add_widget(rooms_layout)
 
         # Corner Property
-        corner_values = ['نعم', 'لا']
-        self.corner_field = FormField('عقار زاوية', 'spinner', corner_values)
+        corner_values = [language_manager.get_text('yes'), language_manager.get_text('no')]
+        self.corner_field = FormField(language_manager.get_text('corner_property'), 'spinner', corner_values)
         self.form_layout.add_widget(self.corner_field)
 
         # Offer Type
         offer_types = self.db.get_offer_types()
         offer_values = [f"{ot[1]} ({ot[0]})" for ot in offer_types]
-        self.offer_type_field = FormField('نوع العرض', 'spinner', offer_values, required=True)
+        self.offer_type_field = FormField(language_manager.get_text('offer_type'), 'spinner', offer_values, required=True)
         self.form_layout.add_widget(self.offer_type_field)
 
         # Province
         provinces = self.db.get_provinces()
         province_values = [f"{p[1]} ({p[0]})" for p in provinces]
-        self.province_field = FormField('المحافظة', 'spinner', province_values, required=True)
+        self.province_field = FormField(language_manager.get_text('province'), 'spinner', province_values, required=True)
         self.form_layout.add_widget(self.province_field)
 
         # Address
-        self.address_field = FormField('العنوان التفصيلي', 'multiline', required=True)
+        self.address_field = FormField(language_manager.get_text('detailed_address'), 'multiline', required=True)
         self.form_layout.add_widget(self.address_field)
 
         # Owner
         owners = self.db.get_owners()
         owner_values = [f"{o[1]} ({o[0]})" for o in owners]
-        self.owner_field = FormField('المالك', 'spinner', owner_values, required=True)
+        self.owner_field = FormField(language_manager.get_text('owner'), 'spinner', owner_values, required=True)
         self.form_layout.add_widget(self.owner_field)
 
         # Description
-        self.description_field = FormField('الوصف', 'multiline')
+        self.description_field = FormField(language_manager.get_text('description'), 'multiline')
         self.form_layout.add_widget(self.description_field)
 
         form_scroll.add_widget(self.form_layout)
@@ -163,15 +174,15 @@ class PropertiesScreen(Screen):
         photo_layout = BoxLayout(orientation='horizontal', spacing=dp(10),
                                 size_hint_y=None, height=dp(50))
 
-        upload_btn = ActionButton(
-            text='رفع صورة',
+        upload_btn = TranslatableButton(
+            translation_key='upload_photo',
             action=self.upload_photo,
             size_hint_x=0.5
         )
         photo_layout.add_widget(upload_btn)
 
-        view_photos_btn = ActionButton(
-            text='عرض الصور',
+        view_photos_btn = TranslatableButton(
+            translation_key='view_photos',
             action=self.view_photos,
             size_hint_x=0.5
         )
@@ -182,30 +193,30 @@ class PropertiesScreen(Screen):
         # Action buttons
         button_layout = GridLayout(cols=2, spacing=dp(10), size_hint_y=None, height=dp(50))
 
-        self.save_btn = ActionButton(
-            text='حفظ',
+        self.save_btn = TranslatableButton(
+            translation_key='save',
             button_type='success',
             action=self.save_property
         )
         button_layout.add_widget(self.save_btn)
 
-        self.clear_btn = ActionButton(
-            text='مسح',
+        self.clear_btn = TranslatableButton(
+            translation_key='clear',
             button_type='secondary',
             action=self.clear_form
         )
         button_layout.add_widget(self.clear_btn)
 
-        self.update_btn = ActionButton(
-            text='تحديث',
+        self.update_btn = TranslatableButton(
+            translation_key='update',
             button_type='warning',
             action=self.update_property
         )
         self.update_btn.disabled = True
         button_layout.add_widget(self.update_btn)
 
-        self.delete_btn = ActionButton(
-            text='حذف',
+        self.delete_btn = TranslatableButton(
+            translation_key='delete',
             button_type='danger',
             action=self.delete_property
         )
@@ -213,10 +224,26 @@ class PropertiesScreen(Screen):
         button_layout.add_widget(self.delete_btn)
 
         left_panel.add_widget(button_layout)
-        main_layout.add_widget(left_panel)
+        content_layout.add_widget(left_panel)
 
-        # Right panel - Data table
-        right_panel = BoxLayout(orientation='vertical', size_hint_x=0.5, spacing=dp(10))
+        # Right panel - Data table in responsive card
+        right_panel = ResponsiveCard(
+            orientation='vertical',
+            size_hint_x=0.5,
+            spacing=dp(15),
+            padding=dp(20)
+        )
+
+        # Table title
+        right_panel.add_widget(BilingualLabel(
+            text_en='Properties List',
+            text_ar='قائمة العقارات',
+            font_size=dp(18),
+            bold=True,
+            size_hint_y=None,
+            height=dp(40),
+            halign='center'
+        ))
 
         # Search and filters
         search_layout = BoxLayout(orientation='vertical', spacing=dp(5),
@@ -287,7 +314,9 @@ class PropertiesScreen(Screen):
         )
         right_panel.add_widget(self.stats_label)
 
-        main_layout.add_widget(right_panel)
+        content_layout.add_widget(right_panel)
+        main_layout.add_widget(content_layout)
+
         self.add_widget(main_layout)
 
     def load_properties(self):

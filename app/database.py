@@ -652,3 +652,86 @@ class DatabaseManager:
             return []
         finally:
             conn.close()
+
+    # Dashboard Statistics Methods
+    def get_total_owners(self) -> int:
+        """Get total number of owners"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT COUNT(*) FROM Owners")
+            result = cursor.fetchone()
+            return result[0] if result else 0
+        except sqlite3.Error as e:
+            logger.error(f"Error getting total owners: {e}")
+            return 0
+        finally:
+            conn.close()
+
+    def get_total_properties(self) -> int:
+        """Get total number of properties"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT COUNT(*) FROM Realstatspecification")
+            result = cursor.fetchone()
+            return result[0] if result else 0
+        except sqlite3.Error as e:
+            logger.error(f"Error getting total properties: {e}")
+            return 0
+        finally:
+            conn.close()
+
+    def get_total_transactions(self) -> int:
+        """Get total number of transactions (placeholder - no transactions table exists)"""
+        # Since there's no transactions table in the current schema,
+        # we'll return the count of properties as a placeholder
+        return self.get_total_properties()
+
+    def get_available_properties_count(self) -> int:
+        """Get count of available properties"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            # Since there's no status column, return total properties as all are considered available
+            cursor.execute("SELECT COUNT(*) FROM Realstatspecification")
+            result = cursor.fetchone()
+            return result[0] if result else 0
+        except sqlite3.Error as e:
+            logger.error(f"Error getting available properties count: {e}")
+            return 0
+        finally:
+            conn.close()
+
+    def get_recent_properties(self, limit: int = 5) -> List[Dict]:
+        """Get recent properties"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                SELECT r.*, o.ownername
+                FROM Realstatspecification r
+                LEFT JOIN Owners o ON r.Ownercode = o.Ownercode
+                ORDER BY r.Companyco DESC
+                LIMIT ?
+            ''', (limit,))
+
+            columns = [description[0] for description in cursor.description]
+            properties = []
+            for row in cursor.fetchall():
+                properties.append(dict(zip(columns, row)))
+            return properties
+        except sqlite3.Error as e:
+            logger.error(f"Error getting recent properties: {e}")
+            return []
+        finally:
+            conn.close()
+    def get_statistics(self) -> dict:
+        """Get comprehensive dashboard statistics"""
+        stats = {
+            'total_owners': self.get_total_owners(),
+            'total_properties': self.get_total_properties(),
+            'total_transactions': self.get_total_transactions(),
+            'available_properties': self.get_available_properties_count()
+        }
+        return stats

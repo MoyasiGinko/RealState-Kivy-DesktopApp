@@ -25,16 +25,20 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.logger import Logger
+from kivy.metrics import dp
+from kivy.uix.image import Image
+from kivy.uix.widget import Widget
 
 # Import our modules
 from config import config
 from database import DatabaseManager
 from font_manager import font_manager
+from language_manager import language_manager
 from screens.dashboard import DashboardScreen
 from screens.owners import OwnersScreen
 from screens.properties import PropertiesScreen
 from screens.search import SearchScreen
-from components import RTLLabel
+from components import RTLLabel, BilingualLabel, BilingualButton, LanguageSwitcher
 
 # Configure logging
 logging.basicConfig(
@@ -49,90 +53,127 @@ logger = logging.getLogger(__name__)
 
 # Set window properties from config
 Window.size = config.window_size
-Window.minimum_width, Window.minimum_height = config.min_window_size
+# Ensure minimum size is always > 0
+min_width, min_height = config.min_window_size
+if min_width <= 0:
+    min_width = 800
+if min_height <= 0:
+    min_height = 600
+Window.minimum_width, Window.minimum_height = min_width, min_height
 
 
-class MainMenuScreen(Screen):
-    """Main menu screen with navigation buttons"""
+class WelcomeScreen(Screen):
+    """Welcome screen with application information and language selection"""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.name = 'menu'
+        self.name = 'welcome'
 
-        # Main layout
-        main_layout = BoxLayout(orientation='vertical', padding=20, spacing=20)
+        # Main layout with elegant design
+        main_layout = BoxLayout(orientation='vertical', padding=[50, 40, 50, 30], spacing=40)
 
-        # Title
-        title = RTLLabel(
-            text=config.app_title,
-            font_size='32sp',
+        # Header with logo and title
+        header_layout = BoxLayout(orientation='vertical', size_hint_y=None, height=dp(200), spacing=20)
+
+        # Logo centered
+        logo_box = BoxLayout(size_hint_y=None, height=dp(120))
+        logo = Image(
+            source='app-images/alkawaz-logo.jpg',
+            size_hint=(None, None),
+            size=(dp(120), dp(120)),
+            pos_hint={'center_x': 0.5}
+        )
+        logo_box.add_widget(logo)
+        header_layout.add_widget(logo_box)
+
+        # Application title
+        title = BilingualLabel(
+            translation_key='app_title',
+            font_size='42sp',
+            bold=True,
+            color=config.get_color('primary'),
+            halign='center',
             size_hint_y=None,
-            height='80dp',
-            color=config.get_color('primary')
+            height=dp(60)
         )
-        main_layout.add_widget(title)
+        header_layout.add_widget(title)
+        main_layout.add_widget(header_layout)
 
-        # Menu buttons layout
-        buttons_layout = GridLayout(cols=2, spacing=20, size_hint_y=None, height='400dp')
-
-        # Dashboard button
-        dashboard_btn = Button(
-            text='لوحة التحكم\nDashboard',
+        # Language selection section
+        lang_section = BoxLayout(orientation='vertical', size_hint_y=None, height=dp(120), spacing=15)
+        lang_label = BilingualLabel(
+            translation_key='switch_language',
             font_size='18sp',
+            halign='center',
+            color=[0.3, 0.3, 0.3, 1],
+            size_hint_y=None,
+            height=dp(30)
+        )
+        lang_section.add_widget(lang_label)
+
+        # Language switcher
+        lang_switcher = LanguageSwitcher(size_hint=(None, None), size=(dp(200), dp(50)), pos_hint={'center_x': 0.5})
+        lang_section.add_widget(lang_switcher)
+        main_layout.add_widget(lang_section)
+
+        # Welcome information
+        info_section = BoxLayout(orientation='vertical', spacing=20)
+
+        # Description
+        description = BilingualLabel(
+            text_ar='نظام شامل لإدارة العقارات مع دعم اللغتين العربية والإنجليزية\nيتيح لك إدارة الملاك، العقارات، البحث والتقارير بكفاءة عالية',
+            text_en='Comprehensive Real Estate Management System with Arabic and English support\nEfficiently manage owners, properties, search and reports',
+            font_size='16sp',
+            halign='center',
+            color=[0.4, 0.4, 0.4, 1],
+            size_hint_y=None,
+            height=dp(80)
+        )
+        info_section.add_widget(description)
+
+        # Features list
+        features_text = BilingualLabel(
+            text_ar='المميزات:\n• إدارة الملاك والعقارات\n• نظام بحث متقدم\n• تقارير شاملة\n• دعم الصور\n• واجهة حديثة ومتجاوبة',
+            text_en='Features:\n• Owners & Properties Management\n• Advanced Search System\n• Comprehensive Reports\n• Photo Support\n• Modern Responsive Interface',
+            font_size='14sp',
+            halign='center',
+            color=[0.5, 0.5, 0.5, 1],
+            size_hint_y=None,
+            height=dp(120)
+        )
+        info_section.add_widget(features_text)
+        main_layout.add_widget(info_section)
+
+        # Enter button
+        enter_btn = BilingualButton(
+            translation_key='enter_dashboard',
             background_color=config.get_color('primary'),
-            font_name=font_manager.get_font_name('لوحة التحكم\nDashboard')
+            font_size='24sp',
+            size_hint=(None, None),
+            size=(dp(300), dp(60)),
+            pos_hint={'center_x': 0.5}
         )
-        dashboard_btn.bind(on_press=lambda x: self.goto_screen('dashboard'))
-        buttons_layout.add_widget(dashboard_btn)
-
-        # Owners button
-        owners_btn = Button(
-            text='إدارة الملاك\nOwners Management',
-            font_size='18sp',
-            background_color=config.get_color('success'),
-            font_name=font_manager.get_font_name('إدارة الملاك\nOwners Management')
-        )
-        owners_btn.bind(on_press=lambda x: self.goto_screen('owners'))
-        buttons_layout.add_widget(owners_btn)
-
-        # Properties button
-        properties_btn = Button(
-            text='إدارة العقارات\nProperties Management',
-            font_size='18sp',
-            background_color=config.get_color('warning'),
-            font_name=font_manager.get_font_name('إدارة العقارات\nProperties Management')
-        )
-        properties_btn.bind(on_press=lambda x: self.goto_screen('properties'))
-        buttons_layout.add_widget(properties_btn)
-
-        # Search/Reports button
-        search_btn = Button(
-            text='البحث والتقارير\nSearch & Reports',
-            font_size='18sp',
-            background_color=config.get_color('error'),
-            font_name=font_manager.get_font_name('البحث والتقارير\nSearch & Reports')
-        )
-        search_btn.bind(on_press=lambda x: self.goto_screen('search'))
-        buttons_layout.add_widget(search_btn)
-
-        main_layout.add_widget(buttons_layout)
+        enter_btn.bind(on_press=self.enter_dashboard)
+        main_layout.add_widget(enter_btn)
 
         # Footer
-        footer = RTLLabel(
-            text=f'نسخة {config.get("application", "version", "1.0.0")} - تطوير {config.get("application", "author", "Luay Alkawaz")}',
-            font_size='14sp',
+        footer = BilingualLabel(
+            text_ar=f'النسخة {config.get("application", "version", "1.0.0")} | تطوير {config.get("application", "author", "Luay Alkawaz")}',
+            text_en=f'Version {config.get("application", "version", "1.0.0")} | Developed by {config.get("application", "author", "Luay Alkawaz")}',
+            font_size='12sp',
+            color=[0.6, 0.6, 0.6, 1],
+            halign='center',
             size_hint_y=None,
-            height='40dp',
-            color=[0.5, 0.5, 0.5, 1]
+            height=dp(30)
         )
         main_layout.add_widget(footer)
 
         self.add_widget(main_layout)
 
-    def goto_screen(self, screen_name):
-        """Navigate to specified screen"""
+    def enter_dashboard(self, instance):
+        """Navigate to dashboard"""
         self.manager.transition = SlideTransition(direction='left')
-        self.manager.current = screen_name
+        self.manager.current = 'dashboard'
 
 
 class RealEstateApp(App):
@@ -158,8 +199,8 @@ class RealEstateApp(App):
             # Add screens
             self.add_screens()
 
-            # Start with main menu
-            self.screen_manager.current = 'menu'
+            # Start with welcome screen
+            self.screen_manager.current = 'welcome'
 
             logger.info("Application started successfully")
             return self.screen_manager
@@ -191,23 +232,21 @@ class RealEstateApp(App):
     def add_screens(self):
         """Add all screens to the screen manager"""
         try:
-            # Main menu
-            menu_screen = MainMenuScreen()
-            self.screen_manager.add_widget(menu_screen)
+            # Welcome screen (entry point)
+            welcome_screen = WelcomeScreen()
+            self.screen_manager.add_widget(welcome_screen)
 
-            # Dashboard
+            # Dashboard (main hub)
             dashboard_screen = DashboardScreen(db_manager=self.db, name='dashboard')
             self.screen_manager.add_widget(dashboard_screen)
 
-            # Owners management
+            # Feature screens
             owners_screen = OwnersScreen(db_manager=self.db, name='owners')
             self.screen_manager.add_widget(owners_screen)
 
-            # Properties management
             properties_screen = PropertiesScreen(db_manager=self.db, name='properties')
             self.screen_manager.add_widget(properties_screen)
 
-            # Search and reports
             search_screen = SearchScreen(db_manager=self.db, name='search')
             self.screen_manager.add_widget(search_screen)
 
@@ -222,10 +261,16 @@ class RealEstateApp(App):
         return self
 
     def goto_main_menu(self):
-        """Return to main menu"""
+        """Return to welcome screen"""
         if self.screen_manager:
             self.screen_manager.transition = SlideTransition(direction='right')
-            self.screen_manager.current = 'menu'
+            self.screen_manager.current = 'welcome'
+
+    def goto_dashboard(self):
+        """Navigate to dashboard screen"""
+        if self.screen_manager:
+            self.screen_manager.transition = SlideTransition(direction='right')
+            self.screen_manager.current = 'dashboard'
 
     def on_stop(self):
         """Called when the application is stopped"""

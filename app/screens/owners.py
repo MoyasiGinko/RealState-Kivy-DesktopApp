@@ -4,7 +4,7 @@
 Real Estate Management System - Owners Management Screen
 """
 
-from kivy.uix.screenmanager import Screen
+from kivy.uix.screenmanager import Screen, SlideTransition
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
@@ -17,10 +17,12 @@ from kivy.clock import Clock
 import logging
 
 from app.components import (RTLLabel, CustomActionButton as ActionButton, FormField, DataTable,
-                            ConfirmDialog, MessageDialog, SearchBox)
+                            ConfirmDialog, MessageDialog, SearchBox, BilingualLabel, TranslatableButton,
+                            NavigationHeader, ResponsiveCard)
 from app.database import DatabaseManager
 from app.utils import DataValidator
 from app.font_manager import font_manager
+from app.language_manager import language_manager
 
 logger = logging.getLogger(__name__)
 
@@ -39,29 +41,38 @@ class OwnersScreen(Screen):
         self.load_owners()
 
     def build_ui(self):
-        """Build the owners management UI"""
-        main_layout = BoxLayout(orientation='horizontal', spacing=dp(10), padding=dp(10))
+        """Build the modern responsive owners management UI"""
+        # Main layout with modern spacing
+        main_layout = BoxLayout(orientation='vertical', spacing=dp(15), padding=[20, 10, 20, 20])
 
-        # Left panel - Form
-        left_panel = BoxLayout(orientation='vertical', size_hint_x=0.4, spacing=dp(10))
-
-        # Header
-        header_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(50))
-        header_layout.add_widget(RTLLabel(
-            text='إدارة الملاك',
-            font_size='24sp',
-            bold=True
-        ))
-
-        # Back button
-        back_btn = ActionButton(
-            text='العودة',
-            size_hint_x=None,
-            width=dp(80),
-            action=self.go_back
+        # Navigation header
+        nav_header = NavigationHeader(
+            screen_title_key='owners_management',
+            show_back_button=True
         )
-        header_layout.add_widget(back_btn)
-        left_panel.add_widget(header_layout)
+        main_layout.add_widget(nav_header)
+
+        # Content area
+        content_layout = BoxLayout(orientation='horizontal', spacing=dp(20))
+
+        # Left panel - Form in responsive card
+        left_panel = ResponsiveCard(
+            orientation='vertical',
+            size_hint_x=0.4,
+            spacing=dp(15),
+            padding=dp(20)
+        )
+
+        # Form title
+        left_panel.add_widget(BilingualLabel(
+            text_en='Owner Information',
+            text_ar='معلومات المالك',
+            font_size=dp(18),
+            bold=True,
+            size_hint_y=None,
+            height=dp(40),
+            halign='center'
+        ))
 
         # Form
         form_scroll = ScrollView()
@@ -71,7 +82,7 @@ class OwnersScreen(Screen):
 
         # Owner Code (auto-generated, read-only)
         self.owner_code_field = FormField(
-            'كود المالك',
+            language_manager.get_text('owner_code'),
             required=True
         )
         self.owner_code_field.input.readonly = True
@@ -80,20 +91,20 @@ class OwnersScreen(Screen):
 
         # Owner Name
         self.owner_name_field = FormField(
-            'اسم المالك',
+            language_manager.get_text('owner_name'),
             required=True
         )
         self.form_layout.add_widget(self.owner_name_field)
 
         # Owner Phone
         self.owner_phone_field = FormField(
-            'رقم الهاتف'
+            language_manager.get_text('phone')
         )
         self.form_layout.add_widget(self.owner_phone_field)
 
         # Notes
         self.notes_field = FormField(
-            'ملاحظات',
+            language_manager.get_text('notes'),
             input_type='multiline'
         )
         self.form_layout.add_widget(self.notes_field)
@@ -104,30 +115,30 @@ class OwnersScreen(Screen):
         # Action buttons
         button_layout = GridLayout(cols=2, spacing=dp(10), size_hint_y=None, height=dp(50))
 
-        self.save_btn = ActionButton(
-            text='حفظ',
+        self.save_btn = TranslatableButton(
+            translation_key='save',
             button_type='success',
             action=self.save_owner
         )
         button_layout.add_widget(self.save_btn)
 
-        self.clear_btn = ActionButton(
-            text='مسح',
+        self.clear_btn = TranslatableButton(
+            translation_key='clear',
             button_type='secondary',
             action=self.clear_form
         )
         button_layout.add_widget(self.clear_btn)
 
-        self.update_btn = ActionButton(
-            text='تحديث',
+        self.update_btn = TranslatableButton(
+            translation_key='update',
             button_type='warning',
             action=self.update_owner
         )
         self.update_btn.disabled = True
         button_layout.add_widget(self.update_btn)
 
-        self.delete_btn = ActionButton(
-            text='حذف',
+        self.delete_btn = TranslatableButton(
+            translation_key='delete',
             button_type='danger',
             action=self.delete_owner
         )
@@ -135,11 +146,26 @@ class OwnersScreen(Screen):
         button_layout.add_widget(self.delete_btn)
 
         left_panel.add_widget(button_layout)
+        content_layout.add_widget(left_panel)
 
-        main_layout.add_widget(left_panel)
+        # Right panel - Data table in responsive card
+        right_panel = ResponsiveCard(
+            orientation='vertical',
+            size_hint_x=0.6,
+            spacing=dp(15),
+            padding=dp(20)
+        )
 
-        # Right panel - Data table
-        right_panel = BoxLayout(orientation='vertical', size_hint_x=0.6, spacing=dp(10))
+        # Table title
+        right_panel.add_widget(BilingualLabel(
+            text_en='Owners List',
+            text_ar='قائمة الملاك',
+            font_size=dp(18),
+            bold=True,
+            size_hint_y=None,
+            height=dp(40),
+            halign='center'
+        ))
 
         # Search box
         self.search_box = SearchBox(search_callback=self.search_owners)
@@ -147,10 +173,10 @@ class OwnersScreen(Screen):
 
         # Data table
         table_columns = [
-            {'title': 'كود المالك', 'field': 'Ownercode'},
-            {'title': 'اسم المالك', 'field': 'ownername'},
-            {'title': 'رقم الهاتف', 'field': 'ownerphone'},
-            {'title': 'ملاحظات', 'field': 'Note'}
+            {'title': language_manager.get_text('owner_code'), 'field': 'Ownercode'},
+            {'title': language_manager.get_text('owner_name'), 'field': 'ownername'},
+            {'title': language_manager.get_text('phone'), 'field': 'ownerphone'},
+            {'title': language_manager.get_text('notes'), 'field': 'Note'}
         ]
 
         self.owners_table = DataTable(
@@ -168,7 +194,8 @@ class OwnersScreen(Screen):
         )
         right_panel.add_widget(self.stats_label)
 
-        main_layout.add_widget(right_panel)
+        content_layout.add_widget(right_panel)
+        main_layout.add_widget(content_layout)
 
         self.add_widget(main_layout)
 

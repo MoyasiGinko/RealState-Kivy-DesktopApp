@@ -22,6 +22,7 @@ from kivy.clock import Clock
 from typing import Callable, List, Dict, Optional
 import logging
 from font_manager import font_manager
+from language_manager import language_manager
 
 logger = logging.getLogger(__name__)
 
@@ -56,8 +57,15 @@ class FormField(BoxLayout):
 
     def __init__(self, label_text: str, input_type: str = 'text',
                  values: List[str] = None, required: bool = False, **kwargs):
-        super().__init__(orientation='horizontal', spacing=dp(10),
-                        size_hint_y=None, height=dp(40), **kwargs)
+        # Handle size_hint_y conflict by extracting it before calling super
+        size_hint_y = kwargs.pop('size_hint_y', None)
+        height = kwargs.pop('height', dp(40))
+
+        super().__init__(orientation='horizontal', spacing=dp(10), **kwargs)
+
+        # Set size properties after initialization
+        self.size_hint_y = size_hint_y if size_hint_y is not None else None
+        self.height = height
 
         # Label
         label = RTLLabel(
@@ -111,6 +119,10 @@ class CustomActionButton(Button):
 
     def __init__(self, text: str, icon_path: str = None,
                  action: Callable = None, button_type: str = 'primary', **kwargs):
+        # Handle size_hint_y conflict by extracting it before calling super
+        size_hint_y = kwargs.pop('size_hint_y', None)
+        height = kwargs.pop('height', dp(40))
+
         # Set font name before calling super
         if 'font_name' not in kwargs:
             kwargs['font_name'] = font_manager.get_font_name(text)
@@ -118,8 +130,9 @@ class CustomActionButton(Button):
         super().__init__(**kwargs)
 
         self.text = text
-        self.size_hint_y = None
-        self.height = dp(40)
+        # Set size properties after initialization
+        self.size_hint_y = size_hint_y if size_hint_y is not None else None
+        self.height = height
 
         # Set button color based on type
         colors = {
@@ -526,3 +539,274 @@ class StatsCard(BoxLayout):
 
 # Import os for PhotoUploader
 import os
+
+
+class LanguageSwitcher(BoxLayout):
+    """Language switcher component"""
+
+    def __init__(self, **kwargs):
+        # Extract size_hint_y and height to avoid multiple values error
+        size_hint_y = kwargs.pop('size_hint_y', None)
+        height = kwargs.pop('height', None)
+        super().__init__(orientation='horizontal', spacing=dp(5), **kwargs)
+        if size_hint_y is not None:
+            self.size_hint_y = size_hint_y
+        if height is not None:
+            self.height = height
+
+        # Language label
+        self.language_label = RTLLabel(
+            text=language_manager.get_text('language'),
+            size_hint_x=0.4,
+            font_size='14sp'
+        )
+        self.add_widget(self.language_label)
+
+        # Language toggle button
+        self.toggle_btn = Button(
+            text=self.get_toggle_text(),
+            size_hint_x=0.6,
+            font_size='14sp',
+            font_name=font_manager.get_font_name(self.get_toggle_text()),
+            background_color=[0.2, 0.6, 0.8, 1]
+        )
+        self.toggle_btn.bind(on_press=self.toggle_language)
+        self.add_widget(self.toggle_btn)
+
+        # Register for language change notifications
+        language_manager.add_observer(self)
+
+    def get_toggle_text(self):
+        """Get text for toggle button"""
+        if language_manager.current_language == 'ar':
+            return 'EN | English'
+        else:
+            return 'ع | العربية'
+
+    def toggle_language(self, *args):
+        """Toggle between Arabic and English"""
+        language_manager.switch_language()
+
+    def on_language_changed(self):
+        """Called when language changes"""
+        self.language_label.text = language_manager.get_text('language')
+        self.toggle_btn.text = self.get_toggle_text()
+        self.toggle_btn.font_name = font_manager.get_font_name(self.toggle_btn.text)
+
+
+class TranslatableLabel(RTLLabel):
+    """Label that updates when language changes"""
+
+    def __init__(self, translation_key: str, **kwargs):
+        self.translation_key = translation_key
+        kwargs['text'] = language_manager.get_text(translation_key)
+        super().__init__(**kwargs)
+        language_manager.add_observer(self)
+
+    def on_language_changed(self):
+        """Called when language changes"""
+        self.text = language_manager.get_text(self.translation_key)
+        self.font_name = font_manager.get_font_name(self.text)
+
+
+class BilingualLabel(RTLLabel):
+    """Label that shows both Arabic and English text"""
+
+    def __init__(self, translation_key: str = None, text_en: str = None, text_ar: str = None, **kwargs):
+        # Handle size_hint_y conflict by extracting it before calling super
+        size_hint_y = kwargs.pop('size_hint_y', None)
+        height = kwargs.pop('height', None)
+
+        # Support both translation_key and direct text_en/text_ar approach
+        if translation_key:
+            self.translation_key = translation_key
+            kwargs['text'] = language_manager.get_bilingual_text(translation_key)
+        elif text_en and text_ar:
+            self.translation_key = None
+            self.text_en = text_en
+            self.text_ar = text_ar
+            # Use current language to determine which text to show
+            if language_manager.current_language == 'en':
+                kwargs['text'] = text_en
+            else:
+                kwargs['text'] = text_ar
+        else:
+            raise ValueError("BilingualLabel requires either translation_key or both text_en and text_ar")
+
+        super().__init__(**kwargs)
+
+        # Set size properties after initialization
+        if size_hint_y is not None:
+            self.size_hint_y = size_hint_y
+        if height is not None:
+            self.height = height
+
+        language_manager.add_observer(self)
+
+    def on_language_changed(self):
+        """Called when language changes"""
+        if self.translation_key:
+            self.text = language_manager.get_bilingual_text(self.translation_key)
+        elif hasattr(self, 'text_en') and hasattr(self, 'text_ar'):
+            if language_manager.current_language == 'en':
+                self.text = self.text_en
+            else:
+                self.text = self.text_ar
+        self.font_name = font_manager.get_font_name(self.text)
+
+
+class TranslatableButton(CustomActionButton):
+    """Button that updates when language changes"""
+
+    def __init__(self, translation_key: str, **kwargs):
+        # Handle size_hint_y conflict by extracting it before calling super
+        size_hint_y = kwargs.pop('size_hint_y', None)
+        height = kwargs.pop('height', None)
+
+        self.translation_key = translation_key
+        text = language_manager.get_text(translation_key)
+        super().__init__(text=text, **kwargs)
+
+        # Set size properties after initialization
+        if size_hint_y is not None:
+            self.size_hint_y = size_hint_y
+        if height is not None:
+            self.height = height
+
+        language_manager.add_observer(self)
+
+    def on_language_changed(self):
+        """Called when language changes"""
+        self.text = language_manager.get_text(self.translation_key)
+        self.font_name = font_manager.get_font_name(self.text)
+
+
+class BilingualButton(CustomActionButton):
+    """Button that shows both Arabic and English text"""
+
+    def __init__(self, translation_key: str, **kwargs):
+        # Handle size_hint_y conflict by extracting it before calling super
+        size_hint_y = kwargs.pop('size_hint_y', None)
+        height = kwargs.pop('height', None)
+
+        self.translation_key = translation_key
+        text = language_manager.get_bilingual_text(translation_key)
+        super().__init__(text=text, **kwargs)
+
+        # Set size properties after initialization
+        if size_hint_y is not None:
+            self.size_hint_y = size_hint_y
+        if height is not None:
+            self.height = height
+
+        language_manager.add_observer(self)
+
+    def on_language_changed(self):
+        """Called when language changes"""
+        self.text = language_manager.get_bilingual_text(self.translation_key)
+        self.font_name = font_manager.get_font_name(self.text)
+
+
+class NavigationHeader(BoxLayout):
+    """Modern navigation header with back to menu button and screen title"""
+
+    def __init__(self, screen_title_key: str = None, show_back_button: bool = True, **kwargs):
+        # Extract size_hint_y and height to avoid conflicts
+        size_hint_y = kwargs.pop('size_hint_y', None)
+        height = kwargs.pop('height', dp(60))
+
+        super().__init__(orientation='horizontal', spacing=dp(15), padding=[20, 10, 20, 10], **kwargs)
+
+        # Set size properties after initialization
+        if size_hint_y is not None:
+            self.size_hint_y = size_hint_y
+        else:
+            self.size_hint_y = None
+        self.height = height
+
+        # Back to menu button (if enabled)
+        if show_back_button:
+            self.back_btn = TranslatableButton(
+                translation_key='back_to_menu',
+                size_hint_x=None,
+                width=dp(120),
+                height=dp(40),
+                background_color=[0.3, 0.6, 0.9, 1],
+                font_size='14sp'
+            )
+            self.back_btn.bind(on_press=self.go_back_to_menu)
+            self.add_widget(self.back_btn)
+
+        # Screen title
+        if screen_title_key:
+            self.title_label = BilingualLabel(
+                translation_key=screen_title_key,
+                font_size='24sp',
+                bold=True,
+                color=[0.2, 0.2, 0.3, 1],
+                halign='center',
+                valign='middle'
+            )
+            self.add_widget(self.title_label)
+
+        # Language switcher (right side)
+        self.lang_switcher = LanguageSwitcher(
+            size_hint_x=None,
+            width=dp(150),
+            height=dp(35)
+        )
+        self.add_widget(self.lang_switcher)
+
+    def go_back_to_menu(self, instance):
+        """Navigate back to dashboard"""
+        from kivy.app import App
+        app = App.get_running_app()
+        if app and hasattr(app, 'goto_dashboard'):
+            app.goto_dashboard()
+        elif app and hasattr(app.screen_manager, 'current'):
+            # Fallback to direct navigation
+            app.screen_manager.current = 'dashboard'
+
+
+class ResponsiveCard(BoxLayout):
+    """Modern card layout with shadow effect and responsive design"""
+
+    def __init__(self, title: str = None, **kwargs):
+        # Extract conflicting parameters
+        size_hint_y = kwargs.pop('size_hint_y', None)
+        height = kwargs.pop('height', None)
+        orientation = kwargs.pop('orientation', 'vertical')  # Default to vertical
+        spacing = kwargs.pop('spacing', dp(10))
+        padding = kwargs.pop('padding', [20, 15, 20, 15])
+
+        super().__init__(orientation=orientation, spacing=spacing, padding=padding, **kwargs)
+
+        # Set size properties
+        if size_hint_y is not None:
+            self.size_hint_y = size_hint_y
+        if height is not None:
+            self.height = height
+
+        # Add card styling with canvas
+        with self.canvas.before:
+            from kivy.graphics import Color, RoundedRectangle
+            Color(1, 1, 1, 0.95)  # White background with slight transparency
+            self.bg_rect = RoundedRectangle(radius=[10])
+            self.bind(size=self._update_bg, pos=self._update_bg)
+
+        # Card title if provided
+        if title:
+            title_label = BilingualLabel(
+                translation_key=title,
+                font_size='18sp',
+                bold=True,
+                color=[0.2, 0.2, 0.3, 1],
+                size_hint_y=None,
+                height=dp(35)
+            )
+            self.add_widget(title_label)
+
+    def _update_bg(self, *args):
+        """Update background rectangle size and position"""
+        self.bg_rect.size = self.size
+        self.bg_rect.pos = self.pos

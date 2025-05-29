@@ -4,7 +4,7 @@
 Real Estate Management System - Main Dashboard Screen
 """
 
-from kivy.uix.screenmanager import Screen
+from kivy.uix.screenmanager import Screen, SlideTransition
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
@@ -12,18 +12,23 @@ from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.metrics import dp
 from kivy.clock import Clock
+from kivy.graphics import Color, RoundedRectangle
 import os
 import logging
 
-from app.components import (RTLLabel, CustomActionButton as ActionButton, StatsCard)
+from app.components import (RTLLabel, CustomActionButton as ActionButton, StatsCard,
+                           BilingualLabel, TranslatableButton, LanguageSwitcher,
+                           NavigationHeader, ResponsiveCard, BilingualButton)
 from app.database import DatabaseManager
 from app.font_manager import font_manager
+from app.language_manager import language_manager
+from app.config import config
 
 logger = logging.getLogger(__name__)
 
 
 class DashboardScreen(Screen):
-    """Main dashboard screen"""
+    """Main dashboard screen - Central hub for all application features"""
 
     def __init__(self, db_manager: DatabaseManager, **kwargs):
         super().__init__(**kwargs)
@@ -36,309 +41,281 @@ class DashboardScreen(Screen):
         Clock.schedule_interval(self.refresh_stats, 30)
 
     def build_ui(self):
-        """Build the dashboard UI"""
-        main_layout = BoxLayout(orientation='vertical', spacing=dp(10), padding=dp(20))
+        """Build the modern, responsive dashboard UI"""
+        # Main layout with proper spacing
+        main_layout = BoxLayout(orientation='vertical', spacing=dp(20), padding=[20, 15, 20, 20])
 
-        # Header
-        header_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(80))
+        # Header with navigation
+        header_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(60), spacing=20)
 
-        # Logo
-        try:
-            logo = Image(
-                source='app-images/alkawaz-logo.jpg',
-                size_hint_x=0.2,
-                fit_mode="contain"
-            )
-            header_layout.add_widget(logo)
-        except:
-            pass
+        # Back to welcome button
+        back_btn = BilingualButton(
+            translation_key='back_to_menu',
+            background_color=config.get_color('secondary'),
+            size_hint=(None, None),
+            size=(dp(150), dp(40))
+        )
+        back_btn.bind(on_press=self.go_to_welcome)
+        header_layout.add_widget(back_btn)
 
-        # Title
-        title_layout = BoxLayout(orientation='vertical', size_hint_x=0.6)
-        title_layout.add_widget(RTLLabel(
-            text='نظام إدارة العقارات',
-            font_size='28sp',
-            bold=True
-        ))
-        title_layout.add_widget(RTLLabel(
-            text='Real Estate Management System',
-            font_size='16sp'
-        ))
-        header_layout.add_widget(title_layout)
+        # Dashboard title
+        title = BilingualLabel(
+            translation_key='dashboard',
+            font_size='32sp',
+            bold=True,
+            color=config.get_color('primary'),
+            halign='center'
+        )
+        header_layout.add_widget(title)
 
-        # Company info
-        try:
-            company_logo = Image(
-                source='app-images/tbci.jpg',
-                size_hint_x=0.2,
-                fit_mode="contain"
-            )
-            header_layout.add_widget(company_logo)
-        except:
-            pass
+        # Language switcher
+        lang_switcher = LanguageSwitcher(size_hint=(None, None), size=(dp(120), dp(40)))
+        header_layout.add_widget(lang_switcher)
 
         main_layout.add_widget(header_layout)
 
         # Statistics section
-        stats_layout = BoxLayout(orientation='vertical', spacing=dp(10))
-        stats_layout.add_widget(RTLLabel(
-            text='إحصائيات النظام',
-            font_size='20sp',
-            bold=True,
-            size_hint_y=None,
-            height=dp(40)
-        ))
-
-        # Stats cards
-        self.stats_container = GridLayout(
-            cols=4,
-            spacing=dp(10),
-            size_hint_y=None,
-            height=dp(120)
-        )
-        stats_layout.add_widget(self.stats_container)
-
-        main_layout.add_widget(stats_layout)
+        stats_section = ResponsiveCard(title='system_statistics')
+        self.stats_container = BoxLayout(orientation='horizontal', spacing=dp(20), padding=[20, 20])
+        stats_section.add_widget(self.stats_container)
+        main_layout.add_widget(stats_section)
 
         # Quick actions section
-        actions_layout = BoxLayout(orientation='vertical', spacing=dp(10))
-        actions_layout.add_widget(RTLLabel(
-            text='الإجراءات السريعة',
-            font_size='20sp',
-            bold=True,
-            size_hint_y=None,
-            height=dp(40)
-        ))
+        actions_section = ResponsiveCard(title='quick_actions')
+        actions_grid = GridLayout(cols=2, spacing=dp(20), padding=[20, 20], size_hint_y=None)
+        actions_grid.bind(minimum_height=actions_grid.setter('height'))
 
-        # Action buttons grid
-        actions_grid = GridLayout(
-            cols=3,
-            spacing=dp(20),
-            size_hint_y=None,
-            height=dp(200)
+        # Action buttons with consistent styling
+        button_style = {
+            'font_size': '18sp',
+            'size_hint_y': None,
+            'height': dp(80),
+            'bold': True
+        }
+
+        # Owners Management
+        owners_btn = BilingualButton(
+            translation_key='owners_management',
+            background_color=config.get_color('success'),
+            **button_style
         )
+        owners_btn.bind(on_press=lambda x: self.navigate_to('owners'))
+        actions_grid.add_widget(owners_btn)
 
-        # Create action buttons
-        action_buttons = [
-            {
-                'text': 'إدارة الملاك',
-                'icon': 'app-images/insert.jpg',
-                'screen': 'owners',
-                'color': [0.2, 0.7, 0.3, 1]
-            },
-            {
-                'text': 'إدارة العقارات',
-                'icon': 'app-images/update.jpg',
-                'screen': 'properties',
-                'color': [0.2, 0.4, 0.8, 1]
-            },
-            {
-                'text': 'البحث والتقارير',
-                'icon': 'app-images/browse.jpg',
-                'screen': 'search',
-                'color': [0.8, 0.5, 0.2, 1]
-            }
-        ]
+        # Properties Management
+        properties_btn = BilingualButton(
+            translation_key='properties_management',
+            background_color=config.get_color('warning'),
+            **button_style
+        )
+        properties_btn.bind(on_press=lambda x: self.navigate_to('properties'))
+        actions_grid.add_widget(properties_btn)
 
-        for btn_info in action_buttons:
-            btn_layout = BoxLayout(orientation='vertical', spacing=dp(10))
+        # Search & Reports
+        search_btn = BilingualButton(
+            translation_key='search_reports',
+            background_color=config.get_color('error'),
+            **button_style
+        )
+        search_btn.bind(on_press=lambda x: self.navigate_to('search'))
+        actions_grid.add_widget(search_btn)
 
-            # Icon
-            try:
-                icon = Image(
-                    source=btn_info['icon'],
-                    size_hint_y=0.7,
-                    fit_mode="contain"
-                )
-                btn_layout.add_widget(icon)
-            except:
-                pass
+        # System Settings (placeholder)
+        settings_btn = BilingualButton(
+            translation_key='settings',
+            background_color=config.get_color('info'),
+            **button_style
+        )
+        settings_btn.bind(on_press=self.show_settings)
+        actions_grid.add_widget(settings_btn)
 
-            # Button
-            action_btn = ActionButton(
-                text=btn_info['text'],
-                action=lambda screen=btn_info['screen']: self.navigate_to_screen(screen),
-                button_type='primary',
-                size_hint_y=0.3
-            )
-            action_btn.background_color = btn_info['color']
-            btn_layout.add_widget(action_btn)
-
-            actions_grid.add_widget(btn_layout)
-
-        actions_layout.add_widget(actions_grid)
-        main_layout.add_widget(actions_layout)
+        actions_section.add_widget(actions_grid)
+        main_layout.add_widget(actions_section)
 
         # Recent activity section
-        recent_layout = BoxLayout(orientation='vertical', spacing=dp(10))
-        recent_layout.add_widget(RTLLabel(
-            text='النشاط الأخير',
-            font_size='20sp',
-            bold=True,
-            size_hint_y=None,
-            height=dp(40)
-        ))
-
-        # Recent properties scroll view
-        self.recent_scroll = ScrollView()
-        self.recent_container = BoxLayout(
-            orientation='vertical',
-            spacing=dp(5),
-            size_hint_y=None
-        )
-        self.recent_container.bind(minimum_height=self.recent_container.setter('height'))
-        self.recent_scroll.add_widget(self.recent_container)
-        recent_layout.add_widget(self.recent_scroll)
-
-        main_layout.add_widget(recent_layout)
-
-        # Footer
-        footer = RTLLabel(
-            text='تطوير: لؤي القواز - Real Estate Management System v1.0.0',
-            font_size='12sp',
-            size_hint_y=None,
-            height=dp(30)
-        )
-        main_layout.add_widget(footer)
+        recent_section = ResponsiveCard(title='recent_activity')
+        self.recent_container = BoxLayout(orientation='vertical', spacing=dp(10), padding=[20, 20])
+        recent_section.add_widget(self.recent_container)
+        main_layout.add_widget(recent_section)
 
         self.add_widget(main_layout)
 
         # Load initial data
-        self.refresh_stats()
-        self.load_recent_properties()
+        Clock.schedule_once(self.load_dashboard_data, 0.1)
 
-    def refresh_stats(self, *args):
-        """Refresh statistics display"""
+    def navigate_to(self, screen_name):
+        """Navigate to a specific screen"""
+        self.manager.transition = SlideTransition(direction='left')
+        self.manager.current = screen_name
+
+    def go_to_welcome(self, instance):
+        """Navigate back to welcome screen"""
+        self.manager.transition = SlideTransition(direction='right')
+        self.manager.current = 'welcome'
+
+    def load_dashboard_data(self, dt):
+        """Load dashboard data asynchronously"""
+        Clock.schedule_once(lambda dt: self.refresh_stats(), 0)
+        Clock.schedule_once(lambda dt: self.load_recent_activities(), 0.1)
+
+    def refresh_stats(self, dt=None):
+        """Load and display statistics"""
         try:
-            stats = self.db.get_statistics()
-
             # Clear existing stats
             self.stats_container.clear_widgets()
 
+            # Get statistics from database
+            total_owners = self.db.get_total_owners()
+            total_properties = self.db.get_total_properties()
+            available_properties = self.db.get_available_properties_count()
+
             # Create stats cards
             stats_data = [
-                {
-                    'title': 'إجمالي الملاك',
-                    'value': str(stats.get('total_owners', 0)),
-                    'color': [0.2, 0.7, 0.3, 1]
-                },
-                {
-                    'title': 'إجمالي العقارات',
-                    'value': str(stats.get('total_properties', 0)),
-                    'color': [0.2, 0.4, 0.8, 1]
-                },
-                {
-                    'title': 'عقارات للبيع',
-                    'value': str(self.count_by_offer_type(stats, '03001')),
-                    'color': [0.8, 0.5, 0.2, 1]
-                },
-                {
-                    'title': 'عقارات للإيجار',
-                    'value': str(self.count_by_offer_type(stats, '03002')),
-                    'color': [0.7, 0.3, 0.7, 1]
-                }
+                ('total_owners', str(total_owners), config.get_color('primary')),
+                ('total_properties', str(total_properties), config.get_color('success')),
+                ('available_properties', str(available_properties), config.get_color('warning')),
+                ('database_status', language_manager.get_text('active'), config.get_color('info'))
             ]
 
-            for stat in stats_data:
-                card = StatsCard(**stat)
+            for title_key, value, color in stats_data:
+                card = self.create_stat_card(title_key, value, color)
                 self.stats_container.add_widget(card)
 
         except Exception as e:
-            logger.error(f"Error refreshing stats: {e}")
+            logger.error(f"Error loading dashboard statistics: {e}")
+            # Show error message
+            error_label = BilingualLabel(
+                translation_key='error_loading_data',
+                font_size='14sp',
+                color=config.get_color('error')
+            )
+            self.stats_container.add_widget(error_label)
 
-    def count_by_offer_type(self, stats: dict, offer_code: str) -> int:
-        """Count properties by offer type"""
-        properties_by_offer = stats.get('properties_by_offer', [])
-        for code, name, count in properties_by_offer:
-            if code == offer_code:
-                return count
-        return 0
+    def create_stat_card(self, title_key: str, value: str, color: list):
+        """Create a modern statistics card"""
+        card_layout = BoxLayout(
+            orientation='vertical',
+            spacing=dp(5),
+            size_hint_x=0.25,
+            padding=dp(15)
+        )
 
-    def load_recent_properties(self):
-        """Load recent properties"""
+        # Add background with canvas
+        with card_layout.canvas.before:
+            Color(*color, 0.1)  # Light background
+            bg_rect = RoundedRectangle(radius=[10])
+            card_layout.bg_rect = bg_rect
+            card_layout.bind(
+                size=lambda *args: setattr(bg_rect, 'size', card_layout.size),
+                pos=lambda *args: setattr(bg_rect, 'pos', card_layout.pos)
+            )
+
+        # Title
+        title = BilingualLabel(
+            translation_key=title_key,
+            font_size='14sp',
+            color=color,
+            bold=True,
+            halign='center',
+            size_hint_y=None,
+            height=dp(30)
+        )
+        card_layout.add_widget(title)
+
+        # Value
+        value_label = RTLLabel(
+            text=value,
+            font_size='24sp',
+            color=color,
+            bold=True,
+            halign='center',
+            size_hint_y=None,
+            height=dp(40)
+        )
+        card_layout.add_widget(value_label)
+
+        return card_layout
+
+    def load_recent_activities(self, dt=None):
+        """Load recent activities"""
         try:
-            # Get recent properties (limit to 5)
-            properties = self.db.get_properties()[:5]
-
+            # Clear existing activities
             self.recent_container.clear_widgets()
 
-            if not properties:
-                no_data = RTLLabel(
-                    text='لا توجد عقارات مسجلة',
+            # Get recent properties
+            recent_properties = self.db.get_recent_properties()
+
+            if not recent_properties:
+                no_activity = BilingualLabel(
+                    translation_key='no_recent_activity',
+                    font_size='14sp',
+                    color=[0.5, 0.5, 0.5, 1],
+                    halign='center',
                     size_hint_y=None,
                     height=dp(40)
                 )
-                self.recent_container.add_widget(no_data)
+                self.recent_container.add_widget(no_activity)
                 return
 
-            for prop in properties:
-                # Create property card
-                prop_layout = BoxLayout(
-                    orientation='horizontal',
-                    spacing=dp(10),
-                    size_hint_y=None,
-                    height=dp(60),
-                    padding=dp(10)
-                )
-
-                # Property info
-                info_layout = BoxLayout(orientation='vertical', size_hint_x=0.8)
-
-                # Property name/address
-                name_label = RTLLabel(
-                    text=prop.get('Property-address', 'عقار بدون عنوان')[:50],
-                    font_size='14sp',
-                    bold=True
-                )
-                info_layout.add_widget(name_label)
-
-                # Property details
-                details = f"المالك: {prop.get('ownername', 'غير محدد')} | "
-                details += f"المساحة: {prop.get('Property-area', 0)} م²"
-
-                details_label = RTLLabel(
-                    text=details,
-                    font_size='12sp'
-                )
-                info_layout.add_widget(details_label)
-
-                prop_layout.add_widget(info_layout)
-
-                # View button
-                view_btn = ActionButton(
-                    text='عرض',
-                    size_hint_x=0.2,
-                    action=lambda p=prop: self.view_property(p)
-                )
-                prop_layout.add_widget(view_btn)
-
-                self.recent_container.add_widget(prop_layout)
+            # Show recent properties (limit to 3)
+            for prop in recent_properties[:3]:
+                activity_item = self.create_activity_item(prop)
+                self.recent_container.add_widget(activity_item)
 
         except Exception as e:
-            logger.error(f"Error loading recent properties: {e}")
+            logger.error(f"Error loading recent activities: {e}")
 
-    def navigate_to_screen(self, screen_name: str):
-        """Navigate to specified screen"""
-        try:
-            self.manager.current = screen_name
-        except Exception as e:
-            logger.error(f"Error navigating to screen {screen_name}: {e}")
+    def create_activity_item(self, property_data: dict):
+        """Create an activity item widget"""
+        item_layout = BoxLayout(
+            orientation='horizontal',
+            spacing=dp(10),
+            size_hint_y=None,
+            height=dp(50),
+            padding=[10, 5]
+        )
+
+        # Property info
+        info_text = f"{language_manager.get_text('property')}: {property_data.get('Property-address', language_manager.get_text('not_specified'))[:30]}..."
+        info_label = RTLLabel(
+            text=info_text,
+            font_size='12sp',
+            size_hint_x=0.8
+        )
+        item_layout.add_widget(info_label)
+
+        # View button
+        view_btn = BilingualButton(
+            translation_key='view',
+            size_hint_x=0.2,
+            size_hint_y=None,
+            height=dp(30),
+            background_color=config.get_color('secondary')
+        )
+        view_btn.bind(on_press=lambda x: self.view_property(property_data))
+        item_layout.add_widget(view_btn)
+
+        return item_layout
 
     def view_property(self, property_data: dict):
-        """View property details"""
+        """Navigate to property details"""
         try:
-            # Store property data for the properties screen
-            if hasattr(self.manager, 'get_screen'):
-                props_screen = self.manager.get_screen('properties')
-                if hasattr(props_screen, 'load_property_data'):
-                    props_screen.load_property_data(property_data)
-
-            self.navigate_to_screen('properties')
+            # Navigate to properties screen
+            self.navigate_to('properties')
         except Exception as e:
             logger.error(f"Error viewing property: {e}")
 
+    def show_settings(self, instance):
+        """Show settings dialog"""
+        from app.components import MessageDialog
+        dialog = MessageDialog(
+            title=language_manager.get_text('settings'),
+            message=language_manager.get_text('feature_coming_soon'),
+            message_type='info'
+        )
+        dialog.open()
+
     def on_enter(self, *args):
-        """Called when screen is entered"""
-        # Refresh data when entering screen
+        """Called when screen is entered - refresh data"""
         self.refresh_stats()
-        self.load_recent_properties()
+        self.load_recent_activities()

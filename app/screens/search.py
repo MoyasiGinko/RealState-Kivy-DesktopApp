@@ -4,7 +4,7 @@
 Real Estate Management System - Search and Reports Screen
 """
 
-from kivy.uix.screenmanager import Screen
+from kivy.uix.screenmanager import Screen, SlideTransition
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
@@ -22,9 +22,11 @@ from datetime import datetime
 import logging
 
 from app.components import (RTLLabel, CustomActionButton as ActionButton, FormField, DataTable,
-                            ConfirmDialog, MessageDialog, SearchBox, StatsCard)
+                            ConfirmDialog, MessageDialog, SearchBox, StatsCard, BilingualLabel, TranslatableButton,
+                            NavigationHeader, ResponsiveCard)
 from app.database import DatabaseManager
 from app.font_manager import font_manager
+from app.language_manager import language_manager
 from app.utils import ExportUtils
 from app.config import config
 
@@ -43,46 +45,50 @@ class SearchScreen(Screen):
         self.build_ui()
 
     def build_ui(self):
-        """Build the search and reports UI"""
-        main_layout = BoxLayout(orientation='vertical', spacing=dp(10), padding=dp(10))
+        """Build the modern responsive search and reports UI"""
+        # Main layout with modern spacing
+        main_layout = BoxLayout(orientation='vertical', spacing=dp(15), padding=[20, 10, 20, 20])
 
-        # Header
-        header_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(50))
-        header_layout.add_widget(RTLLabel(
-            text='البحث والتقارير',
-            font_size='24sp',
-            bold=True
-        ))
-
-        # Back button
-        back_btn = ActionButton(
-            text='العودة',
-            size_hint_x=None,
-            width=dp(80),
-            action=self.go_back
+        # Navigation header
+        nav_header = NavigationHeader(
+            screen_title_key='search_reports',
+            show_back_button=True
         )
-        header_layout.add_widget(back_btn)
-        main_layout.add_widget(header_layout)
+        main_layout.add_widget(nav_header)
+
+        # Tabbed panel in responsive card
+        tabs_card = ResponsiveCard(
+            orientation='vertical',
+            spacing=dp(10),
+            padding=dp(15)
+        )
 
         # Tabbed panel
-        tabs = TabbedPanel(do_default_tab=False)
+        tabs = TabbedPanel(do_default_tab=False, tab_height=dp(50))
 
         # Search tab
-        search_tab = TabbedPanelItem(text='البحث المتقدم')
+        search_tab = TabbedPanelItem(
+            text=language_manager.get_text('advanced_search') if hasattr(language_manager, 'get_text') else 'البحث المتقدم'
+        )
         search_tab.content = self.build_search_tab()
         tabs.add_widget(search_tab)
 
         # Reports tab
-        reports_tab = TabbedPanelItem(text='التقارير')
+        reports_tab = TabbedPanelItem(
+            text=language_manager.get_text('reports') if hasattr(language_manager, 'get_text') else 'التقارير'
+        )
         reports_tab.content = self.build_reports_tab()
         tabs.add_widget(reports_tab)
 
         # Statistics tab
-        stats_tab = TabbedPanelItem(text='الإحصائيات')
+        stats_tab = TabbedPanelItem(
+            text=language_manager.get_text('statistics') if hasattr(language_manager, 'get_text') else 'الإحصائيات'
+        )
         stats_tab.content = self.build_statistics_tab()
         tabs.add_widget(stats_tab)
 
-        main_layout.add_widget(tabs)
+        tabs_card.add_widget(tabs)
+        main_layout.add_widget(tabs_card)
         self.add_widget(main_layout)
 
     def build_search_tab(self):
