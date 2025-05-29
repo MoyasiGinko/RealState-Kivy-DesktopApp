@@ -57,10 +57,8 @@ class Config:
             'font_size_large': '24',
             'font_size_medium': '18',
             'font_size_small': '14',
-            'primary_color': '0.2, 0.4, 0.8, 1',
-            'success_color': '0.2, 0.7, 0.3, 1',
-            'warning_color': '0.8, 0.5, 0.2, 1',
-            'error_color': '0.7, 0.3, 0.2, 1'
+            # Theme is now managed by theme_manager
+            'current_theme': 'light',  # Default theme
         }
 
         self.config['fonts'] = {
@@ -155,12 +153,10 @@ class Config:
         return (width, height)
 
     def get_color(self, color_name: str) -> list:
-        """Get color as list of floats"""
-        color_str = self.get('ui', f'{color_name}_color', '0.2, 0.4, 0.8, 1')
-        try:
-            return [float(x.strip()) for x in color_str.split(',')]
-        except:
-            return [0.2, 0.4, 0.8, 1]
+        """Get color as list of floats from theme manager"""
+        # Import here to avoid circular import
+        from app.theme_manager import theme_manager
+        return theme_manager.get_color(color_name)
 
     def get_font_name(self, font_type: str = 'default') -> str:
         """Get font name based on type"""
@@ -178,6 +174,46 @@ class Config:
             return False
         arabic_range = range(0x0600, 0x06FF)  # Arabic Unicode range
         return any(ord(char) in arabic_range for char in text)
+
+    def set_theme(self, theme_name: str):
+        """Set the current theme"""
+        from app.theme_manager import theme_manager, ThemeType
+        try:
+            # Convert string to ThemeType enum
+            theme_type = ThemeType(theme_name.lower())
+            theme_manager.set_theme(theme_type)
+            self.set('ui', 'current_theme', theme_name.lower())
+        except ValueError:
+            logger.error(f"Invalid theme name: {theme_name}")
+
+    def get_theme(self) -> str:
+        """Get current theme name"""
+        return self.get('ui', 'current_theme', 'light')
+
+    def get_button_style(self, button_type: str = 'primary') -> Dict[str, Any]:
+        """Get button style from theme manager"""
+        from app.theme_manager import theme_manager
+        return theme_manager.get_button_style(button_type)
+
+    def get_input_style(self) -> Dict[str, Any]:
+        """Get input style from theme manager"""
+        from app.theme_manager import theme_manager
+        return theme_manager.get_input_style()
+
+    def get_label_style(self, label_type: str = 'normal') -> Dict[str, Any]:
+        """Get label style from theme manager"""
+        from app.theme_manager import theme_manager
+        return theme_manager.get_label_style(label_type)
+
+    def get_card_style(self) -> Dict[str, Any]:
+        """Get card style from theme manager"""
+        from app.theme_manager import theme_manager
+        return theme_manager.get_card_style()
+
+    def get_table_style(self) -> Dict[str, Any]:
+        """Get table style from theme manager"""
+        from app.theme_manager import theme_manager
+        return theme_manager.get_table_style()
 
 
 # Global configuration instance

@@ -110,56 +110,141 @@ class DatabaseManager:
             conn.close()
 
     def _insert_default_data(self, cursor):
-        """Insert default reference data"""
+        """Insert default reference data using translation keys"""
 
-        # Provinces data
-        provinces = [
-            ('01001', 'بغداد', '01'),
-            ('01002', 'البصرة', '01'),
-            ('01003', 'النجف', '01'),
-            ('01004', 'كربلاء', '01'),
-            ('01005', 'أربيل', '01'),
-            ('01006', 'الموصل', '01'),
-            ('01007', 'الأنبار', '01'),
-            ('01008', 'واسط', '01'),
-            ('01009', 'ذي قار', '01'),
-            ('01010', 'المثنى', '01'),
-            ('01011', 'القادسية', '01'),
-            ('01012', 'بابل', '01'),
-            ('01013', 'كركوك', '01'),
-            ('01014', 'صلاح الدين', '01'),
-            ('01015', 'ديالى', '01'),
-            ('01016', 'ميسان', '01'),
-            ('01017', 'دهوك', '01'),
-            ('01018', 'السليمانية', '01'),
+        # Import here to avoid circular import issues
+        try:
+            from app.language_manager import LanguageManager
+        except ImportError:
+            # Fallback for direct script execution
+            from language_manager import LanguageManager
+
+        # Initialize language manager to get localized text
+        language_manager = LanguageManager()
+
+        # Provinces data - using translation keys
+        province_keys = [
+            ('01001', 'baghdad', '01'),
+            ('01002', 'basra', '01'),
+            ('01003', 'najaf', '01'),
+            ('01004', 'karbala', '01'),
+            ('01005', 'erbil', '01'),
+            ('01006', 'mosul', '01'),
+            ('01007', 'anbar', '01'),
+            ('01008', 'wasit', '01'),
+            ('01009', 'dhi_qar', '01'),
+            ('01010', 'muthanna', '01'),
+            ('01011', 'qadisiyyah', '01'),
+            ('01012', 'babylon', '01'),
+            ('01013', 'kirkuk', '01'),
+            ('01014', 'salah_al_din', '01'),
+            ('01015', 'diyala', '01'),
+            ('01016', 'maysan', '01'),
+            ('01017', 'dohuk', '01'),
+            ('01018', 'sulaymaniyah', '01'),
         ]
 
-        # Property types
-        property_types = [
-            ('02001', 'منزل', '02'),
-            ('02002', 'شقة', '02'),
-            ('02003', 'فيلا', '02'),
-            ('02004', 'أرض', '02'),
-            ('02005', 'محل تجاري', '02'),
-            ('02006', 'مكتب', '02'),
-            ('02007', 'مستودع', '02'),
-            ('02008', 'مجمع سكني', '02'),
+        # Property types - using translation keys
+        property_type_keys = [
+            ('02001', 'house', '02'),
+            ('02002', 'apartment', '02'),
+            ('02003', 'villa', '02'),
+            ('02004', 'land', '02'),
+            ('02005', 'commercial_shop', '02'),
+            ('02006', 'office', '02'),
+            ('02007', 'warehouse', '02'),
+            ('02008', 'residential_complex', '02'),
         ]
 
-        # Offer types
-        offer_types = [
-            ('03001', 'للبيع', '03'),
-            ('03002', 'للإيجار', '03'),
-            ('03003', 'للاستثمار', '03'),
+        # Offer types - using translation keys
+        offer_type_keys = [
+            ('03001', 'for_sale', '03'),
+            ('03002', 'for_rent', '03'),
+            ('03003', 'for_investment', '03'),
         ]
 
-        # Insert all reference data
-        for data_set in [provinces, property_types, offer_types]:
-            for item in data_set:
+        # Insert all reference data with localized text
+        for data_set in [province_keys, property_type_keys, offer_type_keys]:
+            for code, translation_key, recty in data_set:
+                # Get the localized text for the current language
+                localized_name = language_manager.get_text(translation_key)
                 cursor.execute('''
                     INSERT OR IGNORE INTO Maincode (code, name, recty)
                     VALUES (?, ?, ?)
-                ''', item)
+                ''', (code, localized_name, recty))
+
+    def update_reference_data_language(self, language_manager=None):
+        """Update reference data with current language translations"""
+
+        # Import here to avoid circular import issues
+        if language_manager is None:
+            try:
+                from app.language_manager import LanguageManager
+            except ImportError:
+                # Fallback for direct script execution
+                from language_manager import LanguageManager
+            language_manager = LanguageManager()
+
+        conn = self.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            # Province translations
+            province_updates = [
+                ('01001', 'baghdad'),
+                ('01002', 'basra'),
+                ('01003', 'najaf'),
+                ('01004', 'karbala'),
+                ('01005', 'erbil'),
+                ('01006', 'mosul'),
+                ('01007', 'anbar'),
+                ('01008', 'wasit'),
+                ('01009', 'dhi_qar'),
+                ('01010', 'muthanna'),
+                ('01011', 'qadisiyyah'),
+                ('01012', 'babylon'),
+                ('01013', 'kirkuk'),
+                ('01014', 'salah_al_din'),
+                ('01015', 'diyala'),
+                ('01016', 'maysan'),
+                ('01017', 'dohuk'),
+                ('01018', 'sulaymaniyah'),
+            ]
+
+            # Property type translations
+            property_type_updates = [
+                ('02001', 'house'),
+                ('02002', 'apartment'),
+                ('02003', 'villa'),
+                ('02004', 'land'),
+                ('02005', 'commercial_shop'),
+                ('02006', 'office'),
+                ('02007', 'warehouse'),
+                ('02008', 'residential_complex'),
+            ]
+
+            # Offer type translations
+            offer_type_updates = [
+                ('03001', 'for_sale'),
+                ('03002', 'for_rent'),
+                ('03003', 'for_investment'),
+            ]
+
+            # Update all reference data
+            for updates in [province_updates, property_type_updates, offer_type_updates]:
+                for code, translation_key in updates:
+                    localized_name = language_manager.get_text(translation_key)
+                    cursor.execute('''
+                        UPDATE Maincode SET name = ? WHERE code = ?
+                    ''', (localized_name, code))
+
+            conn.commit()
+            logger.info("Reference data language updated successfully")
+        except Exception as e:
+            logger.error(f"Error updating reference data language: {e}")
+            conn.rollback()
+        finally:
+            conn.close()
 
     # Owner management methods
     def add_owner(self, owner_name: str, owner_phone: str = "", note: str = "") -> str:

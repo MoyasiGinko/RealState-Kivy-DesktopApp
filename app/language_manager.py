@@ -17,17 +17,19 @@ class LanguageManager:
     """Manages application languages and translations"""
 
     def __init__(self):
-        self.current_language = 'ar'  # Default to Arabic
+        self.current_language = 'en'  # Default to English
         self.translations = {}
         self.observers = []  # Components that need to update when language changes
         self.load_translations()
 
     def load_translations(self):
         """Load translation data"""
-        self.translations = {
-            'ar': {
+        self.translations = {            'ar': {
                 # Application
                 'app_title': 'نظام إدارة العقارات',
+                'app_description': 'نظام شامل لإدارة العقارات مع دعم اللغتين العربية والإنجليزية\nيتيح لك إدارة الملاك، العقارات، البحث والتقارير بكفاءة عالية',
+                'app_features': 'المميزات:\n• إدارة الملاك والعقارات\n• نظام بحث متقدم\n• تقارير شاملة\n• دعم الصور\n• واجهة حديثة ومتجاوبة',
+                'app_footer': 'النسخة 1.0.0 | تطوير Luay Alkawaz',
                 'version': 'النسخة',
                 'developed_by': 'تطوير',
 
@@ -37,7 +39,7 @@ class LanguageManager:
                 'properties_management': 'إدارة العقارات',
                 'search_reports': 'البحث والتقارير',
                 'back': 'رجوع',
-                'back_to_menu': 'العودة للقائمة الرئيسية',                'home': 'الرئيسية',
+                'back_to_menu':  'رجوع',                'home': 'الرئيسية',
                 'menu': 'القائمة',
                 'enter_dashboard': 'دخول لوحة التحكم',
 
@@ -50,10 +52,13 @@ class LanguageManager:
                 'add': 'إضافة',
                 'edit': 'تعديل',
                 'cancel': 'إلغاء',
-                'ok': 'موافق',
-                'yes': 'نعم',
+                'ok': 'موافق',                'yes': 'نعم',
                 'no': 'لا',
-                'close': 'إغلاق',                # Form Fields - Owner
+                'close': 'إغلاق',
+                'theme': 'المظهر',
+                'select_theme': 'اختيار المظهر',
+                'apply': 'تطبيق',
+                'color_test_title': 'اختبار الألوان والتحسينات',# Form Fields - Owner
                 'owner_code': 'كود المالك',
                 'owner_name': 'اسم المالك',
                 'phone': 'الهاتف',
@@ -80,15 +85,40 @@ class LanguageManager:
                 'street': 'الشارع',
                 'offer_type': 'نوع العرض',
                 'province': 'المحافظة',
-                'detailed_address': 'العنوان التفصيلي',
-
-                # Property Types
+                'detailed_address': 'العنوان التفصيلي',                # Property Types
                 'house': 'منزل',
                 'apartment': 'شقة',
                 'villa': 'فيلا',
                 'land': 'أرض',
-                'commercial': 'تجاري',
+                'commercial_shop': 'محل تجاري',
                 'office': 'مكتب',
+                'warehouse': 'مستودع',
+                'residential_complex': 'مجمع سكني',
+
+                # Offer Types
+                'for_sale': 'للبيع',
+                'for_rent': 'للإيجار',
+                'for_investment': 'للاستثمار',
+
+                # Provinces
+                'baghdad': 'بغداد',
+                'basra': 'البصرة',
+                'najaf': 'النجف',
+                'karbala': 'كربلاء',
+                'erbil': 'أربيل',
+                'mosul': 'الموصل',
+                'anbar': 'الأنبار',
+                'wasit': 'واسط',
+                'dhi_qar': 'ذي قار',
+                'muthanna': 'المثنى',
+                'qadisiyyah': 'القادسية',
+                'babylon': 'بابل',
+                'kirkuk': 'كركوك',
+                'salah_al_din': 'صلاح الدين',
+                'diyala': 'ديالى',
+                'maysan': 'ميسان',
+                'dohuk': 'دهوك',
+                'sulaymaniyah': 'السليمانية',
 
                 # Property Status
                 'available': 'متاح',
@@ -136,14 +166,32 @@ class LanguageManager:
                 'operation_failed': 'فشلت العملية',
                 'required_field': 'هذا الحقل مطلوب',
                 'invalid_data': 'البيانات غير صحيحة',
-                'error_loading_data': 'خطأ في تحميل البيانات',
-
-                # Search
+                'error_loading_data': 'خطأ في تحميل البيانات',                # Search
                 'search_properties': 'البحث في العقارات',
                 'search_owners': 'البحث في الملاك',
                 'filter_by': 'تصفية حسب',
                 'results': 'النتائج',
+                'search_results': 'نتائج البحث',                'export_results': 'تصدير النتائج',
                 'no_results': 'لا توجد نتائج',
+                'search_criteria': 'معايير البحث',
+                'not_specified': 'غير محدد',
+                'all_types': 'كل الأنواع',
+                'all_offers': 'كل العروض',
+                'all_provinces': 'كل المحافظات',
+                'all_owners': 'كل الملاك',
+                'area_from': 'المساحة من:',
+                'area_to': 'إلى:',
+                'search_in_address': 'البحث في العنوان',
+                'clear_filters': 'مسح الفلاتر',
+                'advanced_search': 'البحث المتقدم',                'reports': 'التقارير',
+                'statistics': 'الإحصائيات',
+                'property_details': 'تفاصيل العقار',
+                'construction_year': 'سنة البناء',                'corner_property': 'عقار زاوية',
+                'bathrooms': 'دورات المياه',
+                'description': 'الوصف',                'type_code': 'كود النوع',
+                'property_count': 'عدد العقارات',
+                'province_code': 'كود المحافظة',
+                'province_name': 'اسم المحافظة',
 
                 # Photos
                 'upload_photo': 'رفع صورة',
@@ -154,13 +202,48 @@ class LanguageManager:
                 'arabic': 'العربية',
                 'english': 'English',
                 'switch_language': 'تغيير اللغة',
-                'settings': 'الإعدادات',
+                'settings': 'Settings',
                 'feature_coming_soon': 'هذه الميزة قيد التطوير',
-            },
 
-            'en': {
+                # Form validation and interface
+                'choose_option': 'اختر...',
+                'area_field': 'المساحة',
+                'property_type_field': 'نوع العقار',
+                'offer_type_field': 'نوع العرض',
+                'province_field': 'المحافظة',
+                'address_field': 'العنوان',
+                'owner_field': 'المالك',
+                'owner_name_field': 'اسم المالك',
+                'phone_field': 'الهاتف',
+
+                # Validation messages
+                'field_required': 'مطلوب',
+                'invalid_area': 'المساحة يجب أن تكون رقم صحيح',
+                'invalid_year': 'سنة البناء غير صحيحة',
+                'invalid_phone': 'رقم الهاتف غير صحيح',
+                'owner_name_required': 'اسم المالك مطلوب',
+                'cannot_delete_owner_has_properties': 'لا يمكن حذف المالك - يوجد عقارات مرتبطة به',
+
+                # General error messages
+                'save_failed': 'فشل في الحفظ',
+                'update_failed': 'فشل في التحديث',
+                'delete_failed': 'فشل في الحذف',
+                'upload_failed': 'فشل في رفع الصورة',
+                'export_failed': 'فشل في تصدير النتائج',
+                'report_generation_failed': 'فشل في إنشاء التقرير',
+                'search_failed': 'خطأ في البحث',
+                'details_view_failed': 'خطأ في عرض التفاصيل',
+                'photo_display_failed': 'خطأ في عرض الصور',
+                'photo_load_error': 'خطأ في تحميل الصورة',
+
+                # Report types
+                'choose_report_type': 'اختر نوع التقرير:'
+            },            'en': {
                 # Application
                 'app_title': 'Real Estate Management System',
+                'app_description': 'Comprehensive Real Estate Management System with Arabic and English support\nEfficiently manage owners, properties, search and reports',
+                'app_features': 'Features:\n• Owners & Properties Management\n• Advanced Search System\n• Comprehensive Reports\n• Photo Support\n• Modern Responsive Interface',
+                'app_footer': 'Version 1.0.0 | Developed by Luay Alkawaz',
                 'version': 'Version',
                 'developed_by': 'Developed by',
 
@@ -183,10 +266,13 @@ class LanguageManager:
                 'add': 'Add',
                 'edit': 'Edit',
                 'cancel': 'Cancel',
-                'ok': 'OK',
-                'yes': 'Yes',
+                'ok': 'OK',                'yes': 'Yes',
                 'no': 'No',
-                'close': 'Close',                # Form Fields - Owner
+                'close': 'Close',
+                'theme': 'Theme',
+                'select_theme': 'Select Theme',
+                'apply': 'Apply',
+                'color_test_title': 'Color Improvements Test',# Form Fields - Owner
                 'owner_code': 'Owner Code',
                 'owner_name': 'Owner Name',
                 'phone': 'Phone',
@@ -213,15 +299,40 @@ class LanguageManager:
                 'street': 'Street',
                 'offer_type': 'Offer Type',
                 'province': 'Province',
-                'detailed_address': 'Detailed Address',
-
-                # Property Types
+                'detailed_address': 'Detailed Address',                # Property Types
                 'house': 'House',
                 'apartment': 'Apartment',
                 'villa': 'Villa',
                 'land': 'Land',
-                'commercial': 'Commercial',
+                'commercial_shop': 'Commercial Shop',
                 'office': 'Office',
+                'warehouse': 'Warehouse',
+                'residential_complex': 'Residential Complex',
+
+                # Offer Types
+                'for_sale': 'For Sale',
+                'for_rent': 'For Rent',
+                'for_investment': 'For Investment',
+
+                # Provinces
+                'baghdad': 'Baghdad',
+                'basra': 'Basra',
+                'najaf': 'Najaf',
+                'karbala': 'Karbala',
+                'erbil': 'Erbil',
+                'mosul': 'Mosul',
+                'anbar': 'Anbar',
+                'wasit': 'Wasit',
+                'dhi_qar': 'Dhi Qar',
+                'muthanna': 'Muthanna',
+                'qadisiyyah': 'Qadisiyyah',
+                'babylon': 'Babylon',
+                'kirkuk': 'Kirkuk',
+                'salah_al_din': 'Salah al-Din',
+                'diyala': 'Diyala',
+                'maysan': 'Maysan',
+                'dohuk': 'Dohuk',
+                'sulaymaniyah': 'Sulaymaniyah',
 
                 # Property Status
                 'available': 'Available',
@@ -270,14 +381,32 @@ class LanguageManager:
                 'operation_failed': 'Operation failed',
                 'required_field': 'This field is required',
                 'invalid_data': 'Invalid data',
-                'error_loading_data': 'Error loading data',
-
-                # Search
+                'error_loading_data': 'Error loading data',                # Search
                 'search_properties': 'Search Properties',
                 'search_owners': 'Search Owners',
                 'filter_by': 'Filter by',
                 'results': 'Results',
+                'search_results': 'Search Results',                'export_results': 'Export Results',
                 'no_results': 'No results found',
+                'search_criteria': 'Search Criteria',
+                'not_specified': 'Not specified',
+                'all_types': 'All Types',
+                'all_offers': 'All Offers',
+                'all_provinces': 'All Provinces',
+                'all_owners': 'All Owners',
+                'area_from': 'Area from:',
+                'area_to': 'to:',
+                'search_in_address': 'Search in Address',
+                'clear_filters': 'Clear Filters',
+                'advanced_search': 'Advanced Search',                'reports': 'Reports',
+                'statistics': 'Statistics',
+                'property_details': 'Property Details',
+                'construction_year': 'Construction Year',                'corner_property': 'Corner Property',
+                'bathrooms': 'Bathrooms',
+                'description': 'Description',                'type_code': 'Type Code',
+                'property_count': 'Property Count',
+                'province_code': 'Province Code',
+                'province_name': 'Province Name',
 
                 # Photos
                 'upload_photo': 'Upload Photo',
@@ -290,6 +419,40 @@ class LanguageManager:
                 'switch_language': 'Switch Language',
                 'settings': 'Settings',
                 'feature_coming_soon': 'This feature is coming soon',
+
+                # Form validation and interface
+                'choose_option': 'Choose...',
+                'area_field': 'Area',
+                'property_type_field': 'Property Type',
+                'offer_type_field': 'Offer Type',
+                'province_field': 'Province',
+                'address_field': 'Address',
+                'owner_field': 'Owner',
+                'owner_name_field': 'Owner Name',
+                'phone_field': 'Phone',
+
+                # Validation messages
+                'field_required': 'required',
+                'invalid_area': 'Area must be a valid number',
+                'invalid_year': 'Invalid construction year',
+                'invalid_phone': 'Invalid phone number',
+                'owner_name_required': 'Owner name is required',
+                'cannot_delete_owner_has_properties': 'Cannot delete owner - has associated properties',
+
+                # General error messages
+                'save_failed': 'Save failed',
+                'update_failed': 'Update failed',
+                'delete_failed': 'Delete failed',
+                'upload_failed': 'Upload failed',
+                'export_failed': 'Export failed',
+                'report_generation_failed': 'Report generation failed',
+                'search_failed': 'Search error',
+                'details_view_failed': 'Error displaying details',
+                'photo_display_failed': 'Error displaying photos',
+                'photo_load_error': 'Error loading image',
+
+                # Report types
+                'choose_report_type': 'Choose report type:'
             }
         }
 

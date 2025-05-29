@@ -68,21 +68,21 @@ class SearchScreen(Screen):
 
         # Search tab
         search_tab = TabbedPanelItem(
-            text=language_manager.get_text('advanced_search') if hasattr(language_manager, 'get_text') else 'البحث المتقدم'
+            text=language_manager.get_text('advanced_search') if hasattr(language_manager, 'get_text') else 'Advanced Search'
         )
         search_tab.content = self.build_search_tab()
         tabs.add_widget(search_tab)
 
         # Reports tab
         reports_tab = TabbedPanelItem(
-            text=language_manager.get_text('reports') if hasattr(language_manager, 'get_text') else 'التقارير'
+            text=language_manager.get_text('reports') if hasattr(language_manager, 'get_text') else 'Reports'
         )
         reports_tab.content = self.build_reports_tab()
         tabs.add_widget(reports_tab)
 
         # Statistics tab
         stats_tab = TabbedPanelItem(
-            text=language_manager.get_text('statistics') if hasattr(language_manager, 'get_text') else 'الإحصائيات'
+            text=language_manager.get_text('statistics') if hasattr(language_manager, 'get_text') else 'Statistics'
         )
         stats_tab.content = self.build_statistics_tab()
         tabs.add_widget(stats_tab)
@@ -99,7 +99,7 @@ class SearchScreen(Screen):
         left_panel = BoxLayout(orientation='vertical', size_hint_x=0.3, spacing=dp(10))
 
         left_panel.add_widget(RTLLabel(
-            text='معايير البحث',
+            text=language_manager.get_text('search_criteria'),
             font_size='18sp',
             bold=True,
             size_hint_y=None,
@@ -112,37 +112,37 @@ class SearchScreen(Screen):
 
         # Property type filter
         property_types = self.db.get_property_types()
-        type_values = ['كل الأنواع'] + [pt[1] for pt in property_types]
-        self.search_type_field = FormField('نوع العقار', 'spinner', type_values)
+        type_values = [language_manager.get_text('all_types')] + [pt[1] for pt in property_types]
+        self.search_type_field = FormField(translation_key='property_type_field', input_type='spinner', values=type_values)
         search_form.add_widget(self.search_type_field)
 
         # Offer type filter
         offer_types = self.db.get_offer_types()
-        offer_values = ['كل العروض'] + [ot[1] for ot in offer_types]
-        self.search_offer_field = FormField('نوع العرض', 'spinner', offer_values)
+        offer_values = [language_manager.get_text('all_offers')] + [ot[1] for ot in offer_types]
+        self.search_offer_field = FormField(translation_key='offer_type_field', input_type='spinner', values=offer_values)
         search_form.add_widget(self.search_offer_field)
 
         # Province filter
         provinces = self.db.get_provinces()
-        province_values = ['كل المحافظات'] + [p[1] for p in provinces]
-        self.search_province_field = FormField('المحافظة', 'spinner', province_values)
+        province_values = [language_manager.get_text('all_provinces')] + [p[1] for p in provinces]
+        self.search_province_field = FormField(translation_key='province_field', input_type='spinner', values=province_values)
         search_form.add_widget(self.search_province_field)
 
         # Owner filter
         owners = self.db.get_owners()
-        owner_values = ['كل الملاك'] + [f"{o[1]} ({o[0]})" for o in owners]
-        self.search_owner_field = FormField('المالك', 'spinner', owner_values)
+        owner_values = [language_manager.get_text('all_owners')] + [f"{o[1]} ({o[0]})" for o in owners]
+        self.search_owner_field = FormField(translation_key='owner_field', input_type='spinner', values=owner_values)
         search_form.add_widget(self.search_owner_field)
 
         # Area range
         area_layout = BoxLayout(orientation='horizontal', spacing=dp(5),
                                size_hint_y=None, height=dp(40))
-        area_layout.add_widget(RTLLabel(text='المساحة من:', size_hint_x=0.3))
+        area_layout.add_widget(RTLLabel(text=language_manager.get_text('area_from'), size_hint_x=0.3))
 
         self.min_area_input = TextInput(multiline=False, size_hint_x=0.35)
         area_layout.add_widget(self.min_area_input)
 
-        area_layout.add_widget(RTLLabel(text='إلى:', size_hint_x=0.1))
+        area_layout.add_widget(RTLLabel(text=language_manager.get_text('area_to'), size_hint_x=0.1))
 
         self.max_area_input = TextInput(multiline=False, size_hint_x=0.25)
         area_layout.add_widget(self.max_area_input)
@@ -150,7 +150,7 @@ class SearchScreen(Screen):
         search_form.add_widget(area_layout)
 
         # Address search
-        self.search_address_field = FormField('البحث في العنوان')
+        self.search_address_field = FormField(translation_key='search_in_address')
         search_form.add_widget(self.search_address_field)
 
         left_panel.add_widget(search_form)
@@ -160,14 +160,14 @@ class SearchScreen(Screen):
                                   size_hint_y=None, height=dp(100))
 
         search_btn = ActionButton(
-            text='بحث',
+            text=language_manager.get_text('search'),
             button_type='primary',
             action=self.perform_search
         )
         search_buttons.add_widget(search_btn)
 
         clear_search_btn = ActionButton(
-            text='مسح الفلاتر',
+            text=language_manager.get_text('clear_filters'),
             button_type='secondary',
             action=self.clear_search_filters
         )
@@ -183,7 +183,7 @@ class SearchScreen(Screen):
         results_header = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(40))
 
         self.results_label = RTLLabel(
-            text='نتائج البحث',
+            text=language_manager.get_text('search_results'),
             font_size='18sp',
             bold=True
         )
@@ -191,7 +191,7 @@ class SearchScreen(Screen):
 
         # Export button
         export_btn = ActionButton(
-            text='تصدير النتائج',
+            text=language_manager.get_text('export_results'),
             size_hint_x=None,
             width=dp(120),
             action=self.export_results
@@ -202,13 +202,13 @@ class SearchScreen(Screen):
 
         # Results table
         table_columns = [
-            {'title': 'كود الشركة', 'field': 'Companyco'},
-            {'title': 'نوع العقار', 'field': 'property_type_name'},
-            {'title': 'المساحة', 'field': 'Property-area'},
-            {'title': 'نوع العرض', 'field': 'offer_type_name'},
-            {'title': 'المحافظة', 'field': 'province_name'},
-            {'title': 'المالك', 'field': 'ownername'},
-            {'title': 'العنوان', 'field': 'Property-address'}
+            {'title': language_manager.get_text('company_code'), 'field': 'Companyco'},
+            {'title': language_manager.get_text('property_type'), 'field': 'property_type_name'},
+            {'title': language_manager.get_text('property_area'), 'field': 'Property-area'},
+            {'title': language_manager.get_text('offer_type'), 'field': 'offer_type_name'},
+            {'title': language_manager.get_text('province'), 'field': 'province_name'},
+            {'title': language_manager.get_text('owner_name'), 'field': 'ownername'},
+            {'title': language_manager.get_text('address'), 'field': 'Property-address'}
         ]
 
         self.search_results_table = DataTable(
@@ -225,7 +225,7 @@ class SearchScreen(Screen):
         layout = BoxLayout(orientation='vertical', spacing=dp(20), padding=dp(20))
 
         layout.add_widget(RTLLabel(
-            text='التقارير',
+            text='Reports',
             font_size='20sp',
             bold=True,
             size_hint_y=None,
@@ -238,16 +238,16 @@ class SearchScreen(Screen):
         # Property summary report
         property_report_layout = BoxLayout(orientation='vertical', spacing=dp(10))
         property_report_layout.add_widget(RTLLabel(
-            text='تقرير ملخص العقارات',
+            text='Property Summary Report',
             font_size='16sp',
             bold=True
         ))
         property_report_layout.add_widget(RTLLabel(
-            text='تقرير شامل لجميع العقارات مع التفاصيل الأساسية',
+            text='Comprehensive report for all properties with basic details',
             font_size='12sp'
         ))
         property_report_btn = ActionButton(
-            text='إنشاء التقرير',
+            text='Generate Report',
             action=self.generate_property_report
         )
         property_report_layout.add_widget(property_report_btn)
@@ -256,16 +256,16 @@ class SearchScreen(Screen):
         # Owners report
         owners_report_layout = BoxLayout(orientation='vertical', spacing=dp(10))
         owners_report_layout.add_widget(RTLLabel(
-            text='تقرير الملاك',
+            text='Owners Report',
             font_size='16sp',
             bold=True
         ))
         owners_report_layout.add_widget(RTLLabel(
-            text='قائمة بجميع الملاك وعقاراتهم',
+            text='List of all owners and their properties',
             font_size='12sp'
         ))
         owners_report_btn = ActionButton(
-            text='إنشاء التقرير',
+            text='Generate Report',
             action=self.generate_owners_report
         )
         owners_report_layout.add_widget(owners_report_btn)
@@ -274,16 +274,16 @@ class SearchScreen(Screen):
         # Property types report
         types_report_layout = BoxLayout(orientation='vertical', spacing=dp(10))
         types_report_layout.add_widget(RTLLabel(
-            text='تقرير أنواع العقارات',
+            text='Property Types Report',
             font_size='16sp',
             bold=True
         ))
         types_report_layout.add_widget(RTLLabel(
-            text='توزيع العقارات حسب النوع',
+            text='Distribution of properties by type',
             font_size='12sp'
         ))
         types_report_btn = ActionButton(
-            text='إنشاء التقرير',
+            text='Generate Report',
             action=self.generate_types_report
         )
         types_report_layout.add_widget(types_report_btn)
@@ -292,16 +292,16 @@ class SearchScreen(Screen):
         # Provinces report
         provinces_report_layout = BoxLayout(orientation='vertical', spacing=dp(10))
         provinces_report_layout.add_widget(RTLLabel(
-            text='تقرير المحافظات',
+            text='Provinces Report',
             font_size='16sp',
             bold=True
         ))
         provinces_report_layout.add_widget(RTLLabel(
-            text='توزيع العقارات حسب المحافظة',
+            text='Distribution of properties by province',
             font_size='12sp'
         ))
         provinces_report_btn = ActionButton(
-            text='إنشاء التقرير',
+            text='Generate Report',
             action=self.generate_provinces_report
         )
         provinces_report_layout.add_widget(provinces_report_btn)
@@ -311,7 +311,7 @@ class SearchScreen(Screen):
 
         # Custom report section
         layout.add_widget(RTLLabel(
-            text='تقرير مخصص',
+            text='Custom Report',
             font_size='18sp',
             bold=True,
             size_hint_y=None,
@@ -322,20 +322,21 @@ class SearchScreen(Screen):
                                  size_hint_y=None, height=dp(60))
 
         custom_layout.add_widget(RTLLabel(
-            text='اختر نوع التقرير:',
+            text=language_manager.get_text('choose_report_type'),
             size_hint_x=0.3
         ))
 
+        default_text = language_manager.get_text('choose_option')
         self.custom_report_spinner = Spinner(
-            text='اختر...',
-            values=['عقارات للبيع', 'عقارات للإيجار', 'عقارات حسب المالك', 'عقارات حسب المساحة'],
+            text=default_text,
+            values=['Properties for Sale', 'Properties for Rent', 'Properties by Owner', 'Properties by Area'],
             size_hint_x=0.4,
-            font_name=font_manager.get_font_name('اختر...')
+            font_name=font_manager.get_font_name(default_text)
         )
         custom_layout.add_widget(self.custom_report_spinner)
 
         custom_report_btn = ActionButton(
-            text='إنشاء',
+            text='Generate',
             size_hint_x=0.3,
             action=self.generate_custom_report
         )
@@ -350,7 +351,7 @@ class SearchScreen(Screen):
         layout = BoxLayout(orientation='vertical', spacing=dp(10), padding=dp(10))
 
         layout.add_widget(RTLLabel(
-            text='إحصائيات النظام',
+            text='System Statistics',
             font_size='20sp',
             bold=True,
             size_hint_y=None,
@@ -368,7 +369,7 @@ class SearchScreen(Screen):
 
         # Refresh button
         refresh_btn = ActionButton(
-            text='تحديث الإحصائيات',
+            text='Refresh Statistics',
             action=self.refresh_statistics,
             size_hint_y=None,
             height=dp(40)
@@ -387,7 +388,7 @@ class SearchScreen(Screen):
             filters = {}
 
             # Property type
-            if self.search_type_field.get_value() != 'كل الأنواع':
+            if self.search_type_field.get_value() != language_manager.get_text('all_types'):
                 property_types = self.db.get_property_types()
                 for pt in property_types:
                     if pt[1] == self.search_type_field.get_value():
@@ -395,7 +396,7 @@ class SearchScreen(Screen):
                         break
 
             # Offer type
-            if self.search_offer_field.get_value() != 'كل العروض':
+            if self.search_offer_field.get_value() != language_manager.get_text('all_offers'):
                 offer_types = self.db.get_offer_types()
                 for ot in offer_types:
                     if ot[1] == self.search_offer_field.get_value():
@@ -403,7 +404,7 @@ class SearchScreen(Screen):
                         break
 
             # Province
-            if self.search_province_field.get_value() != 'كل المحافظات':
+            if self.search_province_field.get_value() != language_manager.get_text('all_provinces'):
                 provinces = self.db.get_provinces()
                 for p in provinces:
                     if p[1] == self.search_province_field.get_value():
@@ -411,7 +412,7 @@ class SearchScreen(Screen):
                         break
 
             # Owner
-            if self.search_owner_field.get_value() != 'كل الملاك':
+            if self.search_owner_field.get_value() != language_manager.get_text('all_owners'):
                 owner_text = self.search_owner_field.get_value()
                 if '(' in owner_text:
                     owner_code = owner_text.split('(')[-1].replace(')', '')
@@ -457,11 +458,15 @@ class SearchScreen(Screen):
             self.search_results_table.update_data(filtered_properties)
 
             # Update results label
-            self.results_label.text = f'نتائج البحث ({len(filtered_properties)} عقار)'
+            self.results_label.text = f'{language_manager.get_text("search_results")} ({len(filtered_properties)} {language_manager.get_text("properties")})'
 
         except Exception as e:
             logger.error(f"Error performing search: {e}")
-            self.show_message('خطأ', f'خطأ في البحث: {str(e)}', 'error')
+            self.show_message(
+                language_manager.get_text('error'),
+                f'{language_manager.get_text("search_failed")}: {str(e)}',
+                'error'
+            )
 
     def _add_reference_names(self, property_data: dict) -> dict:
         """Add reference names to property data"""
@@ -474,7 +479,7 @@ class SearchScreen(Screen):
                 processed['property_type_name'] = pt[1]
                 break
         else:
-            processed['property_type_name'] = 'غير محدد'
+            processed['property_type_name'] = language_manager.get_text('not_specified')
 
         # Offer type name
         offer_types = self.db.get_offer_types()
@@ -483,7 +488,7 @@ class SearchScreen(Screen):
                 processed['offer_type_name'] = ot[1]
                 break
         else:
-            processed['offer_type_name'] = 'غير محدد'
+            processed['offer_type_name'] = language_manager.get_text('not_specified')
 
         # Province name
         provinces = self.db.get_provinces()
@@ -492,7 +497,7 @@ class SearchScreen(Screen):
                 processed['province_name'] = p[1]
                 break
         else:
-            processed['province_name'] = 'غير محدد'
+            processed['province_name'] = language_manager.get_text('not_specified')
 
         return processed
 
@@ -517,14 +522,14 @@ class SearchScreen(Screen):
         # Clear results
         self.search_results = []
         self.search_results_table.update_data([])
-        self.results_label.text = 'نتائج البحث'
+        self.results_label.text = language_manager.get_text('search_results')
 
     def view_property_details(self, property_data: dict):
         """View property details"""
         try:
             # Create property details popup
             details_popup = Popup(
-                title='تفاصيل العقار',
+                title=language_manager.get_text('property_details'),
                 size_hint=(0.8, 0.9)
             )
 
@@ -535,21 +540,21 @@ class SearchScreen(Screen):
 
             # Property details
             details_items = [
-                ('كود الشركة', property_data.get('Companyco', '')),
-                ('كود العقار', property_data.get('realstatecode', '')),
-                ('نوع العقار', property_data.get('property_type_name', '')),
-                ('سنة البناء', property_data.get('Yearmake', '')),
-                ('المساحة', f"{property_data.get('Property-area', 0)} م²"),
-                ('الواجهة', f"{property_data.get('Property-facade', 0)} م"),
-                ('العمق', f"{property_data.get('Property-depth', 0)} م"),
-                ('غرف النوم', property_data.get('N-of-bedrooms', 0)),
-                ('دورات المياه', property_data.get('N-of bathrooms', 0)),
-                ('عقار زاوية', property_data.get('Property-corner', '')),
-                ('نوع العرض', property_data.get('offer_type_name', '')),
-                ('المحافظة', property_data.get('province_name', '')),
-                ('العنوان', property_data.get('Property-address', '')),
-                ('المالك', property_data.get('ownername', '')),
-                ('الوصف', property_data.get('Descriptions', ''))
+                (language_manager.get_text('company_code'), property_data.get('Companyco', '')),
+                (language_manager.get_text('property_code'), property_data.get('realstatecode', '')),
+                (language_manager.get_text('property_type'), property_data.get('property_type_name', '')),
+                (language_manager.get_text('construction_year'), property_data.get('Yearmake', '')),
+                (language_manager.get_text('property_area'), f"{property_data.get('Property-area', 0)} m²"),
+                (language_manager.get_text('facade'), f"{property_data.get('Property-facade', 0)} m"),
+                (language_manager.get_text('depth'), f"{property_data.get('Property-depth', 0)} m"),
+                (language_manager.get_text('bedrooms'), property_data.get('N-of-bedrooms', 0)),
+                (language_manager.get_text('bathrooms'), property_data.get('N-of bathrooms', 0)),
+                (language_manager.get_text('corner_property'), property_data.get('Property-corner', '')),
+                (language_manager.get_text('offer_type'), property_data.get('offer_type_name', '')),
+                (language_manager.get_text('province'), property_data.get('province_name', '')),
+                (language_manager.get_text('address'), property_data.get('Property-address', '')),
+                (language_manager.get_text('owner_name'), property_data.get('ownername', '')),
+                (language_manager.get_text('description'), property_data.get('Descriptions', ''))
             ]
 
             for label, value in details_items:
@@ -577,7 +582,7 @@ class SearchScreen(Screen):
 
             # Close button
             close_btn = ActionButton(
-                text='إغلاق',
+                text=language_manager.get_text('close'),
                 action=details_popup.dismiss,
                 size_hint_y=None,
                 height=dp(40)
@@ -589,12 +594,20 @@ class SearchScreen(Screen):
 
         except Exception as e:
             logger.error(f"Error viewing property details: {e}")
-            self.show_message('خطأ', f'خطأ في عرض التفاصيل: {str(e)}', 'error')
+            self.show_message(
+                language_manager.get_text('error'),
+                f'{language_manager.get_text("details_view_failed")}: {str(e)}',
+                'error'
+            )
 
     def export_results(self):
         """Export search results"""
         if not self.search_results:
-            self.show_message('تنبيه', 'لا توجد نتائج للتصدير', 'warning')
+            self.show_message(
+                language_manager.get_text('warning'),
+                language_manager.get_text('no_results'),
+                'warning'
+            )
             return
 
         try:
@@ -603,21 +616,37 @@ class SearchScreen(Screen):
             filename = f'search_results_{timestamp}.txt'
 
             # Export data
-            if ExportUtils.export_to_text(self.search_results, filename, 'نتائج البحث'):
-                self.show_message('نجح', f'تم تصدير النتائج إلى: {filename}', 'success')
+            if ExportUtils.export_to_text(self.search_results, filename, language_manager.get_text('search_results')):
+                self.show_message(
+                    language_manager.get_text('success'),
+                    f'{language_manager.get_text("export_results")}: {filename}',
+                    'success'
+                )
             else:
-                self.show_message('خطأ', 'فشل في تصدير النتائج', 'error')
+                self.show_message(
+                    language_manager.get_text('error'),
+                    language_manager.get_text('export_failed'),
+                    'error'
+                )
 
         except Exception as e:
             logger.error(f"Error exporting results: {e}")
-            self.show_message('خطأ', f'خطأ في التصدير: {str(e)}', 'error')
+            self.show_message(
+                language_manager.get_text('error'),
+                f'{language_manager.get_text("export_failed")}: {str(e)}',
+                'error'
+            )
 
     def generate_property_report(self):
         """Generate property summary report"""
         try:
             properties = self.db.get_properties()
             if not properties:
-                self.show_message('تنبيه', 'لا توجد عقارات لإنشاء التقرير', 'warning')
+                self.show_message(
+                    language_manager.get_text('warning'),
+                    language_manager.get_text('no_results'),
+                    'warning'
+                )
                 return
 
             # Add reference names
@@ -626,42 +655,70 @@ class SearchScreen(Screen):
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             filename = f'property_report_{timestamp}.txt'
 
-            if ExportUtils.export_to_text(processed_properties, filename, 'تقرير ملخص العقارات'):
-                self.show_message('نجح', f'تم إنشاء التقرير: {filename}', 'success')
+            if ExportUtils.export_to_text(processed_properties, filename, language_manager.get_text('reports')):
+                self.show_message(
+                    language_manager.get_text('success'),
+                    f'{language_manager.get_text("reports")}: {filename}',
+                    'success'
+                )
             else:
-                self.show_message('خطأ', 'فشل في إنشاء التقرير', 'error')
+                self.show_message(
+                    language_manager.get_text('error'),
+                    language_manager.get_text('report_generation_failed'),
+                    'error'
+                )
 
         except Exception as e:
             logger.error(f"Error generating property report: {e}")
-            self.show_message('خطأ', f'خطأ في إنشاء التقرير: {str(e)}', 'error')
+            self.show_message(
+                language_manager.get_text('error'),
+                f'{language_manager.get_text("report_generation_failed")}: {str(e)}',
+                'error'
+            )
 
     def generate_owners_report(self):
         """Generate owners report"""
         try:
             owners = self.db.get_owners()
             if not owners:
-                self.show_message('تنبيه', 'لا توجد ملاك لإنشاء التقرير', 'warning')
+                self.show_message(
+                    language_manager.get_text('warning'),
+                    language_manager.get_text('no_results'),
+                    'warning'
+                )
                 return
 
             # Convert to dict format
             owners_data = [{
-                'كود المالك': owner[0],
-                'اسم المالك': owner[1],
-                'رقم الهاتف': owner[2] or '',
-                'ملاحظات': owner[3] or ''
+                language_manager.get_text('owner_code'): owner[0],
+                language_manager.get_text('owner_name'): owner[1],
+                language_manager.get_text('phone'): owner[2] or '',
+                language_manager.get_text('notes'): owner[3] or ''
             } for owner in owners]
 
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             filename = f'owners_report_{timestamp}.txt'
 
-            if ExportUtils.export_to_text(owners_data, filename, 'تقرير الملاك'):
-                self.show_message('نجح', f'تم إنشاء التقرير: {filename}', 'success')
+            if ExportUtils.export_to_text(owners_data, filename, language_manager.get_text('owners_list')):
+                self.show_message(
+                    language_manager.get_text('success'),
+                    f'{language_manager.get_text("reports")}: {filename}',
+                    'success'
+                )
             else:
-                self.show_message('خطأ', 'فشل في إنشاء التقرير', 'error')
+                self.show_message(
+                    language_manager.get_text('error'),
+                    language_manager.get_text('report_generation_failed'),
+                    'error'
+                )
 
         except Exception as e:
             logger.error(f"Error generating owners report: {e}")
-            self.show_message('خطأ', f'خطأ في إنشاء التقرير: {str(e)}', 'error')
+            self.show_message(
+                language_manager.get_text('error'),
+                f'{language_manager.get_text("report_generation_failed")}: {str(e)}',
+                'error'
+            )
 
     def generate_types_report(self):
         """Generate property types report"""
@@ -670,27 +727,43 @@ class SearchScreen(Screen):
             types_data = stats.get('properties_by_type', [])
 
             if not types_data:
-                self.show_message('تنبيه', 'لا توجد بيانات لإنشاء التقرير', 'warning')
+                self.show_message(
+                    language_manager.get_text('warning'),
+                    language_manager.get_text('no_results'),
+                    'warning'
+                )
                 return
 
             # Convert to dict format
             report_data = [{
-                'كود النوع': item[0] or 'غير محدد',
-                'نوع العقار': item[1] or 'غير محدد',
-                'عدد العقارات': item[2]
+                language_manager.get_text('type_code'): item[0] or language_manager.get_text('not_specified'),
+                language_manager.get_text('property_type'): item[1] or language_manager.get_text('not_specified'),
+                language_manager.get_text('property_count'): item[2]
             } for item in types_data]
 
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             filename = f'types_report_{timestamp}.txt'
 
-            if ExportUtils.export_to_text(report_data, filename, 'تقرير أنواع العقارات'):
-                self.show_message('نجح', f'تم إنشاء التقرير: {filename}', 'success')
+            if ExportUtils.export_to_text(report_data, filename, language_manager.get_text('reports')):
+                self.show_message(
+                    language_manager.get_text('success'),
+                    f'{language_manager.get_text("reports")}: {filename}',
+                    'success'
+                )
             else:
-                self.show_message('خطأ', 'فشل في إنشاء التقرير', 'error')
+                self.show_message(
+                    language_manager.get_text('error'),
+                    language_manager.get_text('report_generation_failed'),
+                    'error'
+                )
 
         except Exception as e:
             logger.error(f"Error generating types report: {e}")
-            self.show_message('خطأ', f'خطأ في إنشاء التقرير: {str(e)}', 'error')
+            self.show_message(
+                language_manager.get_text('error'),
+                f'{language_manager.get_text("report_generation_failed")}: {str(e)}',
+                'error'
+            )
 
     def generate_provinces_report(self):
         """Generate provinces report"""
@@ -699,43 +772,63 @@ class SearchScreen(Screen):
             provinces_data = stats.get('properties_by_province', [])
 
             if not provinces_data:
-                self.show_message('تنبيه', 'لا توجد بيانات لإنشاء التقرير', 'warning')
+                self.show_message(
+                    language_manager.get_text('warning'),
+                    language_manager.get_text('no_results'),
+                    'warning'
+                )
                 return
 
             # Convert to dict format
             report_data = [{
-                'كود المحافظة': item[0] or 'غير محدد',
-                'اسم المحافظة': item[1] or 'غير محدد',
-                'عدد العقارات': item[2]
+                language_manager.get_text('province_code'): item[0] or language_manager.get_text('not_specified'),
+                language_manager.get_text('province_name'): item[1] or language_manager.get_text('not_specified'),
+                language_manager.get_text('property_count'): item[2]
             } for item in provinces_data]
 
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             filename = f'provinces_report_{timestamp}.txt'
 
-            if ExportUtils.export_to_text(report_data, filename, 'تقرير المحافظات'):
-                self.show_message('نجح', f'تم إنشاء التقرير: {filename}', 'success')
+            if ExportUtils.export_to_text(report_data, filename, language_manager.get_text('reports')):
+                self.show_message(
+                    language_manager.get_text('success'),
+                    f'{language_manager.get_text("reports")}: {filename}',
+                    'success'
+                )
             else:
-                self.show_message('خطأ', 'فشل في إنشاء التقرير', 'error')
+                self.show_message(
+                    language_manager.get_text('error'),
+                    language_manager.get_text('report_generation_failed'),
+                    'error'
+                )
 
         except Exception as e:
             logger.error(f"Error generating provinces report: {e}")
-            self.show_message('خطأ', f'خطأ في إنشاء التقرير: {str(e)}', 'error')
+            self.show_message(
+                language_manager.get_text('error'),
+                f'{language_manager.get_text("report_generation_failed")}: {str(e)}',
+                'error'
+            )
 
     def generate_custom_report(self):
         """Generate custom report"""
         report_type = self.custom_report_spinner.text
 
-        if report_type == 'اختر...':
-            self.show_message('تنبيه', 'يرجى اختيار نوع التقرير', 'warning')
+        if report_type == language_manager.get_text('choose_option'):
+            self.show_message(
+                language_manager.get_text('warning'),
+                language_manager.get_text('required_field'),
+                'warning'
+            )
             return
 
         try:
-            if report_type == 'عقارات للبيع':
+            if report_type == 'Properties for Sale':
                 filters = {'offer_type': '03001'}
-            elif report_type == 'عقارات للإيجار':
+            elif report_type == 'Properties for Rent':
                 filters = {'offer_type': '03002'}
             else:
-                self.show_message('معلومات', 'نوع التقرير قيد التطوير', 'info')
+                self.show_message('Info', 'Report type under development', 'info')
                 return
 
             properties = self.db.get_properties(filters)
@@ -744,14 +837,14 @@ class SearchScreen(Screen):
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             filename = f'custom_report_{timestamp}.txt'
 
-            if ExportUtils.export_to_text(processed_properties, filename, f'تقرير مخصص - {report_type}'):
-                self.show_message('نجح', f'تم إنشاء التقرير: {filename}', 'success')
+            if ExportUtils.export_to_text(processed_properties, filename, f'Custom Report - {report_type}'):
+                self.show_message('Success', f'Report generated: {filename}', 'success')
             else:
-                self.show_message('خطأ', 'فشل في إنشاء التقرير', 'error')
+                self.show_message('Error', 'Failed to generate report', 'error')
 
         except Exception as e:
             logger.error(f"Error generating custom report: {e}")
-            self.show_message('خطأ', f'خطأ في إنشاء التقرير: {str(e)}', 'error')
+            self.show_message('Error', f'Error generating report: {str(e)}', 'error')
 
     def refresh_statistics(self):
         """Refresh statistics display"""
@@ -766,7 +859,7 @@ class SearchScreen(Screen):
                                      size_hint_y=None, height=dp(150))
 
             overall_layout.add_widget(RTLLabel(
-                text='إحصائيات عامة',
+                text='General Statistics',
                 font_size='18sp',
                 bold=True,
                 size_hint_y=None,
@@ -777,8 +870,8 @@ class SearchScreen(Screen):
 
             # Stats cards
             overall_stats = [
-                ('إجمالي الملاك', str(stats.get('total_owners', 0)), [0.2, 0.7, 0.3, 1]),
-                ('إجمالي العقارات', str(stats.get('total_properties', 0)), [0.2, 0.4, 0.8, 1])
+                ('Total Owners', str(stats.get('total_owners', 0)), [0.2, 0.7, 0.3, 1]),
+                ('Total Properties', str(stats.get('total_properties', 0)), [0.2, 0.4, 0.8, 1])
             ]
 
             for title, value, color in overall_stats:
@@ -791,7 +884,7 @@ class SearchScreen(Screen):
             # Property types statistics
             if stats.get('properties_by_type'):
                 types_layout = self._create_stats_section(
-                    'توزيع العقارات حسب النوع',
+                    'Distribution of properties by type',
                     stats['properties_by_type']
                 )
                 self.stats_container.add_widget(types_layout)
@@ -799,7 +892,7 @@ class SearchScreen(Screen):
             # Offer types statistics
             if stats.get('properties_by_offer'):
                 offers_layout = self._create_stats_section(
-                    'توزيع العقارات حسب نوع العرض',
+                    'Distribution of properties by offer type',
                     stats['properties_by_offer']
                 )
                 self.stats_container.add_widget(offers_layout)
@@ -807,14 +900,14 @@ class SearchScreen(Screen):
             # Provinces statistics
             if stats.get('properties_by_province'):
                 provinces_layout = self._create_stats_section(
-                    'توزيع العقارات حسب المحافظة',
+                    'Distribution of properties by province',
                     stats['properties_by_province'][:5]  # Top 5 provinces
                 )
                 self.stats_container.add_widget(provinces_layout)
 
         except Exception as e:
             logger.error(f"Error refreshing statistics: {e}")
-            self.show_message('خطأ', f'خطأ في تحديث الإحصائيات: {str(e)}', 'error')
+            self.show_message('Error', f'Error in updating statistics: {str(e)}', 'error')
 
     def _create_stats_section(self, title: str, data: list) -> BoxLayout:
         """Create statistics section"""
@@ -841,7 +934,7 @@ class SearchScreen(Screen):
                                    size_hint_y=None, height=dp(25))
 
             item_layout.add_widget(RTLLabel(
-                text=name or 'غير محدد',
+                text=name or 'Unspecified',
                 size_hint_x=0.7
             ))
 

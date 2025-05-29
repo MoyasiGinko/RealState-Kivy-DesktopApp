@@ -121,8 +121,7 @@ class WelcomeScreen(Screen):
 
         # Description
         description = BilingualLabel(
-            text_ar='نظام شامل لإدارة العقارات مع دعم اللغتين العربية والإنجليزية\nيتيح لك إدارة الملاك، العقارات، البحث والتقارير بكفاءة عالية',
-            text_en='Comprehensive Real Estate Management System with Arabic and English support\nEfficiently manage owners, properties, search and reports',
+            translation_key='app_description',
             font_size='16sp',
             halign='center',
             color=[0.4, 0.4, 0.4, 1],
@@ -133,8 +132,7 @@ class WelcomeScreen(Screen):
 
         # Features list
         features_text = BilingualLabel(
-            text_ar='المميزات:\n• إدارة الملاك والعقارات\n• نظام بحث متقدم\n• تقارير شاملة\n• دعم الصور\n• واجهة حديثة ومتجاوبة',
-            text_en='Features:\n• Owners & Properties Management\n• Advanced Search System\n• Comprehensive Reports\n• Photo Support\n• Modern Responsive Interface',
+            translation_key='app_features',
             font_size='14sp',
             halign='center',
             color=[0.5, 0.5, 0.5, 1],
@@ -158,8 +156,7 @@ class WelcomeScreen(Screen):
 
         # Footer
         footer = BilingualLabel(
-            text_ar=f'النسخة {config.get("application", "version", "1.0.0")} | تطوير {config.get("application", "author", "Luay Alkawaz")}',
-            text_en=f'Version {config.get("application", "version", "1.0.0")} | Developed by {config.get("application", "author", "Luay Alkawaz")}',
+            translation_key='app_footer',
             font_size='12sp',
             color=[0.6, 0.6, 0.6, 1],
             halign='center',

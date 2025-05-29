@@ -53,10 +53,12 @@ class TestRealEstateApp(App):
             # Initialize database
             self.db_manager = DatabaseManager()
             self.db_manager.init_database()
-            logger.info("Database initialized successfully")
-
-            # Initialize screen manager
+            logger.info("Database initialized successfully")            # Initialize screen manager
             self.screen_manager = ScreenManager()
+
+            # Add a simple welcome screen to avoid navigation errors
+            welcome_screen = Screen(name='welcome')
+            self.screen_manager.add_widget(welcome_screen)
 
             # Create and add all screens
             self.dashboard_screen = DashboardScreen(self.db_manager)

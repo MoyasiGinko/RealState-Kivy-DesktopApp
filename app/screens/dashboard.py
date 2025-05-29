@@ -19,6 +19,7 @@ import logging
 from app.components import (RTLLabel, CustomActionButton as ActionButton, StatsCard,
                            BilingualLabel, TranslatableButton, LanguageSwitcher,
                            NavigationHeader, ResponsiveCard, BilingualButton)
+from app.config import config
 from app.database import DatabaseManager
 from app.font_manager import font_manager
 from app.language_manager import language_manager
@@ -51,7 +52,7 @@ class DashboardScreen(Screen):
         # Back to welcome button
         back_btn = BilingualButton(
             translation_key='back_to_menu',
-            background_color=config.get_color('secondary'),
+            button_type='secondary',
             size_hint=(None, None),
             size=(dp(150), dp(40))
         )
@@ -59,18 +60,29 @@ class DashboardScreen(Screen):
         header_layout.add_widget(back_btn)
 
         # Dashboard title
+        title_style = config.get_label_style('title')
         title = BilingualLabel(
             translation_key='dashboard',
-            font_size='32sp',
+            font_size=title_style['font_size'],
             bold=True,
-            color=config.get_color('primary'),
+            color=title_style['color'],
             halign='center'
         )
         header_layout.add_widget(title)
 
+        # Theme and language controls
+        controls_layout = BoxLayout(orientation='vertical', size_hint=(None, None), size=(dp(150), dp(85)), spacing=dp(5))
+
+        # Theme selector
+        from app.components import ThemeSelector
+        theme_selector = ThemeSelector(size_hint=(None, None), size=(dp(150), dp(40)))
+        controls_layout.add_widget(theme_selector)
+
         # Language switcher
-        lang_switcher = LanguageSwitcher(size_hint=(None, None), size=(dp(120), dp(40)))
-        header_layout.add_widget(lang_switcher)
+        lang_switcher = LanguageSwitcher(size_hint=(None, None), size=(dp(150), dp(40)))
+        controls_layout.add_widget(lang_switcher)
+
+        header_layout.add_widget(controls_layout)
 
         main_layout.add_widget(header_layout)
 
@@ -96,7 +108,7 @@ class DashboardScreen(Screen):
         # Owners Management
         owners_btn = BilingualButton(
             translation_key='owners_management',
-            background_color=config.get_color('success'),
+            button_type='success',
             **button_style
         )
         owners_btn.bind(on_press=lambda x: self.navigate_to('owners'))
@@ -105,7 +117,7 @@ class DashboardScreen(Screen):
         # Properties Management
         properties_btn = BilingualButton(
             translation_key='properties_management',
-            background_color=config.get_color('warning'),
+            button_type='warning',
             **button_style
         )
         properties_btn.bind(on_press=lambda x: self.navigate_to('properties'))
@@ -114,7 +126,7 @@ class DashboardScreen(Screen):
         # Search & Reports
         search_btn = BilingualButton(
             translation_key='search_reports',
-            background_color=config.get_color('error'),
+            button_type='danger',
             **button_style
         )
         search_btn.bind(on_press=lambda x: self.navigate_to('search'))
@@ -123,7 +135,7 @@ class DashboardScreen(Screen):
         # System Settings (placeholder)
         settings_btn = BilingualButton(
             translation_key='settings',
-            background_color=config.get_color('info'),
+            button_type='info',
             **button_style
         )
         settings_btn.bind(on_press=self.show_settings)
@@ -171,10 +183,10 @@ class DashboardScreen(Screen):
 
             # Create stats cards
             stats_data = [
-                ('total_owners', str(total_owners), config.get_color('primary')),
-                ('total_properties', str(total_properties), config.get_color('success')),
-                ('available_properties', str(available_properties), config.get_color('warning')),
-                ('database_status', language_manager.get_text('active'), config.get_color('info'))
+                ('total_owners', str(total_owners), config.get_color('primary_color')),
+                ('total_properties', str(total_properties), config.get_color('success_color')),
+                ('available_properties', str(available_properties), config.get_color('warning_color')),
+                ('database_status', language_manager.get_text('active'), config.get_color('info_color'))
             ]
 
             for title_key, value, color in stats_data:
@@ -184,10 +196,11 @@ class DashboardScreen(Screen):
         except Exception as e:
             logger.error(f"Error loading dashboard statistics: {e}")
             # Show error message
+            error_style = config.get_label_style('normal')
             error_label = BilingualLabel(
                 translation_key='error_loading_data',
-                font_size='14sp',
-                color=config.get_color('error')
+                font_size=error_style['font_size'],
+                color=config.get_color('error_color')
             )
             self.stats_container.add_widget(error_label)
 
@@ -249,7 +262,7 @@ class DashboardScreen(Screen):
                 no_activity = BilingualLabel(
                     translation_key='no_recent_activity',
                     font_size='14sp',
-                    color=[0.5, 0.5, 0.5, 1],
+                    color=config.get_color('text_muted'),
                     halign='center',
                     size_hint_y=None,
                     height=dp(40)

@@ -31,6 +31,7 @@ from app.database import DatabaseManager
 from app.utils import DataValidator
 from app.font_manager import font_manager
 from app.language_manager import language_manager
+from app.config import config
 
 logger = logging.getLogger(__name__)
 
@@ -72,11 +73,12 @@ class OwnersScreen(Screen):
         )
 
         # Form title
+        title_style = config.get_label_style('header')
         left_panel.add_widget(BilingualLabel(
-            text_en='Owner Information',
-            text_ar='معلومات المالك',
-            font_size=dp(18),
+            translation_key='owner_information',
+            font_size=title_style['font_size'],
             bold=True,
+            color=title_style['color'],
             size_hint_y=None,
             height=dp(40),
             halign='center'
@@ -222,7 +224,11 @@ class OwnersScreen(Screen):
 
         except Exception as e:
             logger.error(f"Error loading owners: {e}")
-            self.show_message('خطأ', f'خطأ في تحميل بيانات الملاك: {str(e)}', 'error')
+            self.show_message(
+                language_manager.get_text('error'),
+                f'{language_manager.get_text("error_loading_data")}: {str(e)}',
+                'error'
+            )
 
     def search_owners(self, search_text: str):
         """Search owners by name or phone"""
@@ -282,15 +288,33 @@ class OwnersScreen(Screen):
             owner_code = self.db.add_owner(owner_name, owner_phone, notes)
 
             if owner_code:
-                self.show_message('نجح', 'تم حفظ المالك بنجاح', 'success')
+                self.show_message(
+                    language_manager.get_text('success'),
+                    language_manager.get_text('operation_successful'),
+                    'success'
+                )
                 self.clear_form()
                 self.load_owners()
             else:
-                self.show_message('خطأ', 'فشل في حفظ المالك', 'error')
+                self.show_message(
+                    language_manager.get_text('error'),
+                    language_manager.get_text('save_failed'),
+                    'error'
+                )
 
         except Exception as e:
             logger.error(f"Error saving owner: {e}")
-            self.show_message('خطأ', f'خطأ في حفظ المالك: {str(e)}', 'error')
+            self.show_message(
+                language_manager.get_text('error'),
+                f'{language_manager.get_text("save_failed")}: {str(e)}',
+                'error'
+            )
+            logger.error(f"Error saving owner: {e}")
+            self.show_message(
+                language_manager.get_text('error'),
+                f'{language_manager.get_text("save_failed")}: {str(e)}',
+                'error'
+            )
 
     def update_owner(self):
         """Update existing owner"""
@@ -310,15 +334,27 @@ class OwnersScreen(Screen):
 
             # Update in database
             if self.db.update_owner(owner_code, owner_name, owner_phone, notes):
-                self.show_message('نجح', 'تم تحديث المالك بنجاح', 'success')
+                self.show_message(
+                    language_manager.get_text('success'),
+                    language_manager.get_text('operation_successful'),
+                    'success'
+                )
                 self.clear_form()
                 self.load_owners()
             else:
-                self.show_message('خطأ', 'فشل في تحديث المالك', 'error')
+                self.show_message(
+                    language_manager.get_text('error'),
+                    language_manager.get_text('update_failed'),
+                    'error'
+                )
 
         except Exception as e:
             logger.error(f"Error updating owner: {e}")
-            self.show_message('خطأ', f'خطأ في تحديث المالك: {str(e)}', 'error')
+            self.show_message(
+                language_manager.get_text('error'),
+                f'{language_manager.get_text("update_failed")}: {str(e)}',
+                'error'
+            )
 
     def delete_owner(self):
         """Delete selected owner"""
@@ -327,8 +363,8 @@ class OwnersScreen(Screen):
 
         # Show confirmation dialog
         confirm_dialog = ConfirmDialog(
-            title='تأكيد الحذف',
-            message=f'هل أنت متأكد من حذف المالك "{self.current_owner["ownername"]}"؟',
+            title=language_manager.get_text('confirm_delete'),
+            message=f'{language_manager.get_text("confirm_delete")} "{self.current_owner["ownername"]}"?',
             confirm_callback=self._confirm_delete
         )
         confirm_dialog.open()
@@ -339,15 +375,27 @@ class OwnersScreen(Screen):
             owner_code = self.current_owner['Ownercode']
 
             if self.db.delete_owner(owner_code):
-                self.show_message('نجح', 'تم حذف المالك بنجاح', 'success')
+                self.show_message(
+                    language_manager.get_text('success'),
+                    language_manager.get_text('operation_successful'),
+                    'success'
+                )
                 self.clear_form()
                 self.load_owners()
             else:
-                self.show_message('خطأ', 'لا يمكن حذف المالك - يوجد عقارات مرتبطة به', 'warning')
+                self.show_message(
+                    language_manager.get_text('error'),
+                    language_manager.get_text('cannot_delete_owner_has_properties'),
+                    'warning'
+                )
 
         except Exception as e:
             logger.error(f"Error deleting owner: {e}")
-            self.show_message('خطأ', f'خطأ في حذف المالك: {str(e)}', 'error')
+            self.show_message(
+                language_manager.get_text('error'),
+                f'{language_manager.get_text("delete_failed")}: {str(e)}',
+                'error'
+            )
 
     def clear_form(self):
         """Clear the form"""
@@ -368,13 +416,21 @@ class OwnersScreen(Screen):
         """Validate form data"""
         # Check required fields
         if not self.owner_name_field.get_value().strip():
-            self.show_message('خطأ', 'اسم المالك مطلوب', 'warning')
+            self.show_message(
+                language_manager.get_text('error'),
+                language_manager.get_text('owner_name_required'),
+                'warning'
+            )
             return False
 
         # Validate phone number
         phone = self.owner_phone_field.get_value().strip()
         if phone and not DataValidator.validate_phone(phone):
-            self.show_message('خطأ', 'رقم الهاتف غير صحيح', 'warning')
+            self.show_message(
+                language_manager.get_text('error'),
+                language_manager.get_text('invalid_phone'),
+                'warning'
+            )
             return False
 
         return True
@@ -383,7 +439,7 @@ class OwnersScreen(Screen):
         """Update statistics display"""
         try:
             total_owners = len(self.owners_data)
-            self.stats_label.text = f'إجمالي الملاك: {total_owners}'
+            self.stats_label.text = f'{language_manager.get_text("total_owners")}: {total_owners}'
         except Exception as e:
             logger.error(f"Error updating stats: {e}")
 

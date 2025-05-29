@@ -257,30 +257,30 @@ class PropertiesScreen(Screen):
 
         # Property type filter
         self.type_filter = Spinner(
-            text='كل الأنواع',
-            values=['كل الأنواع'] + [pt[1] for pt in property_types],
+            text='All Types',
+            values=['All Types'] + [pt[1] for pt in property_types],
             size_hint_x=0.33,
-            font_name=font_manager.get_font_name('كل الأنواع')
+            font_name=font_manager.get_font_name('All Types')
         )
         self.type_filter.bind(text=self.apply_filters)
         filter_layout.add_widget(self.type_filter)
 
         # Offer type filter
         self.offer_filter = Spinner(
-            text='كل العروض',
-            values=['كل العروض'] + [ot[1] for ot in offer_types],
+            text='All Offers',
+            values=['All Offers'] + [ot[1] for ot in offer_types],
             size_hint_x=0.33,
-            font_name=font_manager.get_font_name('كل العروض')
+            font_name=font_manager.get_font_name('All Offers')
         )
         self.offer_filter.bind(text=self.apply_filters)
         filter_layout.add_widget(self.offer_filter)
 
         # Province filter
         self.province_filter = Spinner(
-            text='كل المحافظات',
-            values=['كل المحافظات'] + [p[1] for p in provinces],
+            text='All Provinces',
+            values=['All Provinces'] + [p[1] for p in provinces],
             size_hint_x=0.34,
-            font_name=font_manager.get_font_name('كل المحافظات')
+            font_name=font_manager.get_font_name('All Provinces')
         )
         self.province_filter.bind(text=self.apply_filters)
         filter_layout.add_widget(self.province_filter)
@@ -290,11 +290,11 @@ class PropertiesScreen(Screen):
 
         # Data table
         table_columns = [
-            {'title': 'كود الشركة', 'field': 'Companyco'},
-            {'title': 'نوع العقار', 'field': 'property_type_name'},
-            {'title': 'المساحة', 'field': 'Property-area'},
-            {'title': 'المالك', 'field': 'ownername'},
-            {'title': 'العنوان', 'field': 'Property-address'}
+            {'title': 'Company Code', 'field': 'Companyco'},
+            {'title': 'Property Type', 'field': 'property_type_name'},
+            {'title': 'Area', 'field': 'Property-area'},
+            {'title': 'Owner', 'field': 'ownername'},
+            {'title': 'Address', 'field': 'Property-address'}
         ]
 
         self.properties_table = DataTable(
@@ -327,7 +327,7 @@ class PropertiesScreen(Screen):
             for prop in raw_properties:
                 # Get property type name
                 property_types = self.db.get_property_types()
-                type_name = 'غير محدد'
+                type_name = 'Unspecified'
                 for pt in property_types:
                     if pt[0] == prop.get('Rstatetcode'):
                         type_name = pt[1]
@@ -343,7 +343,11 @@ class PropertiesScreen(Screen):
 
         except Exception as e:
             logger.error(f"Error loading properties: {e}")
-            self.show_message('خطأ', f'خطأ في تحميل بيانات العقارات: {str(e)}', 'error')
+            self.show_message(
+                language_manager.get_text('error'),
+                f'{language_manager.get_text("error_loading_data")}: {str(e)}',
+                'error'
+            )
 
     def search_properties(self, search_text: str):
         """Search properties"""
@@ -370,12 +374,12 @@ class PropertiesScreen(Screen):
             filtered_data = self.properties_data.copy()
 
             # Apply type filter
-            if self.type_filter.text != 'كل الأنواع':
+            if self.type_filter.text != 'All Types':
                 filtered_data = [p for p in filtered_data
                                if p.get('property_type_name') == self.type_filter.text]
 
             # Apply offer filter
-            if self.offer_filter.text != 'كل العروض':
+            if self.offer_filter.text != 'All Offers':
                 offer_types = self.db.get_offer_types()
                 offer_code = None
                 for ot in offer_types:
@@ -388,7 +392,7 @@ class PropertiesScreen(Screen):
                                    if p.get('Offer-Type-Code') == offer_code]
 
             # Apply province filter
-            if self.province_filter.text != 'كل المحافظات':
+            if self.province_filter.text != 'All Provinces':
                 provinces = self.db.get_provinces()
                 province_code = None
                 for pv in provinces:
@@ -464,7 +468,7 @@ class PropertiesScreen(Screen):
                     break
 
             # Corner
-            corner_value = property_data.get('Property-corner', 'لا')
+            corner_value = property_data.get('Property-corner', 'No')
             self.corner_field.input.text = corner_value
 
         except Exception as e:
@@ -480,20 +484,32 @@ class PropertiesScreen(Screen):
             company_code = self.db.add_property(property_data)
 
             if company_code:
-                self.show_message('نجح', 'تم حفظ العقار بنجاح', 'success')
+                self.show_message(
+                    language_manager.get_text('success'),
+                    language_manager.get_text('operation_successful'),
+                    'success'
+                )
                 self.clear_form()
                 self.load_properties()
             else:
-                self.show_message('خطأ', 'فشل في حفظ العقار', 'error')
+                self.show_message(
+                    language_manager.get_text('error'),
+                    language_manager.get_text('save_failed'),
+                    'error'
+                )
 
         except Exception as e:
             logger.error(f"Error saving property: {e}")
-            self.show_message('خطأ', f'خطأ في حفظ العقار: {str(e)}', 'error')
+            self.show_message(
+                language_manager.get_text('error'),
+                f'{language_manager.get_text("save_failed")}: {str(e)}',
+                'error'
+            )
 
     def update_property(self):
         """Update existing property"""
         # Note: This would require an update method in DatabaseManager
-        self.show_message('معلومات', 'وظيفة التحديث قيد التطوير', 'info')
+        self.show_message('Info', 'Update function under development', 'info')
 
     def delete_property(self):
         """Delete selected property"""
@@ -501,8 +517,8 @@ class PropertiesScreen(Screen):
             return
 
         confirm_dialog = ConfirmDialog(
-            title='تأكيد الحذف',
-            message='هل أنت متأكد من حذف هذا العقار؟',
+            title='Delete Confirmation',
+            message='Are you sure you want to delete this property?',
             confirm_callback=self._confirm_delete
         )
         confirm_dialog.open()
@@ -510,7 +526,7 @@ class PropertiesScreen(Screen):
     def _confirm_delete(self):
         """Confirm property deletion"""
         # Note: This would require a delete method in DatabaseManager
-        self.show_message('معلومات', 'وظيفة الحذف قيد التطوير', 'info')
+        self.show_message('Info', 'Delete function under development', 'info')
 
     def get_form_data(self) -> dict:
         """Get form data as dictionary"""
@@ -541,27 +557,39 @@ class PropertiesScreen(Screen):
         """Validate form data"""
         # Check required fields
         required_fields = [
-            (self.area_field, 'المساحة'),
-            (self.property_type_field, 'نوع العقار'),
-            (self.offer_type_field, 'نوع العرض'),
-            (self.province_field, 'المحافظة'),
-            (self.address_field, 'العنوان'),
-            (self.owner_field, 'المالك')
+            (self.area_field, language_manager.get_text('area_field')),
+            (self.property_type_field, language_manager.get_text('property_type_field')),
+            (self.offer_type_field, language_manager.get_text('offer_type_field')),
+            (self.province_field, language_manager.get_text('province_field')),
+            (self.address_field, language_manager.get_text('address_field')),
+            (self.owner_field, language_manager.get_text('owner_field'))
         ]
 
         for field, name in required_fields:
             if not field.get_value().strip():
-                self.show_message('خطأ', f'{name} مطلوب', 'warning')
+                self.show_message(
+                    language_manager.get_text('error'),
+                    f'{name} {language_manager.get_text("field_required")}',
+                    'warning'
+                )
                 return False
 
         # Validate numeric fields
         if not DataValidator.validate_area(self.area_field.get_value()):
-            self.show_message('خطأ', 'المساحة يجب أن تكون رقم صحيح', 'warning')
+            self.show_message(
+                language_manager.get_text('error'),
+                language_manager.get_text('invalid_area'),
+                'warning'
+            )
             return False
 
         year = self.year_field.get_value()
         if year and not DataValidator.validate_year(year):
-            self.show_message('خطأ', 'سنة البناء غير صحيحة', 'warning')
+            self.show_message(
+                language_manager.get_text('error'),
+                language_manager.get_text('invalid_year'),
+                'warning'
+            )
             return False
 
         return True
@@ -590,7 +618,7 @@ class PropertiesScreen(Screen):
         ]
 
         for spinner in spinners:
-            spinner.input.text = 'اختر...'
+            spinner.input.text = language_manager.get_text('choose_option')
 
         # Reset button states
         self.save_btn.disabled = False
@@ -600,7 +628,7 @@ class PropertiesScreen(Screen):
     def upload_photo(self):
         """Upload property photo"""
         if not self.current_property:
-            self.show_message('تنبيه', 'يرجى اختيار عقار أولاً', 'warning')
+            self.show_message('Warning', 'Please select a property first', 'warning')
             return
 
         uploader = PhotoUploader(upload_callback=self._handle_photo_upload)
@@ -617,25 +645,45 @@ class PropertiesScreen(Screen):
                 self.db.add_property_photo(company_code,
                                          self.photo_manager.get_photo_path(filename),
                                          filename)
-                self.show_message('نجح', 'تم رفع الصورة بنجاح', 'success')
+                self.show_message(
+                    language_manager.get_text('success'),
+                    language_manager.get_text('operation_successful'),
+                    'success'
+                )
             else:
-                self.show_message('خطأ', 'فشل في رفع الصورة', 'error')
+                self.show_message(
+                    language_manager.get_text('error'),
+                    language_manager.get_text('upload_failed'),
+                    'error'
+                )
 
         except Exception as e:
             logger.error(f"Error uploading photo: {e}")
-            self.show_message('خطأ', f'خطأ في رفع الصورة: {str(e)}', 'error')
+            self.show_message(
+                language_manager.get_text('error'),
+                f'{language_manager.get_text("upload_failed")}: {str(e)}',
+                'error'
+            )
 
     def view_photos(self):
         """View property photos"""
         if not self.current_property:
-            self.show_message('تنبيه', 'يرجى اختيار عقار أولاً', 'warning')
+            self.show_message(
+                language_manager.get_text('warning'),
+                language_manager.get_text('required_field'),
+                'warning'
+            )
             return
 
         try:
             photos = self.db.get_property_photos(self.current_property['Companyco'])
 
             if not photos:
-                self.show_message('معلومات', 'لا توجد صور لهذا العقار', 'info')
+                self.show_message(
+                    language_manager.get_text('info'),
+                    language_manager.get_text('no_photos'),
+                    'info'
+                )
                 return
 
             # Show photo gallery popup
@@ -643,12 +691,16 @@ class PropertiesScreen(Screen):
 
         except Exception as e:
             logger.error(f"Error viewing photos: {e}")
-            self.show_message('خطأ', f'خطأ في عرض الصور: {str(e)}', 'error')
+            self.show_message(
+                language_manager.get_text('error'),
+                f'{language_manager.get_text("photo_display_failed")}: {str(e)}',
+                'error'
+            )
 
     def _show_photo_gallery(self, photos: list):
         """Show photo gallery popup"""
         gallery_popup = Popup(
-            title='معرض صور العقار',
+            title=language_manager.get_text('view_photos'),
             size_hint=(0.9, 0.8)
         )
 
@@ -673,17 +725,19 @@ class PropertiesScreen(Screen):
                 photo_layout.add_widget(img)
 
                 # View button
+                view_text = language_manager.get_text('view_photos')
                 view_btn = Button(
-                    text='عرض',
+                    text=view_text,
                     size_hint_y=0.2,
-                    font_name=font_manager.get_font_name('عرض'),
+                    font_name=font_manager.get_font_name(view_text),
                     on_press=lambda x, path=photo['photo_path']:
                     self._view_single_photo(path)
                 )
                 photo_layout.add_widget(view_btn)
 
             except Exception as e:
-                error_label = Label(text=f'خطأ في تحميل الصورة\n{photo["photo_name"]}')
+                error_text = f'{language_manager.get_text("photo_load_error")}\n{photo["photo_name"]}'
+                error_label = Label(text=error_text)
                 photo_layout.add_widget(error_label)
 
             photos_grid.add_widget(photo_layout)
@@ -693,10 +747,10 @@ class PropertiesScreen(Screen):
 
         # Close button
         close_btn = Button(
-            text='إغلاق',
+            text='Close',
             size_hint_y=None,
             height=dp(40),
-            font_name=font_manager.get_font_name('إغلاق'),
+            font_name=font_manager.get_font_name('Close'),
             on_press=gallery_popup.dismiss
         )
         content.add_widget(close_btn)
@@ -713,7 +767,7 @@ class PropertiesScreen(Screen):
         """Update statistics display"""
         try:
             total_properties = len(self.properties_data)
-            self.stats_label.text = f'إجمالي العقارات: {total_properties}'
+            self.stats_label.text = f'Total Properties: {total_properties}'
         except Exception as e:
             logger.error(f"Error updating stats: {e}")
 
@@ -733,4 +787,4 @@ class PropertiesScreen(Screen):
         # Refresh owner list in case new owners were added
         owners = self.db.get_owners()
         owner_values = [f"{o[1]} ({o[0]})" for o in owners]
-        self.owner_field.input.values = ['اختر...'] + owner_values
+        self.owner_field.input.values = [language_manager.get_text('choose_option')] + owner_values
