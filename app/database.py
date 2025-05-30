@@ -789,12 +789,67 @@ class DatabaseManager:
             conn.close()
 
     def generate_company_code(self) -> str:
-        """Generate unique company code"""
+        """Generate unique company code - used for database identification
+
+        This is distinct from the company prefix used in the real estate code.
+        This is a longer, unique identifier for the database record.
+        """
         return f"COM{datetime.now().strftime('%Y%m%d')}{str(uuid.uuid4())[:6].upper()}"
 
     def generate_realstate_code(self) -> str:
-        """Generate unique real estate code"""
-        return f"RS{datetime.now().strftime('%Y%m%d')}{str(uuid.uuid4())[:8].upper()}"
+        """Generate unique real estate code
+
+        Format: CCCCNNNN where:
+        - CCCC is the 4-character company code (1 alphabet + 3 digits)
+        - NNNN is a 4-character unique random number
+
+        Both the full code and the company prefix must be unique.
+        """
+        conn = self.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            # Keep generating until we find a unique combination
+            while True:
+                # First part: 4-character company code (1 alphabet + 3 digits)
+                # 1 alphabet character
+                alphabet_char = random.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+                # 3 random digits
+                numeric_part = ''.join(random.choices('0123456789', k=3))
+                company_prefix = f"{alphabet_char}{numeric_part}"
+
+                # Check if this company prefix already exists
+                cursor.execute('''
+                    SELECT COUNT(*) FROM Realstatspecification
+                    WHERE realstatecode LIKE ?
+                ''', (f"{company_prefix}%",))
+
+                # If company prefix exists, try a different one
+                if cursor.fetchone()[0] > 0:
+                    continue
+
+                # Second part: 4-character unique random number
+                # Using numbers only for the second part
+                random_part = ''.join(random.choices('0123456789', k=4))
+
+                # Form the complete real estate code
+                real_estate_code = f"{company_prefix}{random_part}"
+
+                # Verify this code doesn't already exist
+                cursor.execute('''
+                    SELECT COUNT(*) FROM Realstatspecification
+                    WHERE realstatecode = ?
+                ''', (real_estate_code,))
+
+                # If code doesn't exist, we've found a unique one
+                if cursor.fetchone()[0] == 0:
+                    return real_estate_code
+        except Exception as e:
+            logger.error(f"Error generating real estate code: {e}")
+            # Fallback to a simple format if there's an error
+            return f"{company_prefix}{random_part}"
+        finally:
+            conn.close()
 
     # Reference data methods
     def get_property_types(self) -> List[tuple]:
