@@ -65,113 +65,153 @@ logger = logging.getLogger(__name__)
 
 
 class WelcomeScreen(Screen):
-    """Welcome screen with application information and language selection"""
+    """Modern welcome screen with elegant animation and design"""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.name = 'welcome'
 
-        # Main layout with elegant design
-        main_layout = BoxLayout(orientation='vertical', padding=[50, 40, 50, 30], spacing=40)
+        # Main layout with modern gradient background
+        main_layout = BoxLayout(orientation='vertical', padding=[60, 50, 60, 40], spacing=50)
 
-        # Header with logo and title
-        header_layout = BoxLayout(orientation='vertical', size_hint_y=None, height=dp(200), spacing=20)
+        # Add gradient background
+        with main_layout.canvas.before:
+            from kivy.graphics import Color, Rectangle
+            Color(0.05, 0.1, 0.2, 1)  # Dark blue gradient start
+            Rectangle(size=(2000, 2000), pos=(0, 0))
 
-        # Logo centered
-        logo_box = BoxLayout(size_hint_y=None, height=dp(120))
+        # Hero section with logo and title
+        hero_section = BoxLayout(orientation='vertical', size_hint_y=None, height=dp(280), spacing=30)
+
+        # Logo with glow effect
+        logo_container = BoxLayout(size_hint_y=None, height=dp(150), padding=[0, 20])
         logo = Image(
             source='app-images/alkawaz-logo.jpg',
             size_hint=(None, None),
-            size=(dp(120), dp(120)),
+            size=(dp(150), dp(150)),
             pos_hint={'center_x': 0.5}
         )
-        logo_box.add_widget(logo)
-        header_layout.add_widget(logo_box)
+        # Add subtle shadow/glow effect
+        with logo_container.canvas.before:
+            Color(1, 1, 1, 0.1)
+            from kivy.graphics import Ellipse
+            shadow = Ellipse(size=(dp(160), dp(160)), pos=(0, 0))
+            logo_container.shadow = shadow
+            logo_container.bind(
+                size=lambda *args: setattr(shadow, 'pos',
+                    (logo_container.center_x - dp(80), logo_container.center_y - dp(80))),
+                pos=lambda *args: setattr(shadow, 'pos',
+                    (logo_container.center_x - dp(80), logo_container.center_y - dp(80)))
+            )
 
-        # Application title
+        logo_container.add_widget(logo)
+        hero_section.add_widget(logo_container)
+
+        # Main title with enhanced styling
         title = BilingualLabel(
             translation_key='app_title',
-            font_size='42sp',
+            font_size='48sp',
             bold=True,
-            color=config.get_color('primary'),
+            color=[1, 1, 1, 1],  # White text
             halign='center',
             size_hint_y=None,
-            height=dp(60)
-        )
-        header_layout.add_widget(title)
-        main_layout.add_widget(header_layout)
+            height=dp(70)        )
+        hero_section.add_widget(title)
 
-        # Language selection section
-        lang_section = BoxLayout(orientation='vertical', size_hint_y=None, height=dp(120), spacing=15)
+        # Subtitle
+        subtitle = BilingualLabel(
+            translation_key='app_subtitle',
+            font_size='20sp',
+            color=[0.8, 0.9, 1, 1],  # Light blue
+            halign='center',
+            size_hint_y=None,
+            height=dp(40)
+        )
+        hero_section.add_widget(subtitle)
+
+        main_layout.add_widget(hero_section)
+
+        # Features section with cards
+        features_section = BoxLayout(orientation='vertical', spacing=25)
+
+        # Language selection with modern design
+        lang_section = BoxLayout(orientation='vertical', size_hint_y=None, height=dp(100), spacing=15)
         lang_label = BilingualLabel(
-            translation_key='switch_language',
+            translation_key='select_language',
             font_size='18sp',
             halign='center',
-            color=[0.3, 0.3, 0.3, 1],
+            color=[0.9, 0.9, 0.9, 1],
             size_hint_y=None,
             height=dp(30)
         )
         lang_section.add_widget(lang_label)
 
-        # Language switcher
-        lang_switcher = LanguageSwitcher(size_hint=(None, None), size=(dp(200), dp(50)), pos_hint={'center_x': 0.5})
+        # Enhanced language switcher
+        lang_switcher = LanguageSwitcher(
+            size_hint=(None, None),
+            size=(dp(250), dp(50)),
+            pos_hint={'center_x': 0.5}
+        )
         lang_section.add_widget(lang_switcher)
-        main_layout.add_widget(lang_section)
+        features_section.add_widget(lang_section)
 
-        # Welcome information
-        info_section = BoxLayout(orientation='vertical', spacing=20)
-
-        # Description
+        # Description with better typography
         description = BilingualLabel(
             translation_key='app_description',
             font_size='16sp',
             halign='center',
-            color=[0.4, 0.4, 0.4, 1],
+            color=[0.7, 0.8, 0.9, 1],
             size_hint_y=None,
             height=dp(80)
         )
-        info_section.add_widget(description)
+        features_section.add_widget(description)
 
-        # Features list
-        features_text = BilingualLabel(
-            translation_key='app_features',
-            font_size='14sp',
-            halign='center',
-            color=[0.5, 0.5, 0.5, 1],
-            size_hint_y=None,
-            height=dp(120)
-        )
-        info_section.add_widget(features_text)
-        main_layout.add_widget(info_section)
+        main_layout.add_widget(features_section)
 
-        # Enter button
+        # Action section with animated enter button
+        action_section = BoxLayout(orientation='vertical', size_hint_y=None, height=dp(120), spacing=20)
+
+        # Enhanced enter button with gradient effect
         enter_btn = BilingualButton(
             translation_key='enter_dashboard',
-            background_color=config.get_color('primary'),
-            font_size='24sp',
+            background_color=[0.2, 0.6, 1, 1],  # Blue gradient
+            font_size='28sp',
             size_hint=(None, None),
-            size=(dp(300), dp(60)),
+            size=(dp(350), dp(70)),
             pos_hint={'center_x': 0.5}
         )
         enter_btn.bind(on_press=self.enter_dashboard)
-        main_layout.add_widget(enter_btn)
+        action_section.add_widget(enter_btn)
 
-        # Footer
+        # Footer with version info
         footer = BilingualLabel(
             translation_key='app_footer',
             font_size='12sp',
-            color=[0.6, 0.6, 0.6, 1],
+            color=[0.5, 0.6, 0.7, 1],
             halign='center',
             size_hint_y=None,
             height=dp(30)
         )
-        main_layout.add_widget(footer)
+        action_section.add_widget(footer)
+
+        main_layout.add_widget(action_section)
 
         self.add_widget(main_layout)
 
+        # Add entrance animation
+        self.animate_entrance()
+
+    def animate_entrance(self):
+        """Add subtle entrance animation"""
+        from kivy.animation import Animation
+        # Fade in effect
+        self.opacity = 0
+        anim = Animation(opacity=1, duration=1.5)
+        anim.start(self)
+
     def enter_dashboard(self, instance):
-        """Navigate to dashboard"""
-        self.manager.transition = SlideTransition(direction='left')
+        """Navigate to dashboard with smooth transition"""
+        self.manager.transition = SlideTransition(direction='left', duration=0.4)
         self.manager.current = 'dashboard'
 
 

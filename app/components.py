@@ -88,16 +88,19 @@ class FormField(BoxLayout):
             size_hint_x=0.3,
             font_size='14sp'
         )
-        self.add_widget(label)
-
-        # Input widget based on type
+        self.add_widget(label)        # Input widget based on type
         input_style = config.get_input_style()
 
         if input_type == 'spinner' and values:
             default_text = language_manager.get_text('choose_option')
+            # Ensure all values are strings and filter out empty ones
+            safe_values = [str(v) for v in values if v is not None and str(v).strip()]
+            if not safe_values:
+                safe_values = [default_text]
+
             self.input = Spinner(
                 text=default_text,
-                values=values,
+                values=safe_values,
                 size_hint_x=0.7,
                 font_name=font_manager.get_font_name(default_text),
                 background_color=input_style['background_color'],

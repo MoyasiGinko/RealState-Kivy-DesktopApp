@@ -492,24 +492,6 @@ class SearchScreen(Screen):
 
         return layout
 
-    def switch_tab(self, button):
-        """Switch between tabs"""
-        try:
-            # Update button states
-            for i, btn in enumerate(self.tab_buttons):
-                if i == button.tab_index:
-                    btn.background_color = [0.2, 0.8, 0.2, 1]  # Active color
-                else:
-                    btn.background_color = [0.5, 0.5, 0.5, 1]  # Inactive color
-
-            # Update content
-            self.tab_content_container.clear_widgets()
-            self.tab_content_container.add_widget(self.tab_contents[button.tab_index])
-            self.current_tab = button.tab_index
-
-        except Exception as e:
-            logger.error(f"Error switching tab: {e}")
-
     def perform_search(self):
         """Perform advanced search"""
         try:
@@ -961,9 +943,7 @@ class SearchScreen(Screen):
                 return
 
             properties = self.db.get_properties(filters)
-            processed_properties = [self._add_reference_names(prop) for prop in properties]
-
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            processed_properties = [self._add_reference_names(prop) for prop in properties]            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             filename = f'custom_report_{timestamp}.txt'
 
             if ExportUtils.export_to_text(processed_properties, filename, f'Custom Report - {report_type}'):
@@ -987,6 +967,24 @@ class SearchScreen(Screen):
                 'error'
             )
 
+    def switch_tab(self, button):
+        """Switch between tabs"""
+        try:
+            # Update button states
+            for i, btn in enumerate(self.tab_buttons):
+                if i == button.tab_index:
+                    btn.background_color = [0.2, 0.8, 0.2, 1]  # Active color
+                else:
+                    btn.background_color = [0.5, 0.5, 0.5, 1]  # Inactive color
+
+            # Update content
+            self.tab_content_container.clear_widgets()
+            self.tab_content_container.add_widget(self.tab_contents[button.tab_index])
+            self.current_tab = button.tab_index
+
+        except Exception as e:
+            logger.error(f"Error switching tab: {e}")
+
     def refresh_statistics(self):
         """Refresh statistics display"""
         try:
@@ -994,6 +992,10 @@ class SearchScreen(Screen):
 
             # Get statistics from database
             stats = self.db.get_statistics()
+
+            # Basic statistics
+            basic_stats_layout = BoxLayout(orientation='vertical', spacing=dp(15),
+                                         size_hint_y=None)
 
             # Total properties
             total_props = stats.get('total_properties', 0)
@@ -1114,7 +1116,7 @@ class SearchScreen(Screen):
         dialog = MessageDialog(title=title, message=message, message_type=msg_type)
         dialog.open()
 
-    def go_back(self, instance=None):
+    def go_back(self):
         """Go back to dashboard"""
         self.manager.current = 'dashboard'
 

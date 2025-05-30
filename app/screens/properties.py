@@ -767,7 +767,8 @@ class PropertiesScreen(Screen):
         """Update statistics display"""
         try:
             total_properties = len(self.properties_data)
-            self.stats_label.text = f'Total Properties: {total_properties}'
+            if hasattr(self, 'stats_label') and self.stats_label:
+                self.stats_label.text = f'Total Properties: {total_properties}'
         except Exception as e:
             logger.error(f"Error updating stats: {e}")
 

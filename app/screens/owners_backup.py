@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Real Estate Management System - Enhanced Owners Management Screen (Reverted)
+Real Estate Management System - Enhanced Owners Management Screen (Backup)
 """
 
 from kivy.uix.screenmanager import Screen, SlideTransition
@@ -93,8 +93,10 @@ class OwnersScreen(Screen):
 
         # Owner Phone
         self.owner_phone_field = FormField(language_manager.get_text('phone'))
-        self.form_layout.add_widget(self.owner_phone_field)        # Notes
-        self.notes_field = FormField(language_manager.get_text('notes'), input_type='multiline', height=dp(100))
+        self.form_layout.add_widget(self.owner_phone_field)
+
+        # Notes
+        self.notes_field = FormField(language_manager.get_text('notes'), multiline=True, height=dp(100))
         self.form_layout.add_widget(self.notes_field)
 
         # Action buttons
