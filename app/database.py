@@ -8,6 +8,7 @@ Handles all database operations and data models
 import sqlite3
 import os
 import uuid
+import random
 from datetime import datetime
 from typing import List, Dict, Optional, Tuple
 import logging
@@ -765,8 +766,27 @@ class DatabaseManager:
 
     # Code generation methods
     def generate_owner_code(self) -> str:
-        """Generate unique owner code"""
-        return f"OWN{datetime.now().strftime('%Y%m%d')}{str(uuid.uuid4())[:6].upper()}"
+        """Generate unique owner code with max 4 characters"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+
+        try:
+            # Generate a 4-character alphanumeric code
+            while True:
+                # Generate random 4 character code (letters and numbers)
+                code = ''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=4))
+
+                # Check if the code already exists
+                cursor.execute('SELECT COUNT(*) FROM Owners WHERE Ownercode = ?', (code,))
+                if cursor.fetchone()[0] == 0:
+                    # Code is unique, so return it
+                    return code
+        except Exception as e:
+            logger.error(f"Error generating unique owner code: {e}")
+            # Fallback to a simpler code generation if there's an error
+            return f"O{str(uuid.uuid4())[:3].upper()}"
+        finally:
+            conn.close()
 
     def generate_company_code(self) -> str:
         """Generate unique company code"""
