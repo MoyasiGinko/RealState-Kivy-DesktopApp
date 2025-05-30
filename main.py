@@ -16,6 +16,19 @@ from pathlib import Path
 app_dir = Path(__file__).parent / 'app'
 sys.path.insert(0, str(app_dir))
 
+# Set Kivy configuration before importing other Kivy modules
+from kivy.config import Config
+
+# Import our config first
+from app.config import config
+
+# Set minimum window size using our config
+Config.set('graphics', 'minimum_width', str(max(100, config.min_width)))
+Config.set('graphics', 'minimum_height', str(max(100, config.min_height)))
+Config.set('graphics', 'width', str(config.window_width))
+Config.set('graphics', 'height', str(config.window_height))
+
+# Now import other kivy modules
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
@@ -30,15 +43,14 @@ from kivy.uix.image import Image
 from kivy.uix.widget import Widget
 
 # Import our modules
-from config import config
-from database import DatabaseManager
-from font_manager import font_manager
-from language_manager import language_manager
-from screens.dashboard import DashboardScreen
-from screens.owners import OwnersScreen
-from screens.properties import PropertiesScreen
-from screens.search import SearchScreen
-from components import RTLLabel, BilingualLabel, BilingualButton, LanguageSwitcher
+from app.database import DatabaseManager
+from app.font_manager import font_manager
+from app.language_manager import language_manager
+from app.screens.dashboard import DashboardScreen
+from app.screens.owners import OwnersScreen
+from app.screens.properties import PropertiesScreen
+from app.screens.search import SearchScreen
+from app.components import RTLLabel, BilingualLabel, BilingualButton, LanguageSwitcher
 
 # Configure logging
 logging.basicConfig(
@@ -50,16 +62,6 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
-
-# Set window properties from config
-Window.size = config.window_size
-# Ensure minimum size is always > 0
-min_width, min_height = config.min_window_size
-if min_width <= 0:
-    min_width = 800
-if min_height <= 0:
-    min_height = 600
-Window.minimum_width, Window.minimum_height = min_width, min_height
 
 
 class WelcomeScreen(Screen):

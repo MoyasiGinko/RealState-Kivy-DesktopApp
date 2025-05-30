@@ -146,11 +146,31 @@ class Config:
         return (width, height)
 
     @property
+    def window_width(self) -> int:
+        """Get window width"""
+        return self.getint('application', 'window_width', 1200)
+
+    @property
+    def window_height(self) -> int:
+        """Get window height"""
+        return self.getint('application', 'window_height', 800)
+
+    @property
     def min_window_size(self) -> tuple:
         """Get minimum window size"""
         width = self.getint('application', 'min_width', 1000)
         height = self.getint('application', 'min_height', 700)
         return (width, height)
+
+    @property
+    def min_width(self) -> int:
+        """Get minimum window width"""
+        return self.getint('application', 'min_width', 1000)
+
+    @property
+    def min_height(self) -> int:
+        """Get minimum window height"""
+        return self.getint('application', 'min_height', 700)
 
     def get_color(self, color_name: str) -> list:
         """Get color as list of floats from theme manager"""
