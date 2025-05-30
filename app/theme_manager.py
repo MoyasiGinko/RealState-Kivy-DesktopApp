@@ -16,12 +16,6 @@ class ThemeType(Enum):
     """Available theme types"""
     LIGHT = "light"
     DARK = "dark"
-    BLUE = "blue"
-    GREEN = "green"
-    ORANGE = "orange"
-    PURPLE = "purple"
-    PROFESSIONAL = "professional"
-    MODERN = "modern"
 
 
 class ThemeManager:
@@ -41,12 +35,6 @@ class ThemeManager:
         self.themes = {
             ThemeType.LIGHT: self._get_light_theme(),
             ThemeType.DARK: self._get_dark_theme(),
-            ThemeType.BLUE: self._get_blue_theme(),
-            ThemeType.GREEN: self._get_green_theme(),
-            ThemeType.ORANGE: self._get_orange_theme(),
-            ThemeType.PURPLE: self._get_purple_theme(),
-            ThemeType.PROFESSIONAL: self._get_professional_theme(),
-            ThemeType.MODERN: self._get_modern_theme(),
         }
 
     def _get_light_theme(self) -> Dict[str, Any]:
@@ -196,85 +184,7 @@ class ThemeManager:
                if k.startswith(('font_size_', 'spacing_', 'border_radius_', 'button_height', 'input_height', 'header_height', 'toolbar_height', 'footer_height'))}
         }
 
-    def _get_blue_theme(self) -> Dict[str, Any]:
-        """Blue professional theme"""
-        base = self._get_light_theme()
-        base.update({
-            'primary_color': [0.1, 0.3, 0.6, 1],        # Deep blue
-            'secondary_color': [0.2, 0.4, 0.7, 1],      # Medium blue
-            'accent_color': [0.3, 0.6, 0.9, 1],         # Light blue
-            'header_background_color': [0.05, 0.2, 0.4, 1], # Dark blue header
-            'card_background_color': [0.98, 0.99, 1, 1], # Slight blue tint
-            'selected_color': [0.8, 0.9, 1, 1],         # Blue selection
-        })
-        return base
 
-    def _get_green_theme(self) -> Dict[str, Any]:
-        """Green nature theme"""
-        base = self._get_light_theme()
-        base.update({
-            'primary_color': [0.1, 0.6, 0.2, 1],        # Forest green
-            'secondary_color': [0.2, 0.7, 0.3, 1],      # Medium green
-            'accent_color': [0.4, 0.8, 0.4, 1],         # Light green
-            'header_background_color': [0.05, 0.4, 0.1, 1], # Dark green header
-            'card_background_color': [0.98, 1, 0.98, 1], # Slight green tint
-            'selected_color': [0.8, 1, 0.8, 1],         # Green selection
-        })
-        return base
-
-    def _get_orange_theme(self) -> Dict[str, Any]:
-        """Orange warm theme"""
-        base = self._get_light_theme()
-        base.update({
-            'primary_color': [0.8, 0.4, 0.1, 1],        # Deep orange
-            'secondary_color': [0.9, 0.5, 0.2, 1],      # Medium orange
-            'accent_color': [1, 0.7, 0.3, 1],           # Light orange
-            'header_background_color': [0.6, 0.3, 0.05, 1], # Dark orange header
-            'card_background_color': [1, 0.99, 0.98, 1], # Slight orange tint
-            'selected_color': [1, 0.9, 0.8, 1],         # Orange selection
-        })
-        return base
-
-    def _get_purple_theme(self) -> Dict[str, Any]:
-        """Purple elegant theme"""
-        base = self._get_light_theme()
-        base.update({
-            'primary_color': [0.4, 0.1, 0.6, 1],        # Deep purple
-            'secondary_color': [0.5, 0.2, 0.7, 1],      # Medium purple
-            'accent_color': [0.7, 0.4, 0.9, 1],         # Light purple
-            'header_background_color': [0.3, 0.05, 0.4, 1], # Dark purple header
-            'card_background_color': [1, 0.98, 1, 1],   # Slight purple tint
-            'selected_color': [0.9, 0.8, 1, 1],         # Purple selection
-        })
-        return base
-
-    def _get_professional_theme(self) -> Dict[str, Any]:
-        """Professional corporate theme"""
-        base = self._get_light_theme()
-        base.update({
-            'primary_color': [0.2, 0.2, 0.3, 1],        # Dark slate
-            'secondary_color': [0.3, 0.3, 0.4, 1],      # Medium slate
-            'accent_color': [0.5, 0.6, 0.7, 1],         # Light slate
-            'header_background_color': [0.1, 0.1, 0.2, 1], # Very dark slate
-            'card_background_color': [0.99, 0.99, 0.99, 1], # Off-white
-            'selected_color': [0.9, 0.9, 0.95, 1],      # Slate selection
-            'text_primary_color': [0.15, 0.15, 0.2, 1], # Dark slate text
-        })
-        return base
-
-    def _get_modern_theme(self) -> Dict[str, Any]:
-        """Modern minimalist theme"""
-        base = self._get_light_theme()
-        base.update({
-            'primary_color': [0, 0, 0, 1],               # Pure black
-            'secondary_color': [0.2, 0.2, 0.2, 1],      # Dark gray
-            'accent_color': [0.9, 0.9, 0.9, 1],         # Light gray
-            'header_background_color': [0.05, 0.05, 0.05, 1], # Almost black
-            'card_background_color': [1, 1, 1, 1],      # Pure white
-            'selected_color': [0.95, 0.95, 0.95, 1],    # Light gray selection
-            'border_color': [0.9, 0.9, 0.9, 1],         # Very light border
-        })
-        return base
 
     def set_theme(self, theme_type: ThemeType):
         """Set the current theme"""

@@ -18,7 +18,7 @@ import logging
 
 from app.components import (RTLLabel, CustomActionButton as ActionButton, StatsCard,
                            BilingualLabel, TranslatableButton, LanguageSwitcher,
-                           NavigationHeader, ResponsiveCard, BilingualButton)
+                           NavigationHeader, ResponsiveCard, BilingualButton, SettingsDialog)
 from app.config import config
 from app.database import DatabaseManager
 from app.font_manager import font_manager
@@ -44,9 +44,7 @@ class DashboardScreen(Screen):
     def build_ui(self):
         """Build the modern, responsive dashboard UI"""
         # Main layout with proper spacing
-        main_layout = BoxLayout(orientation='vertical', spacing=dp(20), padding=[20, 15, 20, 20])
-
-        # Header with navigation
+        main_layout = BoxLayout(orientation='vertical', spacing=dp(20), padding=[20, 15, 20, 20])        # Header with navigation
         header_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=dp(60), spacing=20)
 
         # Back to welcome button
@@ -57,9 +55,7 @@ class DashboardScreen(Screen):
             size=(dp(150), dp(40))
         )
         back_btn.bind(on_press=self.go_to_welcome)
-        header_layout.add_widget(back_btn)
-
-        # Dashboard title
+        header_layout.add_widget(back_btn)        # Dashboard title
         title_style = config.get_label_style('title')
         title = BilingualLabel(
             translation_key='dashboard',
@@ -72,11 +68,6 @@ class DashboardScreen(Screen):
 
         # Theme and language controls
         controls_layout = BoxLayout(orientation='vertical', size_hint=(None, None), size=(dp(150), dp(85)), spacing=dp(5))
-
-        # Theme selector
-        from app.components import ThemeSelector
-        theme_selector = ThemeSelector(size_hint=(None, None), size=(dp(150), dp(40)))
-        controls_layout.add_widget(theme_selector)
 
         # Language switcher
         lang_switcher = LanguageSwitcher(size_hint=(None, None), size=(dp(150), dp(40)))
@@ -295,9 +286,7 @@ class DashboardScreen(Screen):
             font_size='12sp',
             size_hint_x=0.8
         )
-        item_layout.add_widget(info_label)
-
-        # View button
+        item_layout.add_widget(info_label)        # View button
         view_btn = BilingualButton(
             translation_key='view',
             size_hint_x=0.2,
@@ -320,13 +309,8 @@ class DashboardScreen(Screen):
 
     def show_settings(self, instance):
         """Show settings dialog"""
-        from app.components import MessageDialog
-        dialog = MessageDialog(
-            title=language_manager.get_text('settings'),
-            message=language_manager.get_text('feature_coming_soon'),
-            message_type='info'
-        )
-        dialog.open()
+        settings_dialog = SettingsDialog()
+        settings_dialog.open()
 
     def on_enter(self, *args):
         """Called when screen is entered - refresh data"""

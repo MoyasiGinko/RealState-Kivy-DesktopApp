@@ -201,8 +201,9 @@ class LanguageManager:
                 'language': 'اللغة',
                 'arabic': 'العربية',
                 'english': 'English',
-                'switch_language': 'تغيير اللغة',
-                'settings': 'Settings',
+                'switch_language': 'تغيير اللغة',                'settings': 'Settings',
+                'language_settings': 'إعدادات اللغة',
+                'theme_settings': 'إعدادات المظهر',
                 'feature_coming_soon': 'هذه الميزة قيد التطوير',
 
                 # Form validation and interface
@@ -416,8 +417,9 @@ class LanguageManager:
                 'language': 'Language',
                 'arabic': 'العربية',
                 'english': 'English',
-                'switch_language': 'Switch Language',
-                'settings': 'Settings',
+                'switch_language': 'Switch Language',                'settings': 'Settings',
+                'language_settings': 'Language Settings',
+                'theme_settings': 'Theme Settings',
                 'feature_coming_soon': 'This feature is coming soon',
 
                 # Form validation and interface

@@ -21,6 +21,7 @@ from kivy.graphics import Color, Rectangle, Line
 from kivy.clock import Clock
 from typing import Callable, List, Dict, Optional
 import logging
+import os
 from app.font_manager import font_manager
 from app.language_manager import language_manager
 from app.config import config
@@ -1000,3 +1001,92 @@ class ThemeDialog(Popup):
         content.add_widget(close_btn)
 
         self.content = content
+
+
+class SettingsDialog(Popup):
+    """Settings dialog with theme and language options"""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.title = language_manager.get_text('settings')
+        self.size_hint = (0.7, 0.6)
+        self.auto_dismiss = True
+
+        # Content layout
+        content = BoxLayout(orientation='vertical', spacing=dp(20), padding=dp(20))
+
+        # Settings card
+        settings_card = ResponsiveCard(
+            orientation='vertical',
+            spacing=dp(15),
+            padding=[20, 20, 20, 20]
+        )
+
+        # Language settings section
+        lang_section = BoxLayout(orientation='vertical', spacing=dp(10), size_hint_y=None, height=dp(80))
+
+        # Language section title
+        lang_title_style = config.get_label_style('header')
+        lang_title = BilingualLabel(
+            translation_key='language_settings',
+            font_size=lang_title_style['font_size'],
+            bold=True,
+            color=lang_title_style['color'],
+            size_hint_y=None,
+            height=dp(30)
+        )
+        lang_section.add_widget(lang_title)
+
+        # Language switcher
+        self.lang_switcher = LanguageSwitcher(
+            size_hint_y=None,
+            height=dp(40)
+        )
+        lang_section.add_widget(self.lang_switcher)
+
+        settings_card.add_widget(lang_section)
+
+        # Theme settings section
+        theme_section = BoxLayout(orientation='vertical', spacing=dp(10), size_hint_y=None, height=dp(80))
+
+        # Theme section title
+        theme_title_style = config.get_label_style('header')
+        theme_title = BilingualLabel(
+            translation_key='theme_settings',
+            font_size=theme_title_style['font_size'],
+            bold=True,
+            color=theme_title_style['color'],
+            size_hint_y=None,
+            height=dp(30)
+        )
+        theme_section.add_widget(theme_title)
+
+        # Theme selector
+        self.theme_selector = ThemeSelector(
+            size_hint_y=None,
+            height=dp(40)
+        )
+        theme_section.add_widget(self.theme_selector)
+
+        settings_card.add_widget(theme_section)
+
+        content.add_widget(settings_card)
+
+        # Close button
+        close_btn = TranslatableButton(
+            translation_key='close',
+            button_type='secondary',
+            size_hint_y=None,
+            height=dp(50),
+            action=self.dismiss
+        )
+        content.add_widget(close_btn)
+
+        self.content = content
+
+        # Register for language changes
+        language_manager.add_observer(self)
+
+    def on_language_changed(self):
+        """Called when language changes"""
+        self.title = language_manager.get_text('settings')
