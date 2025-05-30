@@ -156,7 +156,48 @@ class Config:
         """Get color as list of floats from theme manager"""
         # Import here to avoid circular import
         from app.theme_manager import theme_manager
-        return theme_manager.get_color(color_name)
+
+        # Map shortened color names to full theme manager names
+        color_mapping = {
+            'primary': 'primary_color',
+            'secondary': 'secondary_color',
+            'accent': 'accent_color',
+            'success': 'success_color',
+            'warning': 'warning_color',
+            'error': 'error_color',
+            'info': 'info_color',
+            'background': 'background_color',
+            'card_background': 'card_background_color',
+            'input_background': 'input_background_color',
+            'header_background': 'header_background_color',
+            'sidebar_background': 'sidebar_background_color',
+            'text_primary': 'text_primary_color',
+            'text_secondary': 'text_secondary_color',
+            'text_muted': 'text_muted_color',
+            'text_light': 'text_light_color',
+            'text_on_primary': 'text_on_primary_color',
+            'border': 'border_color',
+            'separator': 'separator_color',
+            'divider': 'divider_color',
+            'button_text_light': 'button_text_light',
+            'button_text_dark': 'button_text_dark',
+            'button_hover': 'button_hover_color',
+            'button_pressed': 'button_pressed_color',
+            'disabled': 'disabled_color',
+            'hover': 'hover_color',
+            'selected': 'selected_color',
+            'focus': 'focus_color',
+            'shadow': 'shadow_color',
+            'overlay': 'overlay_color',
+            'table_header_bg': 'table_header_bg',
+            'table_row_even': 'table_row_even',
+            'table_row_odd': 'table_row_odd',
+            'table_row_hover': 'table_row_hover'
+        }
+
+        # Use mapped name if available, otherwise use original name
+        mapped_name = color_mapping.get(color_name, color_name)
+        return theme_manager.get_color(mapped_name)
 
     def get_font_name(self, font_type: str = 'default') -> str:
         """Get font name based on type"""
