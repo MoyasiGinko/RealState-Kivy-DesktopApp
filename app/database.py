@@ -548,17 +548,41 @@ class DatabaseManager:
 
     # Photo management methods
     def add_property_photo(self, company_code: str, photo_path: str, photo_name: str) -> bool:
-        """Add property photo"""
+        """Add property photo
+
+        Args:
+            company_code: The company code of the property
+            photo_path: The full path to the photo file
+            photo_name: The filename of the photo
+        """
         conn = self.get_connection()
         cursor = conn.cursor()
 
         try:
+            # Get the real estate code from the property
+            property_data = self.get_property_by_code(company_code)
+            if not property_data:
+                logger.error(f"Property not found for photo upload: {company_code}")
+                return False
+
+            realstate_code = property_data.get('realstatecode')
+
+            # Split the photo path and name into components expected by the database
+            # Extract the directory path and filename components
+            storage_path = os.path.dirname(photo_path)
+            file_basename = os.path.basename(photo_name)
+
+            # Split into filename and extension
+            filename, extension = os.path.splitext(file_basename)
+
+            # Execute the insert based on the actual schema
             cursor.execute('''
-                INSERT INTO realstatephotos (Companyco, photo_path, photo_name)
-                VALUES (?, ?, ?)
-            ''', (company_code, photo_path, photo_name))
+                INSERT INTO realstatephotos (realstatecode, Storagepath, photofilename, Photoextension)
+                VALUES (?, ?, ?, ?)
+            ''', (realstate_code, storage_path, filename, extension))
+
             conn.commit()
-            logger.info(f"Photo added for property: {company_code}")
+            logger.info(f"Photo added for property: {company_code}, realstate code: {realstate_code}")
             return True
         except Exception as e:
             logger.error(f"Error adding property photo: {e}")
@@ -573,18 +597,61 @@ class DatabaseManager:
         cursor = conn.cursor()
 
         try:
-            cursor.execute('''
-                SELECT id, photo_path, photo_name, upload_date
-                FROM realstatephotos
-                WHERE Companyco = ?
-                ORDER BY upload_date DESC
-            ''', (company_code,))
+            # First check if the Companyco column exists in the realstatephotos table
+            cursor.execute("PRAGMA table_info(realstatephotos)")
+            columns_info = cursor.fetchall()
+            column_names = [col[1] for col in columns_info]
+
+            # Get the real estate code from the property using company_code
+            property_data = self.get_property_by_code(company_code)
+            realstate_code = property_data.get('realstatecode') if property_data else None
+
+            if 'Companyco' in column_names:
+                # If the Companyco column exists, query by it
+                cursor.execute('''
+                    SELECT realstatecode, Storagepath, photofilename, Photoextension
+                    FROM realstatephotos
+                    WHERE Companyco = ?
+                ''', (company_code,))
+            elif realstate_code and 'realstatecode' in column_names:
+                # Otherwise, try to match on realstatecode
+                cursor.execute('''
+                    SELECT realstatecode, Storagepath, photofilename, Photoextension
+                    FROM realstatephotos
+                    WHERE realstatecode = ?
+                ''', (realstate_code,))
+            else:
+                logger.error(f"Cannot find photos: no suitable column to match on")
+                return []
 
             columns = [description[0] for description in cursor.description]
             photos = []
             for row in cursor.fetchall():
-                photos.append(dict(zip(columns, row)))
+                photo_dict = dict(zip(columns, row))
 
+                # Add derived fields that the UI expects
+                if 'Storagepath' in photo_dict and 'photofilename' in photo_dict:
+                    # Build photo path from components
+                    storage_path = photo_dict.get('Storagepath', '')
+                    filename = photo_dict.get('photofilename', '')
+                    extension = photo_dict.get('Photoextension', '')
+
+                    # Ensure extension has a dot prefix if it doesn't already
+                    if extension and not extension.startswith('.'):
+                        extension = '.' + extension
+
+                    # Build full path
+                    photo_path = os.path.join(storage_path, filename)
+                    if extension:
+                        photo_path += extension
+
+                    # Add the derived fields that the UI expects
+                    photo_dict['photo_path'] = photo_path
+                    photo_dict['photo_name'] = filename + (extension if extension else '')
+
+                photos.append(photo_dict)
+
+            logger.info(f"Found {len(photos)} photos for property {company_code}")
             return photos
         except Exception as e:
             logger.error(f"Error getting property photos: {e}")
@@ -592,20 +659,44 @@ class DatabaseManager:
         finally:
             conn.close()
 
-    def delete_property_photo(self, photo_id: int) -> bool:
-        """Delete property photo"""
+    def delete_property_photo(self, photo_name: str) -> bool:
+        """Delete property photo by photo name"""
         conn = self.get_connection()
         cursor = conn.cursor()
 
         try:
-            cursor.execute('DELETE FROM realstatephotos WHERE id = ?', (photo_id,))
+            # First check what columns exist in the table
+            cursor.execute("PRAGMA table_info(realstatephotos)")
+            columns_info = cursor.fetchall()
+            column_names = [col[1] for col in columns_info]
+
+            # Use id or photo_name based on what's available
+            if 'photo_name' in column_names:
+                cursor.execute('DELETE FROM realstatephotos WHERE photo_name = ?', (photo_name,))
+            elif 'id' in column_names and photo_name.isdigit():
+                # In case photo_name is actually an ID
+                cursor.execute('DELETE FROM realstatephotos WHERE id = ?', (int(photo_name),))
+            else:
+                # Fallback - try to delete with any identifying information we have
+                logger.warning("No suitable column found for photo deletion. Using generic method.")
+                found = False
+                for column in column_names:
+                    if column != 'Companyco' and column != 'upload_date':
+                        cursor.execute(f'DELETE FROM realstatephotos WHERE {column} = ?', (photo_name,))
+                        if cursor.rowcount > 0:
+                            found = True
+                            break
+                if not found:
+                    logger.warning(f"No suitable column found to delete photo: {photo_name}")
+                    return False
+
             conn.commit()
 
             if cursor.rowcount > 0:
-                logger.info(f"Photo deleted: {photo_id}")
+                logger.info(f"Photo deleted: {photo_name}")
                 return True
             else:
-                logger.warning(f"Photo not found for deletion: {photo_id}")
+                logger.warning(f"Photo not found for deletion: {photo_name}")
                 return False
         except Exception as e:
             logger.error(f"Error deleting property photo: {e}")
