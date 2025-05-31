@@ -80,8 +80,6 @@ class EnhancedDashboardScreen(MDScreen):
         scroll.add_widget(content_layout)
         main_container.add_widget(scroll)
 
-        # Floating Action Button
-        self.build_fab(main_container)
 
         self.add_widget(main_container)
 
@@ -101,25 +99,42 @@ class EnhancedDashboardScreen(MDScreen):
         parent.add_widget(app_bar)
 
     def build_welcome_section(self, parent):
-        """Build welcome hero section"""
+        """Build welcome hero section with improved spacing and responsiveness"""
+        # Outer container for spacing below the card
+        outer_container = MDBoxLayout(
+            orientation='vertical',
+            size_hint_y=None,
+            height=dp(200),  # Increased height for better fit
+            padding=[0, 0, 0, DesignTokens.SPACING['md']],
+            spacing=DesignTokens.SPACING['sm'],
+            adaptive_height=False
+        )
+
         welcome_card = ModernCard(
             md_bg_color=DesignTokens.COLORS['primary'],
             size_hint_y=None,
             height=dp(180),  # Increased height for better content fitting
-            radius=DesignTokens.RADIUS['lg']
+            radius=DesignTokens.RADIUS['lg'],
+            padding=[0, 0, 0, 0]
         )
 
         welcome_content = MDBoxLayout(
             orientation='horizontal',
-            spacing=DesignTokens.SPACING['lg'],
-            padding=[DesignTokens.SPACING['lg'], DesignTokens.SPACING['md'], DesignTokens.SPACING['lg'], DesignTokens.SPACING['md']]  # Added proper padding
+            spacing=DesignTokens.SPACING['xl'],
+            padding=[
+                DesignTokens.SPACING['xl'],
+                DesignTokens.SPACING['lg'],
+                DesignTokens.SPACING['xl'],
+                DesignTokens.SPACING['lg']
+            ],
+            adaptive_height=True
         )
 
-        # Welcome text container with proper sizing
+        # Welcome text container with proper sizing and responsiveness
         text_layout = MDBoxLayout(
             orientation='vertical',
-            size_hint_x=0.75,  # Take up more space for text
-            spacing=DesignTokens.SPACING['sm'],
+            size_hint_x=0.7,
+            spacing=DesignTokens.SPACING['md'],
             adaptive_height=True
         )
 
@@ -130,19 +145,21 @@ class EnhancedDashboardScreen(MDScreen):
             font_style="H4",
             bold=True,
             size_hint_y=None,
-            height=dp(40),
-            text_size=(None, None)
+            height=dp(44),
+            text_size=(None, None),
+            halign="left",
+            valign="top"
         )
         text_layout.add_widget(welcome_title)
 
         welcome_subtitle = MDLabel(
             text=language_manager.get_text('dashboard_subtitle'),
             theme_text_color="Custom",
-            text_color=(DesignTokens.COLORS['card'][0], DesignTokens.COLORS['card'][1], DesignTokens.COLORS['card'][2], 0.8),
+            text_color=(DesignTokens.COLORS['card'][0], DesignTokens.COLORS['card'][1], DesignTokens.COLORS['card'][2], 0.85),
             font_style="Body1",
             size_hint_y=None,
-            height=dp(60),
-            text_size=(dp(300), None),  # Set text width for better wrapping
+            height=dp(56),
+            text_size=(dp(320), None),
             halign="left",
             valign="top"
         )
@@ -150,29 +167,32 @@ class EnhancedDashboardScreen(MDScreen):
 
         welcome_content.add_widget(text_layout)
 
-        # Language switcher container
+        # Language switcher container with vertical centering
         lang_container = MDBoxLayout(
             orientation='vertical',
-            size_hint_x=0.25,
+            size_hint_x=0.3,
             adaptive_height=True,
-            spacing=DesignTokens.SPACING['sm']
-        )
-
-        # Add some spacing at top
-        lang_container.add_widget(
-            MDLabel(size_hint_y=None, height=dp(20))
+            spacing=DesignTokens.SPACING['md'],
+            padding=[0, dp(18), 0, 0]
         )
 
         lang_switcher = LanguageSwitcher(
             size_hint=(None, None),
-            size=(dp(140), dp(45)),  # Slightly larger for better touch targets
+            size=(dp(140), dp(48)),
             pos_hint={'center_x': 0.5}
         )
         lang_container.add_widget(lang_switcher)
 
         welcome_content.add_widget(lang_container)
         welcome_card.add_widget(welcome_content)
-        parent.add_widget(welcome_card)
+        outer_container.add_widget(welcome_card)
+
+        # Add extra spacing below the card for visual separation
+        outer_container.add_widget(
+            MDLabel(size_hint_y=None, height=DesignTokens.SPACING['md'])
+        )
+
+        parent.add_widget(outer_container)
 
     def build_stats_section(self, parent):
         """Build enhanced statistics section"""
