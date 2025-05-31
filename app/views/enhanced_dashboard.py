@@ -25,7 +25,6 @@ from app.views.modern_components import (
 from app.components import BilingualLabel, LanguageSwitcher
 from app.language_manager import language_manager
 from app.database import DatabaseManager
-from app.screens.dashboard import ActivitySidebar
 
 logger = logging.getLogger(__name__)
 
@@ -697,13 +696,13 @@ class EnhancedDashboardScreen(MDScreen):
         for config in stats_config:
             stat_card = EnhancedStatsCard(
                 title=config['title'],
-                value=config['value'],
-                icon=config['icon'],
+                value=config['value'],                icon=config['icon'],
                 color_scheme=config['color_scheme'],
                 trend=config.get('trend'),
                 size_hint_y=None,
                 height=dp(110)  # Increased height for better visual balance
             )
+
             stat_card.opacity = 0
             self.stats_grid.add_widget(stat_card)            # Animate each card with staggered timing
             Clock.schedule_once(
@@ -732,10 +731,19 @@ class EnhancedDashboardScreen(MDScreen):
         dialog.open()
 
     def show_recent_activity_dialog(self, instance=None):
-        """Show recent activity dialog"""
-        from app.views.enhanced_dialogs import RecentActivityDialog
-        dialog = RecentActivityDialog(self.db)
-        dialog.open()
+        """Show recent activity modal dialog"""
+        try:
+            from app.views.recent_activity_modal import show_fresh_recent_activity_modal
+            # Use the new modal dialog component that ensures proper modal behavior
+            dialog = show_fresh_recent_activity_modal(self.db)
+            if dialog:
+                print("Recent Activity modal dialog opened successfully")
+            else:
+                print("Failed to open Recent Activity modal dialog")
+        except Exception as e:
+            print(f"Error opening Recent Activity modal dialog: {e}")
+            import logging
+            logging.error(f"Error opening Recent Activity modal dialog: {e}")
 
     def show_profile(self):
         """Show user profile"""
@@ -748,26 +756,17 @@ class EnhancedDashboardScreen(MDScreen):
         pass
 
     def show_activity_sidebar(self, instance=None):
-        """Show the activity sidebar when the card button is clicked"""
-        if hasattr(self, 'sidebar') and self.sidebar:
-            return  # Already showing
-
+        """Show the recent activity modal dialog"""
         try:
-            # Create sidebar
-            self.sidebar = ActivitySidebar(self.db)
-
-            # Position sidebar off-screen initially
-            self.sidebar.x = self.width
-
-            # Add to this screen directly
-            self.add_widget(self.sidebar)
-
-            # Animate in
-            anim = Animation(x=self.width - self.sidebar.width, duration=0.3)
-            anim.start(self.sidebar)
-
+            from app.views.recent_activity_modal import show_fresh_recent_activity_modal
+            # Use the new modal dialog component
+            dialog = show_fresh_recent_activity_modal(self.db)
+            if dialog:
+                logger.info("Recent Activity modal dialog opened successfully")
+            else:
+                logger.error("Failed to open Recent Activity modal dialog")
         except Exception as e:
-            logger.error(f"Error showing activity sidebar: {e}")
+            logger.error(f"Error opening Recent Activity modal dialog: {e}")
 
     def on_enter(self, *args):
         """Called when screen is entered"""

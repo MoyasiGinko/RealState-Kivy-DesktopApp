@@ -47,8 +47,6 @@ from kivy.uix.widget import Widget
 from app.database import DatabaseManager
 from app.font_manager import font_manager
 from app.language_manager import language_manager
-from app.screens.dashboard import DashboardScreen
-from app.screens.owners import OwnersScreen
 from app.views.enhanced_search import EnhancedSearchScreen
 from app.components import RTLLabel, BilingualLabel, BilingualButton, LanguageSwitcher
 from app.controllers.app_controller import AppController

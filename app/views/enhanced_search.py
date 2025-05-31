@@ -33,7 +33,6 @@ from app.views.modern_components import (
 )
 from app.database import DatabaseManager
 from app.language_manager import language_manager
-from app.views.enhanced_dialogs import ConfirmationDialog
 
 logger = logging.getLogger(__name__)
 
