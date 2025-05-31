@@ -254,17 +254,20 @@ class EnhancedPropertiesScreen(MDScreen):
         parent_layout.add_widget(search_card)
 
     def build_modern_action_bar(self, parent_layout):
-        """Build modern compact action bar"""
+        """Build modern compact action bar with improved spacing and responsiveness"""
         action_card = ModernCard(
             size_hint_y=None,
-            height=dp(56),
-            elevation=1
+            height=dp(72),  # Increased height for better visual balance
+            elevation=2,
+            padding=[dp(16), dp(12)]
         )
 
         action_layout = MDBoxLayout(
             orientation='horizontal',
-            spacing=dp(8),
-            padding=dp(8)
+            spacing=dp(20),  # More spacing between main and secondary actions
+            padding=[dp(8), dp(8), dp(8), dp(8)],
+            size_hint_y=None,
+            height=dp(48)
         )
 
         # Add property button (primary action)
@@ -272,23 +275,32 @@ class EnhancedPropertiesScreen(MDScreen):
             text="Add Property",
             md_bg_color=DesignTokens.COLORS['primary'],
             icon="plus",
-            size_hint_x=0.3
+            size_hint=(None, None),
+            width=dp(160),
+            height=dp(44)
         )
         add_button.bind(on_release=self.add_new_property)
         action_layout.add_widget(add_button)
 
+        # Spacer for responsiveness
+        action_layout.add_widget(MDLabel(size_hint_x=0.05))
+
         # Secondary actions
         actions_layout = MDBoxLayout(
             orientation='horizontal',
-            spacing=dp(4),
-            size_hint_x=0.7
+            spacing=dp(12),
+            size_hint=(1, None),
+            height=dp(44)
         )
 
         # Import/Export buttons
         import_btn = MDIconButton(
             icon="upload",
             theme_icon_color="Custom",
-            icon_color=DesignTokens.COLORS['secondary']
+            icon_color=DesignTokens.COLORS['secondary'],
+            icon_size=dp(28),
+            size_hint=(None, None),
+            size=(dp(44), dp(44))
         )
         import_btn.bind(on_release=self.import_properties)
         actions_layout.add_widget(import_btn)
@@ -296,7 +308,10 @@ class EnhancedPropertiesScreen(MDScreen):
         export_btn = MDIconButton(
             icon="download",
             theme_icon_color="Custom",
-            icon_color=DesignTokens.COLORS['secondary']
+            icon_color=DesignTokens.COLORS['secondary'],
+            icon_size=dp(28),
+            size_hint=(None, None),
+            size=(dp(44), dp(44))
         )
         export_btn.bind(on_release=self.export_properties)
         actions_layout.add_widget(export_btn)
@@ -305,10 +320,16 @@ class EnhancedPropertiesScreen(MDScreen):
         self.view_toggle_button = MDIconButton(
             icon="view-grid",
             theme_icon_color="Custom",
-            icon_color=DesignTokens.COLORS['primary']
+            icon_color=DesignTokens.COLORS['primary'],
+            icon_size=dp(28),
+            size_hint=(None, None),
+            size=(dp(44), dp(44))
         )
         self.view_toggle_button.bind(on_release=self.toggle_view)
         actions_layout.add_widget(self.view_toggle_button)
+
+        # Add a flexible spacer to push actions to the right if space allows
+        actions_layout.add_widget(MDLabel(size_hint_x=1))
 
         action_layout.add_widget(actions_layout)
         action_card.add_widget(action_layout)
