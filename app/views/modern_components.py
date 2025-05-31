@@ -1068,8 +1068,19 @@ class ModernActionBar(MDCard):
 class ModernListItem(MDCard):
     """Modern list item with customizable content"""
 
-    def __init__(self, title="", subtitle="", icon=None, trailing_icon=None,
+    def __init__(self, title=None, subtitle=None, icon=None, trailing_icon=None,
                  on_tap=None, **kwargs):
+        # Pop custom keys from kwargs if present (for **dict usage)
+        if title is None:
+            title = kwargs.pop("title", "")
+        if subtitle is None:
+            subtitle = kwargs.pop("subtitle", "")
+        if icon is None:
+            icon = kwargs.pop("icon", None)
+        if trailing_icon is None:
+            trailing_icon = kwargs.pop("trailing_icon", None)
+        if on_tap is None:
+            on_tap = kwargs.pop("on_tap", None)
         super().__init__(**kwargs)
         self.elevation = DesignTokens.ELEVATIONS['low']
         self.radius = DesignTokens.RADIUS['small']

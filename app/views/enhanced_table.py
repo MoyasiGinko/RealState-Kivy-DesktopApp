@@ -61,12 +61,10 @@ class EnhancedDataTableHeader(MDBoxLayout):
             size_hint_y=None,
             height=dp(50),
             md_bg_color=DesignTokens.COLORS['surface']
-        )
-
-        # Search field
+        )        # Search field
         self.search_field = MDTextField(
             hint_text=language_manager.get_text('search_table'),
-            mode="outlined",
+            mode="line",
             size_hint_x=0.4,
             size_hint_y=None,
             height=dp(40),
@@ -74,12 +72,10 @@ class EnhancedDataTableHeader(MDBoxLayout):
             line_color_focus=DesignTokens.COLORS['primary']
         )
         self.search_field.bind(text=self.on_search_change)
-        filter_container.add_widget(self.search_field)
-
-        # Column filter dropdown
+        filter_container.add_widget(self.search_field)        # Column filter dropdown
         self.filter_dropdown = MDTextField(
             hint_text=language_manager.get_text('filter_by_column'),
-            mode="outlined",
+            mode="line",
             readonly=True,
             size_hint_x=0.3,
             size_hint_y=None,

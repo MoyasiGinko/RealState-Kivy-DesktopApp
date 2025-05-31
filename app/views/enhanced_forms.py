@@ -92,15 +92,14 @@ class EnhancedFormField(MDBoxLayout):
             font_style="Caption",
             size_hint_y=None,
             height=0,  # Hidden by default
-            opacity=0
-        )
+            opacity=0        )
         self.add_widget(self.error_label)
 
     def build_text_field(self):
         """Build standard text field"""
         self.input = MDTextField(
             hint_text=self.label,
-            mode="outlined",
+            mode="line",
             size_hint_y=None,
             height=dp(56),
             line_color_normal=DesignTokens.COLORS['divider'],
@@ -135,7 +134,7 @@ class EnhancedFormField(MDBoxLayout):
         """Build multiline text field"""
         self.input = MDTextField(
             hint_text=self.label,
-            mode="outlined",
+            mode="line",
             multiline=True,
             size_hint_y=None,
             height=dp(100),
@@ -143,8 +142,7 @@ class EnhancedFormField(MDBoxLayout):
             line_color_focus=DesignTokens.COLORS['primary'],
             text_color_normal=DesignTokens.COLORS['text_primary'],
             text_color_focus=DesignTokens.COLORS['text_primary'],
-            hint_text_color_normal=DesignTokens.COLORS['text_hint'],
-            hint_text_color_focus=DesignTokens.COLORS['primary']
+            hint_text_color_normal=DesignTokens.COLORS['text_hint'],            hint_text_color_focus=DesignTokens.COLORS['primary']
         )
         self.input.bind(text=self.on_text_change)
         self.input.bind(focus=self.on_focus_change)
@@ -154,7 +152,7 @@ class EnhancedFormField(MDBoxLayout):
         """Build dropdown selection field"""
         self.input = MDTextField(
             hint_text=f"Select {self.label}",
-            mode="outlined",
+            mode="line",
             readonly=True,
             size_hint_y=None,
             height=dp(56),
