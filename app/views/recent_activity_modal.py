@@ -76,15 +76,22 @@ class RecentActivityModalDialog:
 
         # Scrollable activity list
         scroll_view = MDScrollView()
-        activity_list = MDList()
-
-        # Populate with activities
+        activity_list = MDList()        # Populate with activities
         self._load_activities_into_list(activity_list)
 
         scroll_view.add_widget(activity_list)
         activity_container.add_widget(scroll_view)
         activity_card.add_widget(activity_container)
         main_content.add_widget(activity_card)
+
+        # Create button callbacks with debug output
+        def close_callback(instance):
+            print("Close button clicked!")
+            self._close_dialog(instance)
+
+        def refresh_callback(instance):
+            print("Refresh button clicked!")
+            self._refresh_activities(instance)
 
         # Create the modal dialog with specific parameters to ensure modal behavior
         self.dialog = MDDialog(
@@ -97,11 +104,11 @@ class RecentActivityModalDialog:
             buttons=[
                 MDFlatButton(
                     text="Refresh",
-                    on_release=self._refresh_activities
+                    on_release=refresh_callback
                 ),
                 MDRaisedButton(
                     text="Close",
-                    on_release=self._close_dialog
+                    on_release=close_callback
                 ),
             ],
         )
@@ -243,10 +250,17 @@ class RecentActivityModalDialog:
         """Close the modal dialog"""
         try:
             if self.dialog:
+                print("Attempting to close Recent Activity modal dialog...")
                 self.dialog.dismiss()
+                print("Recent Activity modal dialog closed successfully")
                 logger.info("Recent Activity modal dialog closed")
+            else:
+                print("No dialog to close")
         except Exception as e:
+            print(f"Error closing Recent Activity modal dialog: {e}")
             logger.error(f"Error closing Recent Activity modal dialog: {e}")
+            import traceback
+            traceback.print_exc()
         finally:
             # Always ensure dialog reference is cleared
             self.dialog = None

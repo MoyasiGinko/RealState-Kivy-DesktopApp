@@ -68,13 +68,8 @@ class EnhancedDashboardScreen(MDScreen):
         self.build_welcome_section(content_layout)
 
         # Statistics section
-        self.build_stats_section(content_layout)
-
-        # Quick actions section
+        self.build_stats_section(content_layout)        # Quick actions section
         self.build_quick_actions_section(content_layout)
-
-        # Recent activity section
-        self.build_recent_activity_section(content_layout)
 
         scroll.add_widget(content_layout)
         main_container.add_widget(scroll)
@@ -305,13 +300,19 @@ class EnhancedDashboardScreen(MDScreen):
                 'subtitle': language_manager.get_text('search_and_generate_reports'),
                 'icon': 'file-chart',
                 'action': lambda: self.navigate_to('enhanced_search'),                'color_scheme': 'warning'
-            },
-            {
+            },            {
                 'title': language_manager.get_text('settings'),
                 'subtitle': language_manager.get_text('app_settings'),
                 'icon': 'cog',
                 'action': self.show_settings,
                 'color_scheme': 'secondary'
+            },
+            {
+                'title': language_manager.get_text('recent_activity'),
+                'subtitle': language_manager.get_text('view_recent_activity'),
+                'icon': 'history',
+                'action': self.show_recent_activity,
+                'color_scheme': 'info'
             }
         ]
 
@@ -329,298 +330,6 @@ class EnhancedDashboardScreen(MDScreen):
 
         actions_container.add_widget(actions_grid)
         parent.add_widget(actions_container)
-
-    def build_recent_activity_section(self, parent):
-        """Build recent activity section as a clickable card button"""
-        # Activity section container with proper spacing
-        activity_container = MDBoxLayout(
-            orientation='vertical',
-            size_hint_y=None,
-            spacing=DesignTokens.SPACING['md'],
-            adaptive_height=True
-        )
-
-        # Activity header with improved styling
-        activity_header = MDBoxLayout(
-            orientation='horizontal',
-            size_hint_y=None,
-            height=dp(50),
-            spacing=DesignTokens.SPACING['sm'],
-            padding=[0, DesignTokens.SPACING['sm']]
-        )
-
-        title_label = MDLabel(
-            text=language_manager.get_text('recent_activity'),
-            theme_text_color="Custom",
-            text_color=DesignTokens.COLORS['text_primary'],
-            font_style="H5",
-            bold=True,
-            size_hint_y=None,
-            height=dp(30)
-        )
-        activity_header.add_widget(title_label)
-        activity_container.add_widget(activity_header)
-
-        # Clickable activity card button
-        self.activity_card = ModernCard(
-            size_hint_y=None,
-            height=dp(120),  # Reduced height for button-like appearance
-            radius=DesignTokens.RADIUS['lg'],
-            ripple_behavior=True,
-            on_release=self.show_activity_sidebar
-        )
-
-        # Card content with icon and text
-        card_content = MDBoxLayout(
-            orientation='horizontal',
-            spacing=DesignTokens.SPACING['lg'],
-            padding=[DesignTokens.SPACING['lg'], DesignTokens.SPACING['md']],
-            adaptive_height=True
-        )
-
-        # Icon container
-        icon_container = MDBoxLayout(
-            size_hint_x=None,
-            width=dp(60),
-            orientation='vertical',
-            adaptive_height=True
-        )
-
-        activity_icon = MDIconButton(
-            icon="history",
-            theme_icon_color="Custom",
-            icon_color=DesignTokens.COLORS['primary'],
-            size_hint=(None, None),
-            size=(dp(48), dp(48)),
-            pos_hint={'center_x': 0.5, 'center_y': 0.5},
-            disabled=True
-        )
-        icon_container.add_widget(activity_icon)
-        card_content.add_widget(icon_container)
-
-        # Text content
-        text_container = MDBoxLayout(
-            orientation='vertical',
-            spacing=DesignTokens.SPACING['xs'],
-            adaptive_height=True
-        )
-
-        main_text = MDLabel(
-            text=language_manager.get_text('view_recent_activity'),
-            theme_text_color="Custom",
-            text_color=DesignTokens.COLORS['text_primary'],
-            font_style="Subtitle1",
-            bold=True,
-            size_hint_y=None,
-            height=dp(28),
-            halign="left",
-            valign="center"
-        )
-        text_container.add_widget(main_text)
-
-        subtitle_text = MDLabel(
-            text=language_manager.get_text('click_to_view_all_activities'),
-            theme_text_color="Custom",
-            text_color=DesignTokens.COLORS['text_secondary'],
-            font_style="Body2",
-            size_hint_y=None,
-            height=dp(20),
-            halign="left",
-            valign="center"
-        )
-        text_container.add_widget(subtitle_text)
-        card_content.add_widget(text_container)
-
-        # Arrow icon
-        arrow_icon = MDIconButton(
-            icon="chevron-right",
-            theme_icon_color="Custom",
-            icon_color=DesignTokens.COLORS['secondary'],
-            size_hint=(None, None),
-            size=(dp(32), dp(32)),
-            disabled=True
-        )
-        card_content.add_widget(arrow_icon)
-
-        self.activity_card.add_widget(card_content)
-        activity_container.add_widget(self.activity_card)
-        parent.add_widget(activity_container)
-
-    def load_recent_activities(self):
-        """Load and display recent activities"""
-        self.activity_content.clear_widgets()
-
-        try:
-            # Get recent activities from database
-            activities = self.get_recent_activities()
-
-            if not activities:
-                no_activity = MDLabel(
-                    text=language_manager.get_text('no_recent_activity'),
-                    theme_text_color="Custom",
-                    text_color=DesignTokens.COLORS['text_secondary'],
-                    font_style="Body1",
-                    halign="center",
-                    valign="center"
-                )
-                self.activity_content.add_widget(no_activity)
-            else:
-                for activity in activities[:3]:  # Show only last 3 activities
-                    activity_item = self.create_activity_item(activity)
-                    self.activity_content.add_widget(activity_item)
-
-        except Exception as e:
-            logger.error(f"Error loading recent activities: {e}")
-            error_label = MDLabel(
-                text=language_manager.get_text('error_loading_activities'),
-                theme_text_color="Custom",
-                text_color=DesignTokens.COLORS['error'],
-                font_style="Body1",
-                halign="center"
-            )
-            self.activity_content.add_widget(error_label)
-
-    def get_recent_activities(self):
-        """Get recent activities from database"""
-        if not self.db:
-            return []
-
-        try:
-            # Sample activities - you can expand this based on your database schema
-            activities = []
-
-            # Get recent owners
-            recent_owners = self.db.get_recent_owners(limit=2)
-            for owner in recent_owners:
-                # Make sure to access the correct indices based on the query
-                # Owners table: Ownercode, ownername, ownerphone, Note
-                owner_name = owner[1] if len(owner) > 1 else "Unknown"
-                owner_phone = owner[2] if len(owner) > 2 else "No phone"
-
-                activities.append({
-                    'type': 'owner_added',
-                    'title': f"New owner: {owner_name}",
-                    'subtitle': f"Phone: {owner_phone}",
-                    'time': '2 hours ago',  # You can calculate this from created_at if available
-                    'icon': 'account-plus'
-                })
-
-            # Get recent properties
-            recent_properties = self.db.get_recent_properties(limit=2)
-            for prop in recent_properties:
-                # The properties are returned as dictionaries
-                prop_address = prop.get('Property-address', 'Unknown address')
-                prop_type = prop.get('Rstatetcode', 'Unknown type')
-
-                activities.append({
-                    'type': 'property_added',
-                    'title': f"New property: {prop_address}",
-                    'subtitle': f"Type: {prop_type}",
-                    'time': '5 hours ago',
-                    'icon': 'home-plus'
-                })
-
-            return activities
-
-        except Exception as e:
-            logger.error(f"Error getting recent activities: {e}")
-            return []
-
-    def create_activity_item(self, activity):
-        """Create an activity item widget with improved styling"""
-        # Main container with better spacing and visual hierarchy
-        item_container = ModernCard(
-            size_hint_y=None,
-            height=dp(70),  # Increased height for better content display
-            radius=DesignTokens.RADIUS['sm'],
-            md_bg_color=DesignTokens.COLORS['surface'],
-            elevation=1
-        )
-
-        item_layout = MDBoxLayout(
-            orientation='horizontal',
-            spacing=DesignTokens.SPACING['md'],
-            padding=[DesignTokens.SPACING['md'], DesignTokens.SPACING['sm']],
-            adaptive_height=True
-        )
-
-        # Icon container with better styling
-        icon_container = MDBoxLayout(
-            size_hint_x=None,
-            width=dp(50),
-            orientation='vertical',
-            adaptive_height=True
-        )
-
-        icon = MDIconButton(
-            icon=activity['icon'],
-            theme_icon_color="Custom",
-            icon_color=DesignTokens.COLORS['secondary'],
-            size_hint=(None, None),
-            size=(dp(32), dp(32)),
-            pos_hint={'center_x': 0.5, 'center_y': 0.5},
-            disabled=True  # Prevent click events on this icon
-        )
-        icon_container.add_widget(icon)
-        item_layout.add_widget(icon_container)
-
-        # Content container with improved text handling
-        content_layout = MDBoxLayout(
-            orientation='vertical',
-            spacing=DesignTokens.SPACING['xs'],
-            adaptive_height=True
-        )
-
-        title = MDLabel(
-            text=activity['title'],
-            font_style="Subtitle2",
-            theme_text_color="Custom",
-            text_color=DesignTokens.COLORS['text_primary'],
-            size_hint_y=None,
-            height=dp(24),
-            text_size=(dp(250), None),  # Better text wrapping
-            halign="left",            valign="center"
-        )
-
-        content_layout.add_widget(title)
-
-        subtitle = MDLabel(
-            text=activity['subtitle'],
-            font_style="Caption",
-            theme_text_color="Custom",
-            text_color=DesignTokens.COLORS['text_secondary'],
-            size_hint_y=None,
-            height=dp(20),
-            text_size=(dp(250), None),
-            halign="left",
-            valign="center"
-        )
-        content_layout.add_widget(subtitle)
-        item_layout.add_widget(content_layout)
-
-        # Time container with better positioning
-        time_container = MDBoxLayout(
-            size_hint_x=None,
-            width=dp(80),
-            orientation='vertical',
-            adaptive_height=True
-        )
-
-        time_label = MDLabel(
-            text=activity['time'],
-            font_style="Caption",
-            theme_text_color="Custom",
-            text_color=DesignTokens.COLORS['text_secondary'],
-            size_hint_y=None,
-            height=dp(16),
-            halign="right",            valign="center"
-        )
-
-        time_container.add_widget(time_label)
-        item_layout.add_widget(time_container)
-
-        item_container.add_widget(item_layout)
-        return item_container
 
     def build_fab(self, parent):
         """Build floating action button with improved positioning"""
@@ -720,8 +429,7 @@ class EnhancedDashboardScreen(MDScreen):
             self.manager.current = screen_name
 
     def show_navigation_drawer(self):
-        """Show navigation drawer"""
-        # Implementation for navigation drawer
+        """Show navigation drawer"""        # Implementation for navigation drawer
         pass
 
     def show_settings(self, instance=None):
@@ -730,20 +438,18 @@ class EnhancedDashboardScreen(MDScreen):
         dialog = SettingsDialog(self)
         dialog.open()
 
-    def show_recent_activity_dialog(self, instance=None):
+    def show_recent_activity(self, instance=None):
         """Show recent activity modal dialog"""
         try:
             from app.views.recent_activity_modal import show_fresh_recent_activity_modal
             # Use the new modal dialog component that ensures proper modal behavior
             dialog = show_fresh_recent_activity_modal(self.db)
             if dialog:
-                print("Recent Activity modal dialog opened successfully")
+                logger.info("Recent Activity modal dialog opened successfully")
             else:
-                print("Failed to open Recent Activity modal dialog")
+                logger.error("Failed to open Recent Activity modal dialog")
         except Exception as e:
-            print(f"Error opening Recent Activity modal dialog: {e}")
-            import logging
-            logging.error(f"Error opening Recent Activity modal dialog: {e}")
+            logger.error(f"Error opening Recent Activity modal dialog: {e}")
 
     def show_profile(self):
         """Show user profile"""
@@ -754,19 +460,6 @@ class EnhancedDashboardScreen(MDScreen):
         """Show quick add menu"""
         # Implementation for quick add menu
         pass
-
-    def show_activity_sidebar(self, instance=None):
-        """Show the recent activity modal dialog"""
-        try:
-            from app.views.recent_activity_modal import show_fresh_recent_activity_modal
-            # Use the new modal dialog component
-            dialog = show_fresh_recent_activity_modal(self.db)
-            if dialog:
-                logger.info("Recent Activity modal dialog opened successfully")
-            else:
-                logger.error("Failed to open Recent Activity modal dialog")
-        except Exception as e:
-            logger.error(f"Error opening Recent Activity modal dialog: {e}")
 
     def on_enter(self, *args):
         """Called when screen is entered"""
