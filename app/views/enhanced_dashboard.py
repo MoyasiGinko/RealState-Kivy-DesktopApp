@@ -25,6 +25,7 @@ from app.views.modern_components import (
 from app.components import BilingualLabel, LanguageSwitcher
 from app.language_manager import language_manager
 from app.database import DatabaseManager
+from app.screens.dashboard import ActivitySidebar
 
 logger = logging.getLogger(__name__)
 
@@ -38,9 +39,7 @@ class EnhancedDashboardScreen(MDScreen):
         self.db = db_manager
         self.stats_data = {}
 
-        self.build_modern_ui()
-
-        # Schedule data loading
+        self.build_modern_ui()        # Schedule data loading
         Clock.schedule_once(self.load_dashboard_data, 0.5)
 
         # Auto-refresh stats every 30 seconds
@@ -57,12 +56,12 @@ class EnhancedDashboardScreen(MDScreen):
         # Top App Bar
         self.build_app_bar(main_container)
 
-        # Scrollable content
+        # Scrollable content with improved spacing
         scroll = MDScrollView()
         content_layout = MDBoxLayout(
             orientation='vertical',
-            spacing=DesignTokens.SPACING['lg'],
-            padding=[DesignTokens.SPACING['md'], DesignTokens.SPACING['sm']],
+            spacing=DesignTokens.SPACING['xl'],  # Increased spacing between sections
+            padding=[DesignTokens.SPACING['lg'], DesignTokens.SPACING['md'], DesignTokens.SPACING['lg'], DesignTokens.SPACING['md']],
             adaptive_height=True
         )
 
@@ -106,17 +105,21 @@ class EnhancedDashboardScreen(MDScreen):
         welcome_card = ModernCard(
             md_bg_color=DesignTokens.COLORS['primary'],
             size_hint_y=None,
-            height=dp(140)
+            height=dp(180),  # Increased height for better content fitting
+            radius=DesignTokens.RADIUS['lg']
         )
 
         welcome_content = MDBoxLayout(
             orientation='horizontal',
-            spacing=DesignTokens.SPACING['md']
+            spacing=DesignTokens.SPACING['lg'],
+            padding=[DesignTokens.SPACING['lg'], DesignTokens.SPACING['md'], DesignTokens.SPACING['lg'], DesignTokens.SPACING['md']]  # Added proper padding
         )
 
-        # Welcome text
+        # Welcome text container with proper sizing
         text_layout = MDBoxLayout(
             orientation='vertical',
+            size_hint_x=0.75,  # Take up more space for text
+            spacing=DesignTokens.SPACING['sm'],
             adaptive_height=True
         )
 
@@ -126,7 +129,9 @@ class EnhancedDashboardScreen(MDScreen):
             text_color=DesignTokens.COLORS['card'],
             font_style="H4",
             bold=True,
-            adaptive_height=True
+            size_hint_y=None,
+            height=dp(40),
+            text_size=(None, None)
         )
         text_layout.add_widget(welcome_title)
 
@@ -135,30 +140,57 @@ class EnhancedDashboardScreen(MDScreen):
             theme_text_color="Custom",
             text_color=(DesignTokens.COLORS['card'][0], DesignTokens.COLORS['card'][1], DesignTokens.COLORS['card'][2], 0.8),
             font_style="Body1",
-            adaptive_height=True
+            size_hint_y=None,
+            height=dp(60),
+            text_size=(dp(300), None),  # Set text width for better wrapping
+            halign="left",
+            valign="top"
         )
         text_layout.add_widget(welcome_subtitle)
 
         welcome_content.add_widget(text_layout)
 
-        # Language switcher
+        # Language switcher container
+        lang_container = MDBoxLayout(
+            orientation='vertical',
+            size_hint_x=0.25,
+            adaptive_height=True,
+            spacing=DesignTokens.SPACING['sm']
+        )
+
+        # Add some spacing at top
+        lang_container.add_widget(
+            MDLabel(size_hint_y=None, height=dp(20))
+        )
+
         lang_switcher = LanguageSwitcher(
             size_hint=(None, None),
-            size=(dp(120), dp(40))
+            size=(dp(140), dp(45)),  # Slightly larger for better touch targets
+            pos_hint={'center_x': 0.5}
         )
-        welcome_content.add_widget(lang_switcher)
+        lang_container.add_widget(lang_switcher)
 
+        welcome_content.add_widget(lang_container)
         welcome_card.add_widget(welcome_content)
         parent.add_widget(welcome_card)
 
     def build_stats_section(self, parent):
         """Build enhanced statistics section"""
+        # Section container with proper spacing
+        stats_container = MDBoxLayout(
+            orientation='vertical',
+            size_hint_y=None,
+            height=dp(300),  # Increased height for better stats display
+            spacing=DesignTokens.SPACING['md']
+        )
+
         # Section header
         stats_header = MDBoxLayout(
             orientation='horizontal',
             size_hint_y=None,
-            height=dp(40),
-            spacing=DesignTokens.SPACING['sm']
+            height=dp(50),  # Increased header height
+            spacing=DesignTokens.SPACING['sm'],
+            padding=[0, DesignTokens.SPACING['sm']]
         )
 
         stats_title = MDLabel(
@@ -167,7 +199,8 @@ class EnhancedDashboardScreen(MDScreen):
             text_color=DesignTokens.COLORS['text_primary'],
             font_style="H5",
             bold=True,
-            adaptive_height=True
+            size_hint_y=None,
+            height=dp(30)
         )
         stats_header.add_widget(stats_title)
 
@@ -175,26 +208,44 @@ class EnhancedDashboardScreen(MDScreen):
             icon="refresh",
             theme_icon_color="Custom",
             icon_color=DesignTokens.COLORS['primary'],
+            size_hint=(None, None),
+            size=(dp(40), dp(40)),
             on_release=lambda x: self.refresh_stats()
         )
-
         stats_header.add_widget(refresh_btn)
 
-        parent.add_widget(stats_header)
+        stats_container.add_widget(stats_header)
 
-        # Stats grid
+        # Stats grid with improved sizing
         self.stats_grid = MDGridLayout(
             cols=2,  # Responsive: 2 cols on mobile, 4 on desktop
-            spacing=DesignTokens.SPACING['md'],
-            size_hint_y=None,
-            height=dp(200),
-            adaptive_height=True
+            spacing=DesignTokens.SPACING['lg'],
+            size_hint_y=None,            height=dp(240),  # Increased height for better card display
+            padding=[DesignTokens.SPACING['sm'], 0]
         )
-        parent.add_widget(self.stats_grid)
+
+        stats_container.add_widget(self.stats_grid)
+        parent.add_widget(stats_container)
 
     def build_quick_actions_section(self, parent):
         """Build quick actions navigation section"""
-        # Section header
+        # Section container with proper spacing
+        actions_container = MDBoxLayout(
+            orientation='vertical',
+            size_hint_y=None,
+            spacing=DesignTokens.SPACING['md'],
+            adaptive_height=True
+        )
+
+        # Section header with improved styling
+        actions_header = MDBoxLayout(
+            orientation='horizontal',
+            size_hint_y=None,
+            height=dp(50),
+            spacing=DesignTokens.SPACING['sm'],
+            padding=[0, DesignTokens.SPACING['sm']]
+        )
+
         actions_title = MDLabel(
             text=language_manager.get_text('quick_actions'),
             theme_text_color="Custom",
@@ -202,19 +253,21 @@ class EnhancedDashboardScreen(MDScreen):
             font_style="H5",
             bold=True,
             size_hint_y=None,
-            height=dp(40)
+            height=dp(30)
         )
-        parent.add_widget(actions_title)
-
-        # Actions grid
+        actions_header.add_widget(actions_title)
+        actions_container.add_widget(actions_header)        # Actions grid with improved layout
         actions_grid = MDGridLayout(
             cols=1,  # Stack vertically for better mobile experience
-            spacing=DesignTokens.SPACING['md'],
-            adaptive_height=True
+            spacing=DesignTokens.SPACING['lg'],  # Increased spacing between cards
+            size_hint_y=None,
+            adaptive_height=True,
+            padding=[DesignTokens.SPACING['sm'], 0]
         )
 
         # Navigation cards
-        navigation_items = [            {
+        navigation_items = [
+            {
                 'title': language_manager.get_text('owners_management'),
                 'subtitle': language_manager.get_text('manage_property_owners'),
                 'icon': 'account-group',
@@ -232,8 +285,7 @@ class EnhancedDashboardScreen(MDScreen):
                 'title': language_manager.get_text('search_reports'),
                 'subtitle': language_manager.get_text('search_and_generate_reports'),
                 'icon': 'file-chart',
-                'action': lambda: self.navigate_to('enhanced_search'),
-                'color_scheme': 'warning'
+                'action': lambda: self.navigate_to('enhanced_search'),                'color_scheme': 'warning'
             },
             {
                 'title': language_manager.get_text('settings'),
@@ -252,19 +304,30 @@ class EnhancedDashboardScreen(MDScreen):
                 action=item['action'],
                 color_scheme=item['color_scheme'],
                 size_hint_y=None,
-                height=dp(80)
+                height=dp(90)  # Increased height for better visual balance
             )
             actions_grid.add_widget(nav_card)
 
-        parent.add_widget(actions_grid)
+        actions_container.add_widget(actions_grid)
+        parent.add_widget(actions_container)
 
     def build_recent_activity_section(self, parent):
-        """Build recent activity section"""
-        activity_title = MDBoxLayout(
+        """Build recent activity section as a clickable card button"""
+        # Activity section container with proper spacing
+        activity_container = MDBoxLayout(
+            orientation='vertical',
+            size_hint_y=None,
+            spacing=DesignTokens.SPACING['md'],
+            adaptive_height=True
+        )
+
+        # Activity header with improved styling
+        activity_header = MDBoxLayout(
             orientation='horizontal',
             size_hint_y=None,
-            height=dp(40),
-            spacing=dp(10)
+            height=dp(50),
+            spacing=DesignTokens.SPACING['sm'],
+            padding=[0, DesignTokens.SPACING['sm']]
         )
 
         title_label = MDLabel(
@@ -272,36 +335,97 @@ class EnhancedDashboardScreen(MDScreen):
             theme_text_color="Custom",
             text_color=DesignTokens.COLORS['text_primary'],
             font_style="H5",
-            bold=True
+            bold=True,
+            size_hint_y=None,
+            height=dp(30)
         )
-        activity_title.add_widget(title_label)
+        activity_header.add_widget(title_label)
+        activity_container.add_widget(activity_header)
 
-        # View all button
-        view_all_btn = MDIconButton(
-            icon="arrow-right",
-            theme_icon_color="Custom",
-            icon_color=DesignTokens.COLORS['secondary'],
-            on_release=self.show_recent_activity_dialog
-        )
-        activity_title.add_widget(view_all_btn)
-
-        parent.add_widget(activity_title)
-
-        # Activity card with actual data
+        # Clickable activity card button
         self.activity_card = ModernCard(
             size_hint_y=None,
-            height=dp(200)
+            height=dp(120),  # Reduced height for button-like appearance
+            radius=DesignTokens.RADIUS['lg'],
+            ripple_behavior=True,
+            on_release=self.show_activity_sidebar
         )
 
-        self.activity_content = MDBoxLayout(
+        # Card content with icon and text
+        card_content = MDBoxLayout(
+            orientation='horizontal',
+            spacing=DesignTokens.SPACING['lg'],
+            padding=[DesignTokens.SPACING['lg'], DesignTokens.SPACING['md']],
+            adaptive_height=True
+        )
+
+        # Icon container
+        icon_container = MDBoxLayout(
+            size_hint_x=None,
+            width=dp(60),
             orientation='vertical',
-            padding=dp(15),
-            spacing=dp(10)
+            adaptive_height=True
         )
 
-        self.load_recent_activities()
-        self.activity_card.add_widget(self.activity_content)
-        parent.add_widget(self.activity_card)
+        activity_icon = MDIconButton(
+            icon="history",
+            theme_icon_color="Custom",
+            icon_color=DesignTokens.COLORS['primary'],
+            size_hint=(None, None),
+            size=(dp(48), dp(48)),
+            pos_hint={'center_x': 0.5, 'center_y': 0.5},
+            disabled=True
+        )
+        icon_container.add_widget(activity_icon)
+        card_content.add_widget(icon_container)
+
+        # Text content
+        text_container = MDBoxLayout(
+            orientation='vertical',
+            spacing=DesignTokens.SPACING['xs'],
+            adaptive_height=True
+        )
+
+        main_text = MDLabel(
+            text=language_manager.get_text('view_recent_activity'),
+            theme_text_color="Custom",
+            text_color=DesignTokens.COLORS['text_primary'],
+            font_style="Subtitle1",
+            bold=True,
+            size_hint_y=None,
+            height=dp(28),
+            halign="left",
+            valign="center"
+        )
+        text_container.add_widget(main_text)
+
+        subtitle_text = MDLabel(
+            text=language_manager.get_text('click_to_view_all_activities'),
+            theme_text_color="Custom",
+            text_color=DesignTokens.COLORS['text_secondary'],
+            font_style="Body2",
+            size_hint_y=None,
+            height=dp(20),
+            halign="left",
+            valign="center"
+        )
+        text_container.add_widget(subtitle_text)
+        card_content.add_widget(text_container)
+
+        # Arrow icon
+        arrow_icon = MDIconButton(
+            icon="chevron-right",
+            theme_icon_color="Custom",
+            icon_color=DesignTokens.COLORS['secondary'],
+            size_hint=(None, None),
+            size=(dp(32), dp(32)),
+            disabled=True
+        )
+        card_content.add_widget(arrow_icon)
+
+        self.activity_card.add_widget(card_content)
+        activity_container.add_widget(self.activity_card)
+        parent.add_widget(activity_container)
 
     def load_recent_activities(self):
         """Load and display recent activities"""
@@ -344,7 +468,9 @@ class EnhancedDashboardScreen(MDScreen):
 
         try:
             # Sample activities - you can expand this based on your database schema
-            activities = []            # Get recent owners
+            activities = []
+
+            # Get recent owners
             recent_owners = self.db.get_recent_owners(limit=2)
             for owner in recent_owners:
                 # Make sure to access the correct indices based on the query
@@ -358,7 +484,9 @@ class EnhancedDashboardScreen(MDScreen):
                     'subtitle': f"Phone: {owner_phone}",
                     'time': '2 hours ago',  # You can calculate this from created_at if available
                     'icon': 'account-plus'
-                })            # Get recent properties
+                })
+
+            # Get recent properties
             recent_properties = self.db.get_recent_properties(limit=2)
             for prop in recent_properties:
                 # The properties are returned as dictionaries
@@ -380,26 +508,48 @@ class EnhancedDashboardScreen(MDScreen):
             return []
 
     def create_activity_item(self, activity):
-        """Create an activity item widget"""
+        """Create an activity item widget with improved styling"""
+        # Main container with better spacing and visual hierarchy
+        item_container = ModernCard(
+            size_hint_y=None,
+            height=dp(70),  # Increased height for better content display
+            radius=DesignTokens.RADIUS['sm'],
+            md_bg_color=DesignTokens.COLORS['surface'],
+            elevation=1
+        )
+
         item_layout = MDBoxLayout(
             orientation='horizontal',
-            size_hint_y=None,
-            height=dp(50),
-            spacing=dp(15),
-            padding=[0, dp(5)]
-        )        # Icon
+            spacing=DesignTokens.SPACING['md'],
+            padding=[DesignTokens.SPACING['md'], DesignTokens.SPACING['sm']],
+            adaptive_height=True
+        )
+
+        # Icon container with better styling
+        icon_container = MDBoxLayout(
+            size_hint_x=None,
+            width=dp(50),
+            orientation='vertical',
+            adaptive_height=True
+        )
+
         icon = MDIconButton(
             icon=activity['icon'],
-            theme_text_color="Custom",
-            text_color=DesignTokens.COLORS['secondary'],
-            size_hint_x=None,
-            width=dp(30),
-            font_size=dp(24)
+            theme_icon_color="Custom",
+            icon_color=DesignTokens.COLORS['secondary'],
+            size_hint=(None, None),
+            size=(dp(32), dp(32)),
+            pos_hint={'center_x': 0.5, 'center_y': 0.5},
+            disabled=True  # Prevent click events on this icon
         )
-        item_layout.add_widget(icon)# Content
+        icon_container.add_widget(icon)
+        item_layout.add_widget(icon_container)
+
+        # Content container with improved text handling
         content_layout = MDBoxLayout(
             orientation='vertical',
-            spacing=dp(2)
+            spacing=DesignTokens.SPACING['xs'],
+            adaptive_height=True
         )
 
         title = MDLabel(
@@ -408,8 +558,11 @@ class EnhancedDashboardScreen(MDScreen):
             theme_text_color="Custom",
             text_color=DesignTokens.COLORS['text_primary'],
             size_hint_y=None,
-            height=dp(20)
+            height=dp(24),
+            text_size=(dp(250), None),  # Better text wrapping
+            halign="left",            valign="center"
         )
+
         content_layout.add_widget(title)
 
         subtitle = MDLabel(
@@ -418,34 +571,49 @@ class EnhancedDashboardScreen(MDScreen):
             theme_text_color="Custom",
             text_color=DesignTokens.COLORS['text_secondary'],
             size_hint_y=None,
-            height=dp(16)
+            height=dp(20),
+            text_size=(dp(250), None),
+            halign="left",
+            valign="center"
         )
         content_layout.add_widget(subtitle)
-
         item_layout.add_widget(content_layout)
 
-        # Time
+        # Time container with better positioning
+        time_container = MDBoxLayout(
+            size_hint_x=None,
+            width=dp(80),
+            orientation='vertical',
+            adaptive_height=True
+        )
+
         time_label = MDLabel(
             text=activity['time'],
             font_style="Caption",
             theme_text_color="Custom",
             text_color=DesignTokens.COLORS['text_secondary'],
-            size_hint_x=None,
-            width=dp(80),
-            halign="right"
+            size_hint_y=None,
+            height=dp(16),
+            halign="right",            valign="center"
         )
-        item_layout.add_widget(time_label)
 
-        return item_layout
+        time_container.add_widget(time_label)
+        item_layout.add_widget(time_container)
+
+        item_container.add_widget(item_layout)
+        return item_container
 
     def build_fab(self, parent):
-        """Build floating action button"""
+        """Build floating action button with improved positioning"""
         fab = MDFloatingActionButton(
             icon="plus",
             md_bg_color=DesignTokens.COLORS['secondary'],
             theme_icon_color="Custom",
-            icon_color=DesignTokens.COLORS['text_primary'],
-            pos_hint={'center_x': 0.9, 'center_y': 0.1},
+            icon_color=DesignTokens.COLORS['card'],
+            pos_hint={'center_x': 0.85, 'center_y': 0.12},  # Better positioning
+            size_hint=(None, None),
+            size=(dp(56), dp(56)),  # Standard FAB size
+            elevation=6,
             on_release=self.show_quick_add_menu
         )
         parent.add_widget(fab)
@@ -502,29 +670,26 @@ class EnhancedDashboardScreen(MDScreen):
             {
                 'title': language_manager.get_text('occupied_properties'),
                 'value': str(self.stats_data.get('occupied_properties', 0)),
-                'icon': 'home',
-                'color_scheme': 'error'
+                'icon': 'home',                'color_scheme': 'error'
             }
         ]
 
         for config in stats_config:
-          stat_card = EnhancedStatsCard(
-              title=config['title'],
-              value=config['value'],
-              icon=config['icon'],
-              color_scheme=config['color_scheme'],
-              trend=config.get('trend'),
-              size_hint_y=None,
-              height=dp(100)
-          )
-          stat_card.opacity = 0
-          self.stats_grid.add_widget(stat_card)
-          anim = Animation(opacity=1, duration=0.3)
-          anim.start(stat_card)
-
-        # Animate in
-        anim = Animation(opacity=1, duration=0.3)
-        anim.start(stat_card)
+            stat_card = EnhancedStatsCard(
+                title=config['title'],
+                value=config['value'],
+                icon=config['icon'],
+                color_scheme=config['color_scheme'],
+                trend=config.get('trend'),
+                size_hint_y=None,
+                height=dp(110)  # Increased height for better visual balance
+            )
+            stat_card.opacity = 0
+            self.stats_grid.add_widget(stat_card)            # Animate each card with staggered timing
+            Clock.schedule_once(
+                lambda dt, card=stat_card: Animation(opacity=1, duration=0.3).start(card),
+                len(self.stats_grid.children) * 0.1
+            )
 
     def refresh_stats(self, dt=None):
         """Refresh statistics"""
@@ -561,6 +726,28 @@ class EnhancedDashboardScreen(MDScreen):
         """Show quick add menu"""
         # Implementation for quick add menu
         pass
+
+    def show_activity_sidebar(self, instance=None):
+        """Show the activity sidebar when the card button is clicked"""
+        if hasattr(self, 'sidebar') and self.sidebar:
+            return  # Already showing
+
+        try:
+            # Create sidebar
+            self.sidebar = ActivitySidebar(self.db)
+
+            # Position sidebar off-screen initially
+            self.sidebar.x = self.width
+
+            # Add to this screen directly
+            self.add_widget(self.sidebar)
+
+            # Animate in
+            anim = Animation(x=self.width - self.sidebar.width, duration=0.3)
+            anim.start(self.sidebar)
+
+        except Exception as e:
+            logger.error(f"Error showing activity sidebar: {e}")
 
     def on_enter(self, *args):
         """Called when screen is entered"""

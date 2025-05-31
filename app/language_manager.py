@@ -147,6 +147,8 @@ class LanguageManager:
 
                 # New Dashboard Elements
                 'no_recent_activity': 'لا يوجد نشاط حديث',
+                'view_recent_activity': 'عرض النشاط الأخير',
+                'click_to_view_all_activities': 'اضغط لعرض جميع الأنشطة',
                 'add_new_owner': 'إضافة مالك جديد',
                 'add_new_property': 'إضافة عقار جديد',
                 'view_all_properties': 'عرض جميع العقارات',
@@ -388,10 +390,12 @@ class LanguageManager:
                 'property_no_address': 'Property without address',
                 'owner': 'Owner',
                 'database_status': 'Database Status',
-                'active': 'Active',
-
-                # New Dashboard Elements
+                'active': 'Active',                # New Dashboard Elements
                 'no_recent_activity': 'No recent activity',
+                'view_recent_activity': 'View Recent Activity',
+                'click_to_view_all_activities': 'Click to view all activities',
+                'view_recent_activity': 'View Recent Activity',
+                'click_to_view_all_activities': 'Click to view all activities',
                 'add_new_owner': 'Add New Owner',
                 'add_new_property': 'Add New Property',
                 'view_all_properties': 'View All Properties',
