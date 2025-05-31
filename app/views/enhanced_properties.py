@@ -190,23 +190,29 @@ class EnhancedPropertiesScreen(MDScreen):
         return card
 
     def build_compact_search_section(self, parent_layout):
-        """Build compact search and filter section"""
+        """Build a visually appealing, well-spaced search and filter section"""
         search_card = ModernCard(
             size_hint_y=None,
-            height=dp(60),
-            elevation=1
+            height=dp(84),  # Increased height for better spacing
+            elevation=2,
+            padding=[dp(16), dp(12)]
         )
 
         search_layout = MDBoxLayout(
             orientation='horizontal',
-            spacing=dp(12),
-            padding=dp(12)
-        )        # Search field
+            spacing=dp(20),  # More spacing between search and filters
+            padding=[dp(8), dp(8), dp(8), dp(8)],
+            size_hint_y=None,
+            height=dp(60)
+        )
+
+        # Search field
         self.search_field = MDTextField(
             hint_text="Search properties...",
             mode="line",
-            size_hint_x=0.6,
-            height=dp(40)
+            size_hint_x=0.62,
+            height=dp(48),
+            padding=[dp(12), 0, dp(12), 0]
         )
         self.search_field.bind(text=self.on_search_text_change)
         search_layout.add_widget(self.search_field)
@@ -214,8 +220,11 @@ class EnhancedPropertiesScreen(MDScreen):
         # Filter buttons container
         filter_layout = MDBoxLayout(
             orientation='horizontal',
-            spacing=dp(8),
-            size_hint_x=0.4
+            spacing=dp(16),  # More space between filter buttons
+            size_hint_x=0.38,
+            size_hint_y=None,
+            height=dp(48),
+            padding=[0, 0, 0, 0]
         )
 
         # Status filter
@@ -223,7 +232,8 @@ class EnhancedPropertiesScreen(MDScreen):
             text="Status",
             md_bg_color=DesignTokens.COLORS['primary'],
             size_hint_x=0.5,
-            height=dp(36)
+            height=dp(44),
+            padding=[dp(8), 0]
         )
         self.status_filter_button.bind(on_release=self.show_status_filter_menu)
         filter_layout.add_widget(self.status_filter_button)
@@ -233,7 +243,8 @@ class EnhancedPropertiesScreen(MDScreen):
             text="Type",
             md_bg_color=DesignTokens.COLORS['secondary'],
             size_hint_x=0.5,
-            height=dp(36)
+            height=dp(44),
+            padding=[dp(8), 0]
         )
         self.type_filter_button.bind(on_release=self.show_type_filter_menu)
         filter_layout.add_widget(self.type_filter_button)
