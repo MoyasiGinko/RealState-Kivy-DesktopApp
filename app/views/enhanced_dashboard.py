@@ -83,14 +83,15 @@ class EnhancedDashboardScreen(MDScreen):
             title="Real Estate Dashboard",
             md_bg_color=DesignTokens.COLORS['primary'],
             specific_text_color=DesignTokens.COLORS['card'],
-            left_action_items=[["menu", lambda x: self.show_navigation_drawer()]],
+            left_action_items=[["home", lambda x: self.navigate_to_welcome()]],
             right_action_items=[
                 ["refresh", lambda x: self.refresh_stats()],
-                ["cog", lambda x: self.show_settings()],
-                ["account-circle", lambda x: self.show_profile()]
+                ["cog", lambda x: self.show_settings()]
+                # Removed the profile button (["account-circle", ...])
             ]
         )
         parent.add_widget(app_bar)
+
 
     def build_welcome_section(self, parent):
         """Build welcome hero section with improved spacing and responsiveness"""
@@ -394,18 +395,19 @@ class EnhancedDashboardScreen(MDScreen):
                 'value': str(self.stats_data.get('available_properties', 0)),
                 'icon': 'home-outline',
                 'color_scheme': 'warning'
-            },
-            {
+            },            {
                 'title': language_manager.get_text('occupied_properties'),
                 'value': str(self.stats_data.get('occupied_properties', 0)),
-                'icon': 'home',                'color_scheme': 'error'
+                'icon': 'home',
+                'color_scheme': 'error'
             }
         ]
 
         for config in stats_config:
             stat_card = EnhancedStatsCard(
                 title=config['title'],
-                value=config['value'],                icon=config['icon'],
+                value=config['value'],
+                icon=config['icon'],
                 color_scheme=config['color_scheme'],
                 trend=config.get('trend'),
                 size_hint_y=None,
@@ -413,7 +415,9 @@ class EnhancedDashboardScreen(MDScreen):
             )
 
             stat_card.opacity = 0
-            self.stats_grid.add_widget(stat_card)            # Animate each card with staggered timing
+            self.stats_grid.add_widget(stat_card)
+
+            # Animate each card with staggered timing
             Clock.schedule_once(
                 lambda dt, card=stat_card: Animation(opacity=1, duration=0.3).start(card),
                 len(self.stats_grid.children) * 0.1
@@ -427,6 +431,23 @@ class EnhancedDashboardScreen(MDScreen):
         """Navigate to specific screen"""
         if hasattr(self, 'manager') and self.manager:
             self.manager.current = screen_name
+
+    def navigate_to_welcome(self, instance=None):
+        """Navigate to welcome/home screen"""
+        if hasattr(self, 'manager') and self.manager:
+            # Navigate to the welcome screen
+            self.manager.current = 'welcome'
+
+    def scroll_to_top(self):
+        """Scroll the dashboard to the top to show welcome section"""
+        try:
+            # Find the scroll view in the widget tree
+            for widget in self.walk():
+                if isinstance(widget, MDScrollView):
+                    widget.scroll_y = 1  # Scroll to top
+                    break
+        except Exception as e:
+            logger.error(f"Error scrolling to top: {e}")
 
     def show_navigation_drawer(self):
         """Show navigation drawer"""        # Implementation for navigation drawer
