@@ -73,6 +73,10 @@ class EnhancedPropertiesScreen(MDScreen):
             padding=[dp(16), dp(8)],
             size_hint_y=None
         )
+
+        # Top app bar
+        self.build_top_bar(main_layout)
+
         main_layout.bind(minimum_height=main_layout.setter('height'))
 
         # Top section: Header stats (responsive)
@@ -89,6 +93,22 @@ class EnhancedPropertiesScreen(MDScreen):
 
         main_scroll.add_widget(main_layout)
         self.add_widget(main_scroll)
+
+
+
+    def build_top_bar(self, parent):
+            """Build the top navigation bar"""
+            self.toolbar = MDTopAppBar(
+                title=language_manager.get_text('manage_property_owners'),
+                left_action_items=[["arrow-left", lambda x: self.go_back()]],
+                right_action_items=[
+                    ["refresh", lambda x: self.refresh_data()],
+                    ["magnify", lambda x: self.toggle_search()]
+                ],
+                md_bg_color=DesignTokens.COLORS['primary'],
+                specific_text_color=DesignTokens.COLORS['text_primary']
+            )
+            parent.add_widget(self.toolbar)
 
     def build_responsive_header(self, parent_layout):
         """Build responsive header with statistics cards"""
