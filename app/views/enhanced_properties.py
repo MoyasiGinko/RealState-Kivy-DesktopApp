@@ -25,7 +25,10 @@ from kivy.animation import Animation
 import logging
 
 from app.views.modern_components import (
-    ModernCard, EnhancedStatsCard, DesignTokens
+    DesignTokens, ModernCard, StatsCard, ModernTextField, ModernButton,
+    ModernDataTable, PropertyCard, OwnerCard, ModernDialog, ModernSnackbar,
+    LoadingSpinner, EmptyState, EnhancedStatsCard, ModernSearchBar,
+    ModernActionBar, ModernListItem, ModernGridView, ModernFormCard
 )
 from app.database import DatabaseManager
 from app.language_manager import language_manager
@@ -44,840 +47,540 @@ class EnhancedPropertiesScreen(MDScreen):
         self.properties_data = []
         self.owners_data = []
 
+        # UI State
+        self.is_loading = False
+        self.current_view = 'grid'  # 'grid' or 'table'
+        self.sort_field = 'location'
+        self.sort_order = 'asc'
+        self.selected_properties = []
+        self.filtered_properties = []
+
         self.build_ui()
         self.load_data()
 
     def build_ui(self):
-        """Build the enhanced properties management UI"""
-        # Main layout
-        main_layout = MDBoxLayout(orientation='vertical')
-
-        # Top app bar
-        self.build_top_bar(main_layout)
-
-        # Content area
-        content_scroll = MDScrollView()
-        content_layout = MDBoxLayout(
+        """Build the enhanced properties management UI with modern components"""
+        # Main layout with modern spacing
+        main_layout = MDBoxLayout(
             orientation='vertical',
-            padding=dp(20),
-            spacing=dp(20),
-            adaptive_height=True
+            spacing=DesignTokens.SPACING['medium'],
+            padding=DesignTokens.SPACING['large']
         )
 
-        # Statistics cards
-        self.build_stats_section(content_layout)
+        # Header with stats
+        self.build_header(main_layout)
 
-        # Main content with form and list
-        self.build_main_content(content_layout)
+        # Search and filters
+        self.build_search_section(main_layout)
 
-        content_scroll.add_widget(content_layout)
-        main_layout.add_widget(content_scroll)
+        # Action bar
+        self.build_action_bar(main_layout)
 
-        # Floating action button
-        self.build_fab(main_layout)
+        # Content area (form + properties list/grid)
+        content_layout = MDBoxLayout(
+            orientation='horizontal',
+            spacing=DesignTokens.SPACING['large']
+        )
 
+        # Left panel - Property form
+        self.build_form_panel(content_layout)
+
+        # Right panel - Properties display
+        self.build_properties_panel(content_layout)
+
+        main_layout.add_widget(content_layout)
         self.add_widget(main_layout)
 
-    def build_top_bar(self, parent):
-        """Build the top navigation bar"""
-        self.toolbar = MDTopAppBar(
-            title=language_manager.get_text('manage_properties'),
-            left_action_items=[["arrow-left", lambda x: self.go_back()]],
-            right_action_items=[
-                ["refresh", lambda x: self.refresh_data()],
-                ["magnify", lambda x: self.toggle_search()],
-                ["camera", lambda x: self.manage_photos()]
-            ],
-            md_bg_color=DesignTokens.COLORS['primary'],
-            specific_text_color=DesignTokens.COLORS['text_primary']
-        )
-        parent.add_widget(self.toolbar)
-
-    def build_stats_section(self, parent):
-        """Build statistics section"""
-        stats_title = MDLabel(
-            text=language_manager.get_text('properties_statistics'),
-            theme_text_color="Custom",
-            text_color=DesignTokens.COLORS['text_primary'],
-            font_style="H5",
-            bold=True,
-            size_hint_y=None,
-            height=dp(40)
-        )
-        parent.add_widget(stats_title)
-
-        # Stats grid
-        self.stats_grid = MDGridLayout(
-            cols=3,
-            adaptive_height=True,
-            spacing=dp(15),
-            size_hint_y=None
-        )
-
-        self.update_stats_display()
-        parent.add_widget(self.stats_grid)
-
-    def build_main_content(self, parent):
-        """Build main content with form and list"""
-        # Content card
-        content_card = ModernCard(
-            orientation='horizontal',
-            adaptive_height=True,
-            padding=dp(20),
-            spacing=dp(20)
-        )
-
-        # Left side - Form
-        self.build_form_section(content_card)        # Divider
-        from kivy.uix.widget import Widget
-        divider = Widget(
-            size_hint_x=None,
-            width=dp(1)
-        )
-        content_card.add_widget(divider)
-
-        # Right side - Properties list
-        self.build_list_section(content_card)
-
-        parent.add_widget(content_card)
-
-    def build_form_section(self, parent):
-        """Build the property form section"""
-        form_scroll = MDScrollView(size_hint_x=0.45)
-        form_layout = MDBoxLayout(
-            orientation='vertical',
-            spacing=dp(15),
-            adaptive_height=True,
-            padding=[0, 0, dp(10), 0]
-        )
-
-        # Form title
-        form_title = MDLabel(
-            text=language_manager.get_text('property_information'),
-            theme_text_color="Custom",
-            text_color=DesignTokens.COLORS['primary'],
-            font_style="H6",
-            bold=True,
-            size_hint_y=None,
-            height=dp(40)
-        )
-        form_layout.add_widget(form_title)
-
-        # Basic Information Section
-        self.build_basic_info_section(form_layout)
-
-        # Property Details Section
-        self.build_details_section(form_layout)
-
-        # Location Section
-        self.build_location_section(form_layout)
-
-        # Action buttons
-        self.build_action_buttons(form_layout)
-
-        form_scroll.add_widget(form_layout)
-        parent.add_widget(form_scroll)
-
-    def build_basic_info_section(self, parent):
-        """Build basic information section"""
-        # Section header
-        basic_header = MDLabel(
-            text=language_manager.get_text('basic_information'),
-            theme_text_color="Custom",
-            text_color=DesignTokens.COLORS['secondary'],
-            font_style="Subtitle1",
-            bold=True,
-            size_hint_y=None,
-            height=dp(30)
-        )
-        parent.add_widget(basic_header)
-
-        # Company code (read-only)
-        self.company_code_field = MDTextField(
-            hint_text=language_manager.get_text('company_code'),
-            readonly=True,
-            icon_left="identifier",
-            size_hint_y=None,
-            height=dp(48)
-        )
-        parent.add_widget(self.company_code_field)
-
-        # Real estate code
-        self.realstate_code_field = MDTextField(
-            hint_text=language_manager.get_text('realstate_code'),
-            icon_left="home-outline",
-            size_hint_y=None,
-            height=dp(48)
-        )
-        parent.add_widget(self.realstate_code_field)
-
-        # Property address
-        self.address_field = MDTextField(
-            hint_text=language_manager.get_text('property_address'),
-            required=True,
-            icon_left="map-marker",
-            size_hint_y=None,
-            height=dp(48)
-        )
-        parent.add_widget(self.address_field)
-
-        # Property type dropdown (you can replace with actual dropdown)
-        self.property_type_field = MDTextField(
-            hint_text=language_manager.get_text('property_type'),
-            icon_left="home-variant",
-            size_hint_y=None,
-            height=dp(48)
-        )
-        parent.add_widget(self.property_type_field)
-
-    def build_details_section(self, parent):
-        """Build property details section"""
-        # Section header
-        details_header = MDLabel(
-            text=language_manager.get_text('property_details'),
-            theme_text_color="Custom",
-            text_color=DesignTokens.COLORS['secondary'],
-            font_style="Subtitle1",
-            bold=True,
-            size_hint_y=None,
-            height=dp(30)
-        )
-        parent.add_widget(details_header)
-
-        # Two-column layout for details
-        details_grid = MDGridLayout(
-            cols=2,
-            adaptive_height=True,
-            spacing=dp(10)
-        )
-
-        # Area
-        self.area_field = MDTextField(
-            hint_text=language_manager.get_text('area'),
-            icon_left="ruler-square",
-            input_type="number",
-            size_hint_y=None,
-            height=dp(48)
-        )
-        details_grid.add_widget(self.area_field)
-
-        # Year make
-        self.year_make_field = MDTextField(
-            hint_text=language_manager.get_text('year_make'),
-            icon_left="calendar",
-            input_type="number",
-            size_hint_y=None,
-            height=dp(48)
-        )
-        details_grid.add_widget(self.year_make_field)
-
-        # Bedrooms
-        self.bedrooms_field = MDTextField(
-            hint_text=language_manager.get_text('bedrooms'),
-            icon_left="bed",
-            input_type="number",
-            size_hint_y=None,
-            height=dp(48)
-        )
-        details_grid.add_widget(self.bedrooms_field)
-
-        # Bathrooms
-        self.bathrooms_field = MDTextField(
-            hint_text=language_manager.get_text('bathrooms'),
-            icon_left="shower",
-            input_type="number",
-            size_hint_y=None,
-            height=dp(48)
-        )
-        details_grid.add_widget(self.bathrooms_field)
-
-        parent.add_widget(details_grid)
-
-        # Description
-        self.description_field = MDTextField(
-            hint_text=language_manager.get_text('description'),
-            multiline=True,
-            icon_left="text",
-            size_hint_y=None,
-            height=dp(96)
-        )
-        parent.add_widget(self.description_field)
-
-    def build_location_section(self, parent):
-        """Build location section"""
-        # Section header
-        location_header = MDLabel(
-            text=language_manager.get_text('location_information'),
-            theme_text_color="Custom",
-            text_color=DesignTokens.COLORS['secondary'],
-            font_style="Subtitle1",
-            bold=True,
-            size_hint_y=None,
-            height=dp(30)
-        )
-        parent.add_widget(location_header)
-
-        # Owner selection
-        self.owner_field = MDTextField(
-            hint_text=language_manager.get_text('select_owner'),
-            icon_left="account",
-            size_hint_y=None,
-            height=dp(48),
-            readonly=True,
-            on_focus=self.show_owner_selection
-        )
-        parent.add_widget(self.owner_field)
-
-        # Province and region in grid
-        location_grid = MDGridLayout(
-            cols=2,
-            adaptive_height=True,
-            spacing=dp(10)
-        )
-
-        self.province_field = MDTextField(
-            hint_text=language_manager.get_text('province'),
-            icon_left="map",
-            size_hint_y=None,
-            height=dp(48)
-        )
-        location_grid.add_widget(self.province_field)
-
-        self.region_field = MDTextField(
-            hint_text=language_manager.get_text('region'),
-            icon_left="map-marker-outline",
-            size_hint_y=None,
-            height=dp(48)
-        )
-        location_grid.add_widget(self.region_field)
-
-        parent.add_widget(location_grid)
-
-    def build_action_buttons(self, parent):
-        """Build action buttons for the form"""
-        buttons_layout = MDBoxLayout(
-            orientation='vertical',
-            spacing=dp(10),
-            size_hint_y=None,
-            height=dp(140)
-        )
-
-        # First row
-        row1 = MDBoxLayout(
-            orientation='horizontal',
-            spacing=dp(10),
-            size_hint_y=None,
-            height=dp(48)
-        )
-
-        # Save button
-        self.save_btn = MDRaisedButton(
-            text=language_manager.get_text('save'),
-            icon="content-save",
-            md_bg_color=DesignTokens.COLORS['success'],
-            on_release=self.save_property
-        )
-        row1.add_widget(self.save_btn)
-
-        # Update button
-        self.update_btn = MDFlatButton(
-            text=language_manager.get_text('update'),
-            icon="pencil",
-            disabled=True,
-            on_release=self.update_property
-        )
-        row1.add_widget(self.update_btn)
-
-        buttons_layout.add_widget(row1)
-
-        # Second row
-        row2 = MDBoxLayout(
-            orientation='horizontal',
-            spacing=dp(10),
-            size_hint_y=None,
-            height=dp(48)
-        )
-
-        # Delete button
-        self.delete_btn = MDFlatButton(
-            text=language_manager.get_text('delete'),
-            icon="delete",
-            theme_text_color="Custom",
-            text_color=DesignTokens.COLORS['error'],
-            disabled=True,
-            on_release=self.confirm_delete_property
-        )
-        row2.add_widget(self.delete_btn)
-
-        # Clear button
-        clear_btn = MDFlatButton(
-            text=language_manager.get_text('clear'),
-            icon="refresh",
-            on_release=self.clear_form
-        )
-        row2.add_widget(clear_btn)
-
-        buttons_layout.add_widget(row2)
-
-        # Third row - Photos button
-        photos_btn = MDRaisedButton(
-            text=language_manager.get_text('manage_photos'),
-            icon="camera",
-            md_bg_color=DesignTokens.COLORS['secondary'],
-            size_hint_y=None,
-            height=dp(48),
-            on_release=self.manage_photos
-        )
-        buttons_layout.add_widget(photos_btn)
-
-        parent.add_widget(buttons_layout)
-
-    def build_list_section(self, parent):
-        """Build the properties list section"""
-        list_layout = MDBoxLayout(
-            orientation='vertical',
-            size_hint_x=0.55,
-            spacing=dp(15)
-        )
-
-        # List header with search and filters
-        self.build_list_header(list_layout)
-
-        # Properties list
-        self.properties_list_scroll = MDScrollView()
-        self.properties_list = MDList()
-        self.properties_list_scroll.add_widget(self.properties_list)
-        list_layout.add_widget(self.properties_list_scroll)
-
-        parent.add_widget(list_layout)
-
-    def build_list_header(self, parent):
-        """Build list header with search and filters"""
+    def build_header(self, parent_layout):
+        """Build header with statistics cards"""
+        header_card = ModernCard(size_hint_y=None, height=dp(120))
         header_layout = MDBoxLayout(
-            orientation='vertical',
-            size_hint_y=None,
-            height=dp(100),
-            spacing=dp(10)
-        )
-
-        # Title and search row
-        title_row = MDBoxLayout(
             orientation='horizontal',
-            size_hint_y=None,
-            height=dp(48),
-            spacing=dp(10)
+            spacing=DesignTokens.SPACING['medium'],
+            padding=DesignTokens.SPACING['medium']
         )
 
-        list_title = MDLabel(
-            text=language_manager.get_text('properties_list'),
-            theme_text_color="Custom",
-            text_color=DesignTokens.COLORS['primary'],
-            font_style="H6",
-            bold=True
+        # Statistics
+        total_properties = len(self.properties_data)
+        available_count = len([p for p in self.properties_data if p.get('status') == 'Available'])
+        sold_count = len([p for p in self.properties_data if p.get('status') == 'Sold'])
+        rented_count = len([p for p in self.properties_data if p.get('status') == 'Rented'])
+
+        stats = [
+            {'title': 'Total Properties', 'value': str(total_properties), 'icon': 'home-group'},
+            {'title': 'Available', 'value': str(available_count), 'icon': 'home-plus', 'md_bg_color': DesignTokens.COLORS['success']},
+            {'title': 'Sold', 'value': str(sold_count), 'icon': 'home-check', 'md_bg_color': DesignTokens.COLORS['warning']},
+            {'title': 'Rented', 'value': str(rented_count), 'icon': 'home-heart', 'md_bg_color': DesignTokens.COLORS['info']}
+        ]
+
+        for stat in stats:
+            stat_card = EnhancedStatsCard(
+                title=stat['title'],
+                value=stat['value'],
+                icon=stat['icon'],
+                md_bg_color=stat.get('md_bg_color', DesignTokens.COLORS['primary']),
+                size_hint_x=0.25
+            )
+            header_layout.add_widget(stat_card)
+
+        header_card.add_widget(header_layout)
+        parent_layout.add_widget(header_card)
+
+    def build_search_section(self, parent_layout):
+        """Build search and filter section"""
+        search_card = ModernCard(size_hint_y=None, height=dp(80))
+        search_layout = MDBoxLayout(
+            orientation='horizontal',
+            spacing=DesignTokens.SPACING['medium'],
+            padding=DesignTokens.SPACING['medium']
         )
-        title_row.add_widget(list_title)
 
-        # Search field
-        self.search_field = MDTextField(
-            hint_text=language_manager.get_text('search_properties'),
-            icon_right="magnify",
-            size_hint_x=0.5,
-            size_hint_y=None,
-            height=dp(48),
-            on_text=self.on_search_text
+        # Search bar
+        self.search_bar = ModernSearchBar(
+            placeholder="Search properties...",
+            on_search=self.on_search,
+            size_hint_x=0.6
         )
-        title_row.add_widget(self.search_field)
+        search_layout.add_widget(self.search_bar)
 
-        header_layout.add_widget(title_row)
-
-        # Filter chips
+        # Filter buttons
         filter_layout = MDBoxLayout(
             orientation='horizontal',
+            spacing=DesignTokens.SPACING['small'],
+            size_hint_x=0.4
+        )
+
+        # Status filter
+        self.status_filter_button = MDFlatButton(
+            text="All Status",
+            theme_text_color="Custom",
+            text_color=DesignTokens.COLORS['primary']
+        )
+        self.status_filter_button.bind(on_release=self.show_status_filter_menu)
+        filter_layout.add_widget(self.status_filter_button)
+
+        # Type filter
+        self.type_filter_button = MDFlatButton(
+            text="All Types",
+            theme_text_color="Custom",
+            text_color=DesignTokens.COLORS['primary']
+        )
+        self.type_filter_button.bind(on_release=self.show_type_filter_menu)
+        filter_layout.add_widget(self.type_filter_button)
+
+        # View toggle
+        self.view_toggle_button = MDIconButton(
+            icon="view-grid",
+            theme_icon_color="Custom",
+            icon_color=DesignTokens.COLORS['primary']
+        )
+        self.view_toggle_button.bind(on_release=self.toggle_view)
+        filter_layout.add_widget(self.view_toggle_button)
+
+        search_layout.add_widget(filter_layout)
+        search_card.add_widget(search_layout)
+        parent_layout.add_widget(search_card)
+
+    def build_action_bar(self, parent_layout):
+        """Build action bar with property management actions"""
+        actions = [
+            {
+                'type': 'raised',
+                'text': 'Add Property',
+                'color': DesignTokens.COLORS['primary'],
+                'callback': self.add_new_property
+            },
+            {
+                'type': 'flat',
+                'text': 'Import',
+                'color': DesignTokens.COLORS['secondary'],
+                'callback': self.import_properties
+            },
+            {
+                'type': 'flat',
+                'text': 'Export',
+                'color': DesignTokens.COLORS['secondary'],
+                'callback': self.export_properties
+            },
+            {
+                'type': 'icon',
+                'icon': 'delete',
+                'color': DesignTokens.COLORS['error'],
+                'callback': self.delete_selected_properties
+            }
+        ]
+
+        self.action_bar = ModernActionBar(actions=actions)
+        parent_layout.add_widget(self.action_bar)
+
+    def build_form_panel(self, parent_layout):
+        """Build property form panel"""
+        form_fields = [
+            {'name': 'location', 'type': 'text', 'hint': 'Property Location', 'required': True},
+            {'name': 'propertytype', 'type': 'dropdown', 'hint': 'Property Type', 'required': True},
+            {'name': 'area', 'type': 'text', 'hint': 'Area (m²)', 'required': True},
+            {'name': 'price', 'type': 'text', 'hint': 'Price', 'required': True},
+            {'name': 'status', 'type': 'dropdown', 'hint': 'Status', 'required': True},
+            {'name': 'description', 'type': 'text', 'hint': 'Description'},
+            {'name': 'features', 'type': 'text', 'hint': 'Features'},
+            {'name': 'is_furnished', 'type': 'switch', 'label': 'Furnished'},
+            {'name': 'has_parking', 'type': 'switch', 'label': 'Parking Available'}
+        ]
+
+        self.form_card = ModernFormCard(
+            title="Property Information",
+            fields=form_fields,
+            size_hint_x=0.4
+        )
+
+        # Add photo upload section
+        photo_layout = MDBoxLayout(
+            orientation='vertical',
+            spacing=DesignTokens.SPACING['small'],
             size_hint_y=None,
-            height=dp(40),
-            spacing=dp(10)
-        )        # Property type filter
-        self.type_chip = MDChip(
-            type="filter",
-            on_release=self.show_type_filter
+            height=dp(120)
         )
-        self.type_chip.add_widget(IconLeftWidget(
-            icon="home-variant"
-        ))
-        self.type_chip.add_widget(MDLabel(
-            text=language_manager.get_text('all_types'),
-            halign="center",
-            adaptive_size=True
-        ))
-        filter_layout.add_widget(self.type_chip)        # Owner filter
-        self.owner_chip = MDChip(
-            type="filter",
-            on_release=self.show_owner_filter
-        )
-        self.owner_chip.add_widget(IconLeftWidget(
-            icon="account"
-        ))
-        self.owner_chip.add_widget(MDLabel(
-            text=language_manager.get_text('all_owners'),
-            halign="center",
-            adaptive_size=True
-        ))
-        filter_layout.add_widget(self.owner_chip)
 
-        header_layout.add_widget(filter_layout)
-        parent.add_widget(header_layout)
-
-    def build_fab(self, parent):
-        """Build floating action button"""
-        fab = MDFloatingActionButton(
-            icon="plus",
+        photo_button = MDRaisedButton(
+            text="Upload Photos",
             md_bg_color=DesignTokens.COLORS['secondary'],
-            pos_hint={'center_x': 0.9, 'center_y': 0.1},
-            on_release=self.clear_form
+            size_hint_y=None,
+            height=dp(40)
         )
-        parent.add_widget(fab)
+        photo_button.bind(on_release=self.upload_photos)
+        photo_layout.add_widget(photo_button)
 
-    def update_stats_display(self):
-        """Update statistics display"""
-        self.stats_grid.clear_widgets()
+        # Photo preview area
+        self.photo_preview = MDBoxLayout(
+            orientation='horizontal',
+            spacing=DesignTokens.SPACING['small'],
+            size_hint_y=None,
+            height=dp(60)
+        )
+        photo_layout.add_widget(self.photo_preview)
 
-        try:
-            total_properties = len(self.properties_data)
+        # Form buttons
+        button_layout = MDBoxLayout(
+            orientation='horizontal',
+            spacing=DesignTokens.SPACING['medium'],
+            size_hint_y=None,
+            height=dp(50)
+        )
 
-            # Total properties card
-            total_card = EnhancedStatsCard(
-                title=language_manager.get_text('total_properties'),
-                value=str(total_properties),
-                icon='home-city',
-                color_scheme='primary',
-                size_hint_y=None,
-                height=dp(100)
+        save_button = MDRaisedButton(
+            text="Save Property",
+            md_bg_color=DesignTokens.COLORS['primary']
+        )
+        save_button.bind(on_release=self.save_property)
+        button_layout.add_widget(save_button)
+
+        clear_button = MDFlatButton(
+            text="Clear Form",
+            theme_text_color="Custom",
+            text_color=DesignTokens.COLORS['text_secondary']
+        )
+        clear_button.bind(on_release=self.clear_form)
+        button_layout.add_widget(clear_button)
+
+        # Combine form elements
+        form_container = MDBoxLayout(
+            orientation='vertical',
+            spacing=DesignTokens.SPACING['medium']
+        )
+        form_container.add_widget(self.form_card)
+        form_container.add_widget(photo_layout)
+        form_container.add_widget(button_layout)
+
+        parent_layout.add_widget(form_container)
+
+    def build_properties_panel(self, parent_layout):
+        """Build properties display panel"""
+        self.properties_container = MDBoxLayout(
+            orientation='vertical',
+            spacing=DesignTokens.SPACING['medium'],
+            size_hint_x=0.6
+        )
+
+        # Loading spinner
+        self.loading_spinner = LoadingSpinner()
+        self.loading_spinner.size_hint = (None, None)
+        self.loading_spinner.size = (dp(50), dp(50))
+        self.loading_spinner.pos_hint = {'center_x': 0.5, 'center_y': 0.5}
+
+        # Empty state
+        self.empty_state = EmptyState(
+            icon="home-search",
+            title="No Properties Found",
+            subtitle="Add your first property to get started"
+        )
+
+        # Grid view for properties
+        self.properties_grid = ModernGridView(cols=2)
+
+        # Table view for properties
+        self.properties_table = ModernDataTable(
+            column_data=[
+                ("Location", dp(150)),
+                ("Type", dp(100)),
+                ("Area", dp(80)),
+                ("Price", dp(120)),
+                ("Status", dp(100)),
+                ("Actions", dp(100))
+            ]
+        )
+
+        # Initially show grid view
+        self.properties_container.add_widget(self.properties_grid)
+        parent_layout.add_widget(self.properties_container)
+
+    # Modern interaction methods
+    def on_search(self, instance):
+        """Handle search input"""
+        search_text = self.search_bar.get_text().lower()
+
+        if not search_text:
+            self.filtered_properties = self.properties_data.copy()
+        else:
+            self.filtered_properties = [
+                prop for prop in self.properties_data
+                if search_text in prop.get('location', '').lower() or
+                   search_text in prop.get('propertytype', '').lower() or
+                   search_text in prop.get('status', '').lower()
+            ]
+
+        self.update_properties_display()
+
+    def toggle_view(self, instance):
+        """Toggle between grid and table view"""
+        if self.current_view == 'grid':
+            self.current_view = 'table'
+            self.view_toggle_button.icon = "view-list"
+        else:
+            self.current_view = 'grid'
+            self.view_toggle_button.icon = "view-grid"
+
+        self.update_properties_display()
+
+    def update_properties_display(self):
+        """Update the properties display based on current view"""
+        if self.current_view == 'grid':
+            self.update_grid_view()
+        else:
+            self.update_table_view()
+
+    def update_grid_view(self):
+        """Update grid view with property cards"""
+        self.properties_grid.clear_items()
+
+        if not self.filtered_properties:
+            self.properties_container.clear_widgets()
+            self.properties_container.add_widget(self.empty_state)
+            return
+
+        # Ensure grid is in container
+        if self.properties_grid not in self.properties_container.children:
+            self.properties_container.clear_widgets()
+            self.properties_container.add_widget(self.properties_grid)
+
+        for property_data in self.filtered_properties:
+            property_card = PropertyCard(
+                property_data=property_data,
+                on_edit=lambda x, prop=property_data: self.edit_property(prop),
+                on_delete=lambda x, prop=property_data: self.delete_property(prop)
             )
-            self.stats_grid.add_widget(total_card)
+            self.properties_grid.add_item(property_card)
 
-            # Available properties
-            available_card = EnhancedStatsCard(
-                title=language_manager.get_text('available_properties'),
-                value=str(total_properties),  # Assuming all are available
-                icon='home-outline',
-                color_scheme='success',
-                size_hint_y=None,
-                height=dp(100)
-            )
-            self.stats_grid.add_widget(available_card)
+    def update_table_view(self):
+        """Update table view with property data"""
+        if self.properties_table not in self.properties_container.children:
+            self.properties_container.clear_widgets()
+            self.properties_container.add_widget(self.properties_table)
 
-            # With photos
-            with_photos = sum(1 for prop in self.properties_data if prop.get('Photosituation') != 'لا توجد صور')
-            photos_card = EnhancedStatsCard(
-                title=language_manager.get_text('with_photos'),
-                value=str(with_photos),
-                icon='camera',
-                color_scheme='warning',
-                size_hint_y=None,
-                height=dp(100)
-            )
-            self.stats_grid.add_widget(photos_card)
+        # Convert property data to table rows
+        table_data = []
+        for prop in self.filtered_properties:
+            row = [
+                prop.get('location', ''),
+                prop.get('propertytype', ''),
+                f"{prop.get('area', '')} m²",
+                f"${prop.get('price', 0):,}",
+                prop.get('status', ''),
+                "Edit | Delete"  # Action buttons would be handled by table
+            ]
+            table_data.append(row)
 
-        except Exception as e:
-            logger.error(f"Error updating stats: {e}")
+        self.properties_table.update_data(table_data)
 
-    def load_data(self):
-        """Load properties and owners data"""
+    def add_new_property(self, instance):
+        """Add new property"""
+        self.current_property = None
+        self.clear_form(None)
+
+    def edit_property(self, property_data):
+        """Edit existing property"""
+        self.current_property = property_data
+        self.populate_form(property_data)
+
+    def save_property(self, instance):
+        """Save property to database"""
+        # Validate form
+        errors = self.form_card.validate_form()
+        if errors:
+            self.show_error_snackbar(f"Please fix errors: {', '.join(errors)}")
+            return
+
+        # Collect form data
+        property_data = {}
+        for field_name in ['location', 'propertytype', 'area', 'price', 'status', 'description', 'features']:
+            property_data[field_name] = self.form_card.get_field_value(field_name)
+
+        property_data['is_furnished'] = self.form_card.get_field_value('is_furnished')
+        property_data['has_parking'] = self.form_card.get_field_value('has_parking')
+
         try:
-            if not self.db:
-                return
-
-            self.properties_data = self.db.get_properties()
-            self.owners_data = self.db.get_owners()
-            self.display_properties(self.properties_data)
-            self.update_stats_display()
-
-        except Exception as e:
-            logger.error(f"Error loading data: {e}")
-            self.show_snackbar(language_manager.get_text('error_loading_data'))
-
-    def display_properties(self, properties):
-        """Display properties in the list"""
-        try:
-            self.properties_list.clear_widgets()
-
-            for prop in properties:
-                # Get property details
-                company_code = prop.get('Companyco', '')
-                address = prop.get('Property-address', '') or language_manager.get_text('no_address')
-                property_type = prop.get('Rstatetcode', '') or language_manager.get_text('unknown_type')
-                owner_name = prop.get('ownername', '') or language_manager.get_text('no_owner')
-
-                # Create list item
-                item = ThreeLineAvatarIconListItem(
-                    text=address[:50] + ('...' if len(address) > 50 else ''),
-                    secondary_text=f"{language_manager.get_text('type')}: {property_type}",
-                    tertiary_text=f"{language_manager.get_text('owner')}: {owner_name}",
-                    on_release=lambda x, data=prop: self.select_property(data)
-                )
-
-                # Icon based on property type
-                item.add_widget(IconLeftWidget(icon="home"))
-
-                # Action button
-                item.add_widget(IconRightWidget(
-                    icon="chevron-right",
-                    on_release=lambda x, data=prop: self.select_property(data)
-                ))
-
-                self.properties_list.add_widget(item)
-
-        except Exception as e:
-            logger.error(f"Error displaying properties: {e}")
-
-    def select_property(self, property_data):
-        """Select property for editing"""
-        try:
-            self.current_property = property_data
-
-            # Populate form
-            self.company_code_field.text = property_data.get('Companyco', '')
-            self.realstate_code_field.text = property_data.get('realstatecode', '')
-            self.address_field.text = property_data.get('Property-address', '')
-            self.property_type_field.text = property_data.get('Rstatetcode', '')
-            self.area_field.text = str(property_data.get('Property-area', ''))
-            self.year_make_field.text = property_data.get('Yearmake', '')
-            self.bedrooms_field.text = str(property_data.get('N-of-bedrooms', ''))
-            self.bathrooms_field.text = str(property_data.get('N-of bathrooms', ''))
-            self.description_field.text = property_data.get('Descriptions', '')
-            self.province_field.text = property_data.get('Province-code ', '')
-            self.region_field.text = property_data.get('Region-code', '')
-
-            # Set owner field
-            self.owner_field.text = property_data.get('ownername', '')
-
-            # Enable update/delete buttons
-            self.update_btn.disabled = False
-            self.delete_btn.disabled = False
-            self.save_btn.disabled = True
-
-        except Exception as e:
-            logger.error(f"Error selecting property: {e}")
-
-    def save_property(self, instance=None):
-        """Save new property"""
-        try:
-            if not self.validate_form():
-                return
-
-            property_data = self.get_form_data()
-
-            if not self.db:
-                self.show_snackbar(language_manager.get_text('database_error'))
-                return
-
-            company_code = self.db.add_property(property_data)
-            if company_code:
-                self.show_snackbar(language_manager.get_text('property_saved_successfully'))
-                self.clear_form()
-                self.load_data()
+            if self.current_property:
+                # Update existing property
+                property_data['id'] = self.current_property['id']
+                self.db.update_property(property_data)
+                self.show_success_snackbar("Property updated successfully")
             else:
-                self.show_snackbar(language_manager.get_text('error_saving_property'))
+                # Add new property
+                property_data['company_code'] = self.db.generate_company_code()
+                property_data['realstate_code'] = self.db.generate_realstate_code()
+                self.db.add_property(property_data)
+                self.show_success_snackbar("Property added successfully")
+
+            self.load_data()
+            self.clear_form(None)
 
         except Exception as e:
             logger.error(f"Error saving property: {e}")
-            self.show_snackbar(language_manager.get_text('error_saving_property'))
+            self.show_error_snackbar("Failed to save property")
 
-    def update_property(self, instance=None):
-        """Update existing property"""
-        try:
-            if not self.current_property or not self.validate_form():
-                return
-
-            company_code = self.company_code_field.text
-            property_data = self.get_form_data()
-
-            if not self.db:
-                self.show_snackbar(language_manager.get_text('database_error'))
-                return
-
-            if self.db.update_property(company_code, property_data):
-                self.show_snackbar(language_manager.get_text('property_updated_successfully'))
-                self.clear_form()
+    def delete_property(self, property_data):
+        """Delete property with confirmation"""
+        def confirm_delete(instance):
+            try:
+                self.db.delete_property(property_data['id'])
+                self.show_success_snackbar("Property deleted successfully")
                 self.load_data()
-            else:
-                self.show_snackbar(language_manager.get_text('error_updating_property'))
+                dialog.dismiss()
+            except Exception as e:
+                logger.error(f"Error deleting property: {e}")
+                self.show_error_snackbar("Failed to delete property")
 
-        except Exception as e:
-            logger.error(f"Error updating property: {e}")
-            self.show_snackbar(language_manager.get_text('error_updating_property'))
-
-    def confirm_delete_property(self, instance=None):
-        """Confirm property deletion"""
-        if not self.current_property:
-            return
-
-        address = self.current_property.get('Property-address', language_manager.get_text('unknown_property'))
-        dialog = ConfirmationDialog(
-            title=language_manager.get_text('confirm_deletion'),
-            message=f"{language_manager.get_text('confirm_delete_property')}: {address}?",
-            confirm_callback=self.delete_property
+        dialog = ModernDialog(
+            title="Delete Property",
+            text=f"Are you sure you want to delete the property at {property_data.get('location', 'Unknown')}?",
+            buttons=[
+                {"text": "Cancel", "action": lambda x: dialog.dismiss()},
+                {"text": "Delete", "action": confirm_delete, "style": "error"}
+            ]
         )
         dialog.open()
 
-    def delete_property(self, instance=None):
-        """Delete selected property"""
-        try:
-            if not self.current_property:
-                return
-
-            company_code = self.current_property.get('Companyco', '')
-
-            if not self.db:
-                self.show_snackbar(language_manager.get_text('database_error'))
-                return
-
-            if self.db.delete_property(company_code):
-                self.show_snackbar(language_manager.get_text('property_deleted_successfully'))
-                self.clear_form()
-                self.load_data()
-            else:
-                self.show_snackbar(language_manager.get_text('error_deleting_property'))
-
-        except Exception as e:
-            logger.error(f"Error deleting property: {e}")
-            self.show_snackbar(language_manager.get_text('error_deleting_property'))
-
-    def get_form_data(self):
-        """Get form data as dictionary"""
-        return {
-            'realstatecode': self.realstate_code_field.text.strip(),
-            'address': self.address_field.text.strip(),
-            'property_type': self.property_type_field.text.strip(),
-            'area': self.area_field.text.strip(),
-            'year_make': self.year_make_field.text.strip(),
-            'bedrooms': self.bedrooms_field.text.strip(),
-            'bathrooms': self.bathrooms_field.text.strip(),
-            'description': self.description_field.text.strip(),
-            'province_code': self.province_field.text.strip(),
-            'region_code': self.region_field.text.strip(),
-            'owner_code': getattr(self, 'selected_owner_code', '')
-        }
-
-    def clear_form(self, instance=None):
-        """Clear the form"""
+    def clear_form(self, instance):
+        """Clear form fields"""
+        for field_name in self.form_card.form_fields.keys():
+            self.form_card.set_field_value(field_name, "")
         self.current_property = None
 
-        # Clear all fields
-        fields = [
-            self.company_code_field, self.realstate_code_field, self.address_field,
-            self.property_type_field, self.area_field, self.year_make_field,
-            self.bedrooms_field, self.bathrooms_field, self.description_field,
-            self.province_field, self.region_field, self.owner_field
-        ]
+    def populate_form(self, property_data):
+        """Populate form with property data"""
+        for field_name, value in property_data.items():
+            if field_name in self.form_card.form_fields:
+                self.form_card.set_field_value(field_name, value)
 
-        for field in fields:
-            field.text = ''
-
-        # Reset button states
-        self.save_btn.disabled = False
-        self.update_btn.disabled = True
-        self.delete_btn.disabled = True
-
-    def validate_form(self):
-        """Validate form data"""
-        if not self.address_field.text.strip():
-            self.show_snackbar(language_manager.get_text('address_required'))
-            return False
-        return True
-
-    def on_search_text(self, instance, text):
-        """Handle search text change"""
-        if text.strip():
-            filtered_properties = []
-            search_lower = text.lower()
-
-            for prop in self.properties_data:
-                address = (prop.get('Property-address', '') or '').lower()
-                owner_name = (prop.get('ownername', '') or '').lower()
-                company_code = (prop.get('Companyco', '') or '').lower()
-
-                if (search_lower in address or
-                    search_lower in owner_name or
-                    search_lower in company_code):
-                    filtered_properties.append(prop)
-
-            self.display_properties(filtered_properties)
-        else:
-            self.display_properties(self.properties_data)
-
-    def show_owner_selection(self, instance, value):
-        """Show owner selection menu"""
-        if not value:  # Only show when gaining focus
-            return
-
-        menu_items = []
-        for owner in self.owners_data:
-            owner_code, owner_name, _, _ = owner
-            menu_items.append({
-                "text": f"{owner_name} ({owner_code})",
-                "viewclass": "OneLineListItem",
-                "on_release": lambda x=owner_code, y=owner_name: self.select_owner(x, y),
-            })
-
-        if menu_items:
-            self.owner_menu = MDDropdownMenu(
-                caller=self.owner_field,
-                items=menu_items,
-            )
-            self.owner_menu.open()
-
-    def select_owner(self, owner_code, owner_name):
-        """Select owner for property"""
-        self.owner_field.text = f"{owner_name} ({owner_code})"
-        self.selected_owner_code = owner_code
-        if hasattr(self, 'owner_menu'):
-            self.owner_menu.dismiss()
-
-    def show_type_filter(self, instance):
-        """Show property type filter"""
-        # Implement type filtering
+    def upload_photos(self, instance):
+        """Upload photos for property"""
+        # Implement photo upload using file manager
         pass
 
-    def show_owner_filter(self, instance):
-        """Show owner filter"""
-        # Implement owner filtering
+    def show_status_filter_menu(self, instance):
+        """Show status filter menu"""
+        # Implement status filter dropdown
         pass
 
-    def manage_photos(self, instance=None):
-        """Open photo management"""
-        self.show_snackbar(language_manager.get_text('photo_management_coming_soon'))
+    def show_type_filter_menu(self, instance):
+        """Show type filter menu"""
+        # Implement type filter dropdown
+        pass
 
-    def toggle_search(self, instance=None):
-        """Toggle search field focus"""
-        self.search_field.focus = True
+    def import_properties(self, instance):
+        """Import properties from file"""
+        # Implement import functionality
+        pass
 
-    def refresh_data(self, instance=None):
-        """Refresh properties data"""
-        self.load_data()
-        self.show_snackbar(language_manager.get_text('data_refreshed'))
+    def export_properties(self, instance):
+        """Export properties to file"""
+        # Implement export functionality
+        pass
 
-    def show_snackbar(self, message):
-        """Show snackbar message"""
-        snackbar = Snackbar(
-            text=message,
-            snackbar_x="10dp",
-            snackbar_y="10dp",
-            size_hint_x=(
-                self.width - (2 * 10)
-            ) / self.width
-        )
+    def delete_selected_properties(self, instance):
+        """Delete selected properties"""
+        # Implement bulk delete
+        pass
+
+    def show_success_snackbar(self, message: str):
+        """Show success snackbar"""
+        snackbar = Snackbar(text=message)
+        snackbar.bg_color = DesignTokens.COLORS['success']
         snackbar.open()
 
-    def go_back(self, instance=None):
-        """Go back to enhanced dashboard"""
-        if hasattr(self, 'manager') and self.manager:
-            self.manager.current = 'enhanced_dashboard'
+    def show_error_snackbar(self, message: str):
+        """Show error snackbar"""
+        snackbar = Snackbar(text=message)
+        snackbar.bg_color = DesignTokens.COLORS['error']
+        snackbar.open()
 
-    def on_enter(self, *args):
-        """Called when screen is entered"""
+    # Keep existing methods for compatibility
+
+    def load_data(self):
+        """Load properties and owners data from database"""
+        try:
+            self.properties_data = self.db.get_all_properties()
+            self.owners_data = self.db.get_all_owners()
+            self.filtered_properties = self.properties_data.copy()
+
+            Clock.schedule_once(lambda dt: self.update_properties_display(), 0.1)
+            Clock.schedule_once(lambda dt: self.update_header_stats(), 0.1)
+
+        except Exception as e:
+            logger.error(f"Error loading data: {e}")
+            self.show_error_snackbar("Failed to load data")
+
+    def update_header_stats(self):
+        """Update header statistics - rebuild header with new stats"""
+        # This is called after data changes to refresh statistics
+        if hasattr(self, 'properties_container'):
+            # We'll rebuild the header when we get the updated data
+            pass
+
+    def refresh_data(self):
+        """Refresh all data from database"""
         self.load_data()
 
-    def on_leave(self, *args):
-        """Called when leaving screen"""
+    def go_back(self):
+        """Navigate back to dashboard"""
+        if self.manager:
+            self.manager.current = 'enhanced_dashboard'
+
+    def toggle_search(self):
+        """Toggle search visibility"""
+        # Search is always visible in modern design
         pass
+
+    def manage_photos(self):
+        """Open photo management"""
+        self.upload_photos(None)
+
+    def show_loading(self, show: bool):
+        """Show or hide loading spinner"""
+        self.is_loading = show
+
+        if show:
+            self.properties_container.clear_widgets()
+            self.properties_container.add_widget(self.loading_spinner)
+        else:
+            self.properties_container.clear_widgets()
+            self.update_properties_display()

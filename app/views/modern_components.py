@@ -33,6 +33,7 @@ from kivy.metrics import dp, sp
 from kivy.uix.widget import Widget
 from typing import Callable, List, Dict, Optional, Any
 import logging
+import os
 
 from app.font_manager import font_manager
 from app.language_manager import language_manager
@@ -60,7 +61,9 @@ class DesignTokens:
         'text_primary': (0.13, 0.13, 0.13, 1),    # Dark Text #212121
         'text_secondary': (0.46, 0.46, 0.46, 1),  # Gray Text #757575
         'text_hint': (0.62, 0.62, 0.62, 1),       # Hint Text #9E9E9E
+        'info': (0.25, 0.47, 0.75, 1),         # Info Blue #4080C0
         'divider': (0.88, 0.88, 0.88, 1),         # Divider #E0E0E0
+
     }
 
     # Elevation & Shadows
@@ -68,7 +71,10 @@ class DesignTokens:
         'card': 2,
         'button': 1,
         'modal': 8,
-        'nav_drawer': 16
+        'nav_drawer': 16,
+        'low': 1,
+        'medium': 4,
+        'high': 8,
     }
 
     # Spacing
@@ -78,7 +84,11 @@ class DesignTokens:
         'md': dp(16),
         'lg': dp(24),
         'xl': dp(32),
-        'xxl': dp(48)
+        'extra_small': dp(4),  # Alias for 'xs'
+        'small': dp(8),  # Alias for 'sm'
+        'medium': dp(16),  # Alias for 'md'
+        'large': dp(24),  # Alias for 'lg'
+        'extra_large': dp(32),  # Alias for 'xl'
     }
 
     # Border Radius
@@ -86,7 +96,11 @@ class DesignTokens:
         'sm': [dp(4), dp(4), dp(4), dp(4)],
         'md': [dp(8), dp(8), dp(8), dp(8)],
         'lg': [dp(12), dp(12), dp(12), dp(12)],
-        'xl': [dp(16), dp(16), dp(16), dp(16)]
+        'xl': [dp(16), dp(16), dp(16), dp(16)],
+        'small': [dp(4), dp(4), dp(4), dp(4)],  # Alias for 'sm'
+        'medium': [dp(8), dp(8), dp(8), dp(8)],  # Alias for 'md'
+        'large': [dp(12), dp(12), dp(12), dp(12)],  # Alias for 'lg'
+        'extra_large': [dp(16), dp(16), dp(16), dp(16)],  # Alias for 'xl'
     }
 
 
@@ -183,7 +197,7 @@ class ModernTextField(MDTextField):
             kwargs['hint_text'] = language_manager.get_text(translation_key)
 
         # Set Material Design properties
-        kwargs.setdefault('mode', 'outlined')
+        kwargs.setdefault('mode', 'line')
         kwargs.setdefault('size_hint_y', None)
         kwargs.setdefault('height', dp(56))
 
@@ -382,9 +396,10 @@ class PropertyCard(ModernCard):
                 text=f"${property_data['price']:,}",
                 theme_text_color="Primary",
                 font_style="H6",
-                adaptive_height=True
-            )
-            details_layout.add_widget(price_label)        # Status chip
+                adaptive_height=True            )
+            details_layout.add_widget(price_label)
+
+        # Status chip
         if property_data.get('status'):
             status_chip = MDChip(
                 type="filter",
@@ -629,7 +644,7 @@ class EmptyState(MDBoxLayout):
             icon=icon,
             theme_icon_color="Secondary",
             icon_size=dp(64),
-            pos_hint={'center_x': 0.5}
+            pos_hint={'center_x': 0.5, 'center_y': 0.5}
         )
         self.add_widget(icon_widget)
 
@@ -834,3 +849,450 @@ class ModernNavigationCard(ModernCard):
         content.add_widget(arrow)
 
         self.add_widget(content)
+
+
+class ModernImageViewer(MDCard):
+    """Modern image viewer with preview capabilities"""
+
+    def __init__(self, image_path: str = None, **kwargs):
+        super().__init__(**kwargs)
+
+        # Container for image
+        image_container = MDBoxLayout(
+            orientation='vertical',
+            adaptive_height=True,
+            spacing=DesignTokens.SPACING['sm']
+        )
+
+        if image_path and os.path.exists(image_path):
+            # Image display
+            image_tile = MDSmartTile(
+                source=image_path,
+                size_hint_y=None,
+                height=dp(300),
+                radius=DesignTokens.RADIUS['md']
+            )
+            image_container.add_widget(image_tile)
+        else:
+            # Placeholder for no image
+            placeholder = MDBoxLayout(
+                size_hint_y=None,
+                height=dp(200),
+                md_bg_color=DesignTokens.COLORS['surface'],
+                radius=DesignTokens.RADIUS['md']
+            )
+
+            placeholder_icon = MDIconButton(
+                icon="image-outline",
+                theme_icon_color="Custom",
+                icon_color=DesignTokens.COLORS['text_hint'],
+                icon_size=dp(64),
+                pos_hint={'center_x': 0.5, 'center_y': 0.5}
+            )
+            placeholder.add_widget(placeholder_icon)
+            image_container.add_widget(placeholder)
+
+        self.add_widget(image_container)
+
+
+class ModernFilterChip(MDChip):
+    """Modern filter chip for property filtering"""
+
+    def __init__(self, text: str, filter_key: str, filter_value: Any,
+                 on_filter: Callable = None, **kwargs):
+        kwargs.setdefault('type', 'filter')
+        kwargs.setdefault('check', False)
+        super().__init__(**kwargs)
+
+        self.text = text
+        self.filter_key = filter_key
+        self.filter_value = filter_value
+        self.on_filter = on_filter
+
+        # Style the chip
+        self.md_bg_color = DesignTokens.COLORS['surface']
+        self.text_color = DesignTokens.COLORS['text_primary']
+
+        self.bind(active=self._on_chip_active)
+
+    def _on_chip_active(self, instance, active):
+        """Handle chip activation"""
+        if self.on_filter:
+            self.on_filter(self.filter_key, self.filter_value, active)
+
+
+class ModernProgressCard(ModernCard):
+    """Card with progress indicator for operations"""
+
+    def __init__(self, title: str, progress: float = 0, **kwargs):
+        super().__init__(**kwargs)
+
+        self.title = title
+        self.progress_value = progress
+
+        # Title
+        title_label = MDLabel(
+            text=title,
+            theme_text_color="Primary",
+            font_style="H6",
+            adaptive_height=True
+        )
+        self.add_widget(title_label)
+
+        # Progress bar
+        self.progress_bar = MDProgressBar(
+            value=progress,
+            color=DesignTokens.COLORS['primary']
+        )
+        self.add_widget(self.progress_bar)
+
+        # Progress text
+        self.progress_label = MDLabel(
+            text=f"{progress:.0f}%",
+            theme_text_color="Secondary",
+            font_style="Body2",
+            adaptive_height=True
+        )
+        self.add_widget(self.progress_label)
+
+    def set_progress(self, value: float):
+        """Update progress value and label."""
+        self.progress_value = value
+        self.progress_bar.value = value
+        self.progress_label.text = f"{value:.0f}%"
+
+
+class ModernSearchBar(MDCard):
+    """Modern search bar with filters and actions"""
+
+    def __init__(self, placeholder="Search...", on_search=None, filters=None, **kwargs):
+        super().__init__(**kwargs)
+        self.elevation = DesignTokens.ELEVATIONS['low']
+        self.radius = DesignTokens.RADIUS['medium']
+        self.size_hint_y = None
+        self.height = dp(56)
+        self.padding = dp(8)
+
+        layout = MDBoxLayout(
+            orientation='horizontal',
+            adaptive_height=True,
+            spacing=dp(8)
+        )
+
+        # Search icon
+        search_icon = MDIconButton(
+            icon="magnify",
+            theme_icon_color="Custom",
+            icon_color=DesignTokens.COLORS['text_secondary']
+        )
+        layout.add_widget(search_icon)
+
+        # Search field
+        self.search_field = MDTextField(
+            hint_text=placeholder,
+            size_hint_y=None,
+            height=dp(40),
+            mode="fill"
+        )
+        if on_search:
+            self.search_field.bind(on_text_validate=on_search)
+        layout.add_widget(self.search_field)
+
+        # Filter button
+        if filters:
+            filter_button = MDIconButton(
+                icon="filter-variant",
+                theme_icon_color="Custom",
+                icon_color=DesignTokens.COLORS['primary']
+            )
+            layout.add_widget(filter_button)
+
+        self.add_widget(layout)
+
+    def get_text(self):
+        """Get search text"""
+        return self.search_field.text
+
+    def clear(self):
+        """Clear search text"""
+        self.search_field.text = ""
+
+
+class ModernActionBar(MDCard):
+    """Modern action bar with customizable actions"""
+
+    def __init__(self, actions=None, **kwargs):
+        super().__init__(**kwargs)
+        self.elevation = DesignTokens.ELEVATIONS['medium']
+        self.radius = DesignTokens.RADIUS['medium']
+        self.size_hint_y = None
+        self.height = dp(72)
+        self.padding = dp(16)
+
+        layout = MDBoxLayout(
+            orientation='horizontal',
+            adaptive_height=True,
+            spacing=dp(16)
+        )
+
+        if actions:
+            for action in actions:
+                if action.get('type') == 'raised':
+                    button = MDRaisedButton(
+                        text=action.get('text', ''),
+                        md_bg_color=action.get('color', DesignTokens.COLORS['primary']),
+                        on_release=action.get('callback')
+                    )
+                elif action.get('type') == 'flat':
+                    button = MDFlatButton(
+                        text=action.get('text', ''),
+                        theme_text_color="Custom",
+                        text_color=action.get('color', DesignTokens.COLORS['primary']),
+                        on_release=action.get('callback')
+                    )
+                elif action.get('type') == 'icon':
+                    button = MDIconButton(
+                        icon=action.get('icon', 'plus'),
+                        theme_icon_color="Custom",
+                        icon_color=action.get('color', DesignTokens.COLORS['primary']),
+                        on_release=action.get('callback')
+                    )
+                else:
+                    continue
+
+                layout.add_widget(button)
+
+        self.add_widget(layout)
+
+
+class ModernListItem(MDCard):
+    """Modern list item with customizable content"""
+
+    def __init__(self, title="", subtitle="", icon=None, trailing_icon=None,
+                 on_tap=None, **kwargs):
+        super().__init__(**kwargs)
+        self.elevation = DesignTokens.ELEVATIONS['low']
+        self.radius = DesignTokens.RADIUS['small']
+        self.size_hint_y = None
+        self.height = dp(72)
+        self.padding = dp(16)
+        self.ripple_behavior = True
+
+        if on_tap:
+            self.bind(on_release=on_tap)
+
+        layout = MDBoxLayout(
+            orientation='horizontal',
+            adaptive_height=True,
+            spacing=dp(16)
+        )
+
+        # Leading icon
+        if icon:
+            icon_widget = MDIconButton(
+                icon=icon,
+                theme_icon_color="Custom",
+                icon_color=DesignTokens.COLORS['primary']
+            )
+            layout.add_widget(icon_widget)
+
+        # Content
+        content_layout = MDBoxLayout(
+            orientation='vertical',
+            adaptive_height=True
+        )
+
+        title_label = MDLabel(
+            text=title,
+            theme_text_color="Primary",
+            font_style="Subtitle1",
+            adaptive_height=True
+        )
+        content_layout.add_widget(title_label)
+
+        if subtitle:
+            subtitle_label = MDLabel(
+                text=subtitle,
+                theme_text_color="Secondary",
+                font_style="Body2",
+                adaptive_height=True
+            )
+            content_layout.add_widget(subtitle_label)
+
+        layout.add_widget(content_layout)
+
+        # Trailing icon
+        if trailing_icon:
+            trailing_widget = MDIconButton(
+                icon=trailing_icon,
+                theme_icon_color="Custom",
+                icon_color=DesignTokens.COLORS['text_secondary']
+            )
+            layout.add_widget(trailing_widget)
+
+        self.add_widget(layout)
+
+
+class ModernGridView(MDScrollView):
+    """Modern grid view for displaying cards in a grid"""
+
+    def __init__(self, cols=2, spacing=None, **kwargs):
+        super().__init__(**kwargs)
+
+        if spacing is None:
+            spacing = DesignTokens.SPACING['medium']
+
+        self.grid = MDGridLayout(
+            cols=cols,
+            adaptive_height=True,
+            spacing=spacing,
+            size_hint_y=None
+        )
+        self.grid.bind(minimum_height=self.grid.setter('height'))
+
+        self.add_widget(self.grid)
+
+    def add_item(self, widget):
+        """Add item to grid"""
+        self.grid.add_widget(widget)
+
+    def clear_items(self):
+        """Clear all items from grid"""
+        self.grid.clear_widgets()
+
+    def set_cols(self, cols):
+        """Set number of columns"""
+        self.grid.cols = cols
+
+
+class ModernFormCard(MDCard):
+    """Modern form card with grouped form fields"""
+
+    def __init__(self, title="", fields=None, **kwargs):
+        super().__init__(**kwargs)
+        self.elevation = DesignTokens.ELEVATIONS['medium']
+        self.radius = DesignTokens.RADIUS['large']
+        self.padding = DesignTokens.SPACING['large']
+        self.adaptive_height = True
+
+        self.form_fields = {}
+
+        layout = MDBoxLayout(
+            orientation='vertical',
+            adaptive_height=True,
+            spacing=DesignTokens.SPACING['medium']
+        )
+
+        # Title
+        if title:
+            title_label = MDLabel(
+                text=title,
+                theme_text_color="Primary",
+                font_style="H6",
+                adaptive_height=True
+            )
+            layout.add_widget(title_label)
+
+        # Form fields
+        if fields:
+            for field in fields:
+                field_widget = self._create_field(field)
+                if field_widget:
+                    layout.add_widget(field_widget)
+
+        self.add_widget(layout)
+
+    def _create_field(self, field_config):
+        """Create form field based on configuration"""
+        field_type = field_config.get('type', 'text')
+        field_name = field_config.get('name', '')
+
+        if field_type == 'text':
+            field = ModernTextField(
+                hint_text=field_config.get('hint', ''),
+                required=field_config.get('required', False)
+            )
+        elif field_type == 'dropdown':
+            # Create dropdown field
+            field = MDTextField(
+                hint_text=field_config.get('hint', ''),
+                readonly=True
+            )
+            # Add dropdown menu logic here if needed
+        elif field_type == 'switch':
+            field = MDBoxLayout(
+                orientation='horizontal',
+                adaptive_height=True,
+                spacing=dp(16)
+            )
+            label = MDLabel(
+                text=field_config.get('label', ''),
+                theme_text_color="Primary",
+                adaptive_height=True
+            )
+            switch = MDSwitch()
+            field.add_widget(label)
+            field.add_widget(switch)
+            self.form_fields[field_name] = switch
+            return field
+        else:
+            return None
+
+        self.form_fields[field_name] = field
+        return field
+
+    def get_field_value(self, field_name):
+        """Get value of a form field"""
+        field = self.form_fields.get(field_name)
+        if field:
+            if hasattr(field, 'text'):
+                return field.text
+            elif hasattr(field, 'active'):
+                return field.active
+        return None
+
+    def set_field_value(self, field_name, value):
+        """Set value of a form field"""
+        field = self.form_fields.get(field_name)
+        if field:
+            if hasattr(field, 'text'):
+                field.text = str(value)
+            elif hasattr(field, 'active'):
+                field.active = bool(value)
+
+    def validate_form(self):
+        """Validate all form fields"""
+        errors = []
+        for name, field in self.form_fields.items():
+            if hasattr(field, 'required') and field.required:
+                if not field.text.strip():
+                    errors.append(f"{name} is required")
+        return errors
+
+
+# Export all components for easy importing
+__all__ = [
+    'DesignTokens',
+    'ModernCard',
+    'StatsCard',
+    'ModernTextField',
+    'ModernButton',
+    'ModernDataTable',
+    'PropertyCard',
+    'OwnerCard',
+    'ModernDialog',
+    'ModernSnackbar',
+    'NavigationDrawer',
+    'LoadingSpinner',
+    'EmptyState',
+    'EnhancedStatsCard',
+    'ModernNavigationCard',
+    'ModernImageViewer',
+    'ModernFilterChip',
+    'ModernProgressCard',
+    'ModernSearchBar',
+    'ModernActionBar',
+    'ModernListItem',
+    'ModernGridView',
+    'ModernFormCard'
+]

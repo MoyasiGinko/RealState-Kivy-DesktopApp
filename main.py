@@ -276,14 +276,13 @@ class RealEstateApp(MDApp):
 
             # Enhanced Dashboard (main hub) - Use enhanced version as primary
             enhanced_dashboard = EnhancedDashboardScreen(self.db, name='enhanced_dashboard')
-            self.screen_manager.add_widget(enhanced_dashboard)
-
-            # Feature screens - controllers will be set up when navigating
+            self.screen_manager.add_widget(enhanced_dashboard)            # Feature screens - controllers will be set up when navigating
             enhanced_owners = EnhancedOwnersScreen(self.db, name='enhanced_owners')
             self.screen_manager.add_widget(enhanced_owners)
 
-            properties_screen = EnhancedPropertiesScreen(self.db, name='enhanced_properties')
-            self.screen_manager.add_widget(properties_screen)
+            # Enhanced properties screen with modern components
+            enhanced_properties_screen = EnhancedPropertiesScreen(self.db, name='enhanced_properties')
+            self.screen_manager.add_widget(enhanced_properties_screen)
 
             search_screen = EnhancedSearchScreen(self.db, name='enhanced_search')
             self.screen_manager.add_widget(search_screen)
