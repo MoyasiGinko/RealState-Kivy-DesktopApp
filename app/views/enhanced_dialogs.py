@@ -22,6 +22,11 @@ import logging
 from app.language_manager import language_manager
 from app.theme_manager import theme_manager
 
+from app.views.modern_components import (
+    DesignTokens, EnhancedStatsCard, ModernNavigationCard,
+    ModernCard, ModernTextField, ModernButton
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -70,7 +75,7 @@ class SettingsDialog:
                 MDFlatButton(
                     text=language_manager.get_text('cancel'),
                     theme_text_color="Custom",
-                    text_color=theme_manager.get_color('primary'),
+                    text_color=DesignTokens.COLORS['primary'],
                     on_release=self.close_dialog
                 ),
                 MDRaisedButton(
@@ -86,7 +91,7 @@ class SettingsDialog:
         header = MDLabel(
             text=language_manager.get_text('language_settings'),
             theme_text_color="Custom",
-            text_color=theme_manager.get_color('primary'),
+            text_color=DesignTokens.COLORS['primary'],
             font_style="H6",
             bold=True,
             size_hint_y=None,
@@ -145,7 +150,7 @@ class SettingsDialog:
         header = MDLabel(
             text=language_manager.get_text('theme_settings'),
             theme_text_color="Custom",
-            text_color=theme_manager.get_color('primary'),
+            text_color=DesignTokens.COLORS['primary'],
             font_style="H6",
             bold=True,
             size_hint_y=None,
@@ -190,7 +195,7 @@ class SettingsDialog:
         header = MDLabel(
             text=language_manager.get_text('database_settings'),
             theme_text_color="Custom",
-            text_color=theme_manager.get_color('primary'),
+            text_color=DesignTokens.COLORS['primary'],
             font_style="H6",
             bold=True,
             size_hint_y=None,
@@ -244,7 +249,7 @@ class SettingsDialog:
         header = MDLabel(
             text=language_manager.get_text('notification_settings'),
             theme_text_color="Custom",
-            text_color=theme_manager.get_color('primary'),
+            text_color=DesignTokens.COLORS['primary'],
             font_style="H6",
             bold=True,
             size_hint_y=None,
@@ -366,7 +371,7 @@ class ConfirmationDialog:
                 MDFlatButton(
                     text=language_manager.get_text('cancel'),
                     theme_text_color="Custom",
-                    text_color=theme_manager.get_color('primary'),
+                    text_color=DesignTokens.COLORS['primary'],
                     on_release=self.handle_cancel
                 ),
                 MDRaisedButton(
@@ -432,7 +437,7 @@ class RecentActivityDialog:
                 MDFlatButton(
                     text=language_manager.get_text('close'),
                     theme_text_color="Custom",
-                    text_color=theme_manager.get_color('primary'),
+                    text_color=DesignTokens.COLORS['primary'],
                     on_release=self.close_dialog
                 ),
             ],
