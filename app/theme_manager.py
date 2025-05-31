@@ -195,6 +195,17 @@ class ThemeManager:
         else:
             logger.error(f"Unknown theme type: {theme_type}")
 
+    def is_dark_mode(self) -> bool:
+        """Check if current theme is dark mode"""
+        return self.current_theme == ThemeType.DARK
+
+    def set_dark_mode(self, enabled: bool):
+        """Enable or disable dark mode"""
+        if enabled:
+            self.set_theme(ThemeType.DARK)
+        else:
+            self.set_theme(ThemeType.LIGHT)
+
     def get_color(self, color_name: str) -> List[float]:
         """Get color value by name"""
         theme = self.themes[self.current_theme]
