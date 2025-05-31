@@ -30,7 +30,6 @@ Config.set('graphics', 'height', str(config.window_height))
 
 # Now import other kivy modules
 from kivy.app import App
-from kivymd.app import MDApp
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
 from kivy.uix.button import Button
@@ -49,14 +48,14 @@ from app.font_manager import font_manager
 from app.language_manager import language_manager
 from app.screens.dashboard import DashboardScreen
 from app.screens.owners import OwnersScreen
-from app.views.enhanced_search import EnhancedSearchScreen
+from app.screens.properties import PropertiesScreen
+from app.screens.search import SearchScreen
 from app.components import RTLLabel, BilingualLabel, BilingualButton, LanguageSwitcher
 from app.controllers.app_controller import AppController
 
 # Import enhanced components
 from app.views.enhanced_dashboard import EnhancedDashboardScreen
-from app.views.enhanced_owners import EnhancedOwnersScreen
-from app.views.enhanced_properties import EnhancedPropertiesScreen
+from app.views.enhanced_examples import EnhancedOwnersScreen, EnhancedPropertiesScreen
 
 # Configure logging
 logging.basicConfig(
@@ -97,6 +96,19 @@ class WelcomeScreen(Screen):
             size=(dp(150), dp(150)),
             pos_hint={'center_x': 0.5}
         )
+        # Add subtle shadow/glow effect
+        with logo_container.canvas.before:
+            Color(1, 1, 1, 0.1)
+            from kivy.graphics import Ellipse
+            shadow = Ellipse(size=(dp(160), dp(160)), pos=(0, 0))
+            logo_container.shadow = shadow
+            logo_container.bind(
+                size=lambda *args: setattr(shadow, 'pos',
+                    (logo_container.center_x - dp(80), logo_container.center_y - dp(80))),
+                pos=lambda *args: setattr(shadow, 'pos',
+                    (logo_container.center_x - dp(80), logo_container.center_y - dp(80)))
+            )
+
         logo_container.add_widget(logo)
         hero_section.add_widget(logo_container)
 
@@ -108,8 +120,7 @@ class WelcomeScreen(Screen):
             color=[1, 1, 1, 1],  # White text
             halign='center',
             size_hint_y=None,
-            height=dp(70)
-        )
+            height=dp(70)        )
         hero_section.add_widget(title)
 
         # Subtitle
@@ -204,12 +215,12 @@ class WelcomeScreen(Screen):
         anim.start(self)
 
     def enter_dashboard(self, instance):
-        """Navigate to enhanced dashboard with smooth transition"""
+        """Navigate to dashboard with smooth transition"""
         self.manager.transition = SlideTransition(direction='left', duration=0.4)
-        self.manager.current = 'enhanced_dashboard'
+        self.manager.current = 'dashboard'
 
 
-class RealEstateApp(MDApp):
+class RealEstateApp(App):
     """Main application class"""
 
     def __init__(self, **kwargs):
@@ -238,9 +249,7 @@ class RealEstateApp(MDApp):
             self.add_screens()
 
             # Start with welcome screen
-            self.screen_manager.current = 'welcome'
-
-            logger.info("Application started successfully")
+            self.screen_manager.current = 'welcome'            logger.info("Application started successfully")
             return self.screen_manager
 
         except Exception as e:
@@ -274,19 +283,29 @@ class RealEstateApp(MDApp):
             welcome_screen = WelcomeScreen()
             self.screen_manager.add_widget(welcome_screen)
 
-            # Enhanced Dashboard (main hub) - Use enhanced version as primary
-            enhanced_dashboard = EnhancedDashboardScreen(self.db, name='enhanced_dashboard')
-            self.screen_manager.add_widget(enhanced_dashboard)
+            # Dashboard (main hub)
+            dashboard_screen = DashboardScreen(name='dashboard')
+            self.screen_manager.add_widget(dashboard_screen)
 
             # Feature screens - controllers will be set up when navigating
-            enhanced_owners = EnhancedOwnersScreen(self.db, name='enhanced_owners')
-            self.screen_manager.add_widget(enhanced_owners)
+            owners_screen = OwnersScreen(name='owners')
+            self.screen_manager.add_widget(owners_screen)
 
-            properties_screen = EnhancedPropertiesScreen(self.db, name='enhanced_properties')
+            properties_screen = PropertiesScreen(name='properties')
             self.screen_manager.add_widget(properties_screen)
 
-            search_screen = EnhancedSearchScreen(self.db, name='enhanced_search')
+            search_screen = SearchScreen(name='search')
             self.screen_manager.add_widget(search_screen)
+
+            # Enhanced screens - for advanced features
+            enhanced_dashboard = EnhancedDashboardScreen(name='enhanced_dashboard')
+            self.screen_manager.add_widget(enhanced_dashboard)
+
+            enhanced_owners = EnhancedOwnersScreen(name='enhanced_owners')
+            self.screen_manager.add_widget(enhanced_owners)
+
+            enhanced_properties = EnhancedPropertiesScreen(name='enhanced_properties')
+            self.screen_manager.add_widget(enhanced_properties)
 
             logger.info("All screens added successfully")
 
@@ -305,10 +324,10 @@ class RealEstateApp(MDApp):
             self.screen_manager.current = 'welcome'
 
     def goto_dashboard(self):
-        """Navigate to enhanced dashboard screen"""
+        """Navigate to dashboard screen"""
         if self.screen_manager:
             self.screen_manager.transition = SlideTransition(direction='right')
-            self.screen_manager.current = 'enhanced_dashboard'
+            self.screen_manager.current = 'dashboard'
 
     def on_stop(self):
         """Called when the application is stopped"""

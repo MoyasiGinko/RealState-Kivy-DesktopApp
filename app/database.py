@@ -954,6 +954,24 @@ class DatabaseManager:
         finally:
             conn.close()
 
+    def get_recent_owners(self, limit: int = 5) -> List[Tuple]:
+        """Get recent owners"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute('''
+                SELECT Ownercode, ownername, ownerphone, Note
+                FROM Owners
+                ORDER BY Ownercode DESC
+                LIMIT ?
+            ''', (limit,))
+            return cursor.fetchall()
+        except sqlite3.Error as e:
+            logger.error(f"Error getting recent owners: {e}")
+            return []
+        finally:
+            conn.close()
+
     def get_recent_properties(self, limit: int = 5) -> List[Dict]:
         """Get recent properties"""
         conn = self.get_connection()

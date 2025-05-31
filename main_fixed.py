@@ -30,7 +30,6 @@ Config.set('graphics', 'height', str(config.window_height))
 
 # Now import other kivy modules
 from kivy.app import App
-from kivymd.app import MDApp
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import ScreenManager, Screen, SlideTransition
 from kivy.uix.button import Button
@@ -49,14 +48,13 @@ from app.font_manager import font_manager
 from app.language_manager import language_manager
 from app.screens.dashboard import DashboardScreen
 from app.screens.owners import OwnersScreen
-from app.views.enhanced_search import EnhancedSearchScreen
+from app.screens.properties import PropertiesScreen
+from app.screens.search import SearchScreen
 from app.components import RTLLabel, BilingualLabel, BilingualButton, LanguageSwitcher
 from app.controllers.app_controller import AppController
 
 # Import enhanced components
 from app.views.enhanced_dashboard import EnhancedDashboardScreen
-from app.views.enhanced_owners import EnhancedOwnersScreen
-from app.views.enhanced_properties import EnhancedPropertiesScreen
 
 # Configure logging
 logging.basicConfig(
@@ -209,7 +207,7 @@ class WelcomeScreen(Screen):
         self.manager.current = 'enhanced_dashboard'
 
 
-class RealEstateApp(MDApp):
+class RealEstateApp(App):
     """Main application class"""
 
     def __init__(self, **kwargs):
@@ -278,14 +276,18 @@ class RealEstateApp(MDApp):
             enhanced_dashboard = EnhancedDashboardScreen(self.db, name='enhanced_dashboard')
             self.screen_manager.add_widget(enhanced_dashboard)
 
-            # Feature screens - controllers will be set up when navigating
-            enhanced_owners = EnhancedOwnersScreen(self.db, name='enhanced_owners')
-            self.screen_manager.add_widget(enhanced_owners)
+            # Original Dashboard (backup)
+            dashboard_screen = DashboardScreen(self.db, name='dashboard')
+            self.screen_manager.add_widget(dashboard_screen)
 
-            properties_screen = EnhancedPropertiesScreen(self.db, name='enhanced_properties')
+            # Feature screens - controllers will be set up when navigating
+            owners_screen = OwnersScreen(self.db, name='owners')
+            self.screen_manager.add_widget(owners_screen)
+
+            properties_screen = PropertiesScreen(self.db, name='properties')
             self.screen_manager.add_widget(properties_screen)
 
-            search_screen = EnhancedSearchScreen(self.db, name='enhanced_search')
+            search_screen = SearchScreen(self.db, name='search')
             self.screen_manager.add_widget(search_screen)
 
             logger.info("All screens added successfully")

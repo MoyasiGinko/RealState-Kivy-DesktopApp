@@ -5,6 +5,9 @@
 # Core Kivy framework for GUI
 kivy>=2.3.0
 
+# KivyMD for Material Design components
+kivymd>=1.1.1
+
 # Image processing for photo management
 Pillow>=10.0.0
 
