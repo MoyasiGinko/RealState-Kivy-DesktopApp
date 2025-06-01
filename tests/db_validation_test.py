@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 # Import our modules
 from app.database import DatabaseManager
-from app.utils import PhotoManager
+from app.image_manager import PhotoManager
 
 def test_database_connection():
     """Test basic database connection"""

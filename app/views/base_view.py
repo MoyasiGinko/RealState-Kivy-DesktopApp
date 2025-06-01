@@ -14,7 +14,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.metrics import dp
 import logging
 
-from ..components import ConfirmDialog, MessageDialog, BilingualLabel, BilingualButton
+from ..utils import ConfirmDialog, MessageDialog, BilingualLabel, BilingualButton
 from ..language_manager import language_manager
 
 logger = logging.getLogger(__name__)

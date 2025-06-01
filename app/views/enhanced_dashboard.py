@@ -22,7 +22,7 @@ from app.views.modern_components import (
     DesignTokens, EnhancedStatsCard, ModernNavigationCard,
     ModernCard, ModernTextField, ModernButton
 )
-from app.components import BilingualLabel, LanguageSwitcher
+from app.utils import BilingualLabel, LanguageSwitcher
 from app.language_manager import language_manager
 from app.database import DatabaseManager
 
