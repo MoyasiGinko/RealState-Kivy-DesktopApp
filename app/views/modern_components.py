@@ -37,7 +37,6 @@ import os
 
 from app.font_manager import font_manager
 from app.language_manager import language_manager
-from app.config import config
 
 logger = logging.getLogger(__name__)
 
