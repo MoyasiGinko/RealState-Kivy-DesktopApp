@@ -50,7 +50,7 @@ class EnhancedSearchScreen(MDScreen):
         self.load_initial_data()
 
     def build_ui(self):
-        """Build the enhanced search and reports UI"""
+        """Build the enhanced search and reports UI with side-by-side layout"""
         # Main layout
         main_layout = MDBoxLayout(orientation='vertical')
 
@@ -72,23 +72,29 @@ class EnhancedSearchScreen(MDScreen):
         )
         content.bind(minimum_height=content.setter('height'))
 
-        # Statistics Cards Row
+        # Statistics Cards Row (full width)
         stats_layout = self.build_stats_section()
         content.add_widget(stats_layout)
 
-        # Search and Filter Section
-        search_section = self.build_search_section()
-        content.add_widget(search_section)
+        # Main content area with horizontal layout (search/filters on left, results on right)
+        main_content_layout = MDBoxLayout(
+            orientation='horizontal',
+            spacing=DesignTokens.SPACING['lg'],
+            size_hint_y=None,
+            height=dp(600)  # Fixed height for the main content area
+        )
 
-        # Advanced Filters Section
-        filters_section = self.build_filters_section()
-        content.add_widget(filters_section)
+        # Left side: Combined Search and Filters
+        left_panel = self.build_search_and_filters_panel()
+        main_content_layout.add_widget(left_panel)
 
-        # Results Section
-        results_section = self.build_results_section()
-        content.add_widget(results_section)
+        # Right side: Results
+        right_panel = self.build_results_section()
+        main_content_layout.add_widget(right_panel)
 
-        # Reports Section
+        content.add_widget(main_content_layout)
+
+        # Reports Section (full width at bottom)
         reports_section = self.build_reports_section()
         content.add_widget(reports_section)
 
@@ -467,21 +473,21 @@ class EnhancedSearchScreen(MDScreen):
         return filters_container
 
     def build_results_section(self):
-        """Build search results section with improved layout and responsiveness"""
-        # Enhanced results container with increased height and spacing
+        """Build search results section optimized for right panel in side-by-side layout"""
+        # Enhanced results container optimized for right panel
         self.results_card = ModernCard(
             elevation=DesignTokens.ELEVATIONS['card'],
+            size_hint_x=1,  # Take remaining width in horizontal layout
             size_hint_y=None,
-            height=dp(520),  # Increased height for better fit
-            md_bg_color=DesignTokens.COLORS['card'],
-            padding=[DesignTokens.SPACING['lg'], DesignTokens.SPACING['md']]
+            height=dp(600),  # Match main content area height
+            md_bg_color=DesignTokens.COLORS['card'],            padding=[DesignTokens.SPACING['lg'], DesignTokens.SPACING['md']]
         )
 
         results_layout = MDBoxLayout(
             orientation='vertical',
             spacing=DesignTokens.SPACING['lg'],
             size_hint_y=None,
-            height=dp(500)  # Ensure layout fits inside container
+            height=dp(580)  # Match container height minus padding
         )
 
         # Header section with icon and title
@@ -501,13 +507,15 @@ class EnhancedSearchScreen(MDScreen):
             size=(dp(36), dp(36))
         ))
 
-        header_layout.add_widget(MDLabel(
+        # Store reference to results title for dynamic updates
+        self.results_title_label = MDLabel(
             text=language_manager.get_text('search_results'),
             font_style="H6",
             theme_text_color="Primary",
             halign="left",
             valign="middle"
-        ))
+        )
+        header_layout.add_widget(self.results_title_label)
 
         results_layout.add_widget(header_layout)
 
@@ -516,13 +524,13 @@ class EnhancedSearchScreen(MDScreen):
             orientation='vertical',
             spacing=DesignTokens.SPACING['md'],
             size_hint_y=None,
-            height=dp(420)
+            height=dp(500)  # Increased height for better content display
         )
 
         self.results_list = MDList()
         results_scroll = MDScrollView(
             size_hint_y=None,
-            height=dp(400)
+            height=dp(480)  # Increased scroll area height
         )
         results_scroll.add_widget(self.results_list)
 
@@ -636,6 +644,290 @@ class EnhancedSearchScreen(MDScreen):
         reports_layout.add_widget(content_layout)
         reports_container.add_widget(reports_layout)
         return reports_container
+
+    def build_search_and_filters_panel(self):
+        """Build combined search and filters panel for left side"""
+        # Combined container with scroll view for all search and filter content
+        combined_container = MDScrollView(
+            size_hint_x=None,
+            width=dp(400)  # Fixed width for left panel
+        )
+
+        combined_layout = MDBoxLayout(
+            orientation='vertical',
+            spacing=DesignTokens.SPACING['lg'],
+            padding=[DesignTokens.SPACING['md'], DesignTokens.SPACING['md']],
+            size_hint_y=None
+        )
+        combined_layout.bind(minimum_height=combined_layout.setter('height'))
+
+        # Search Section
+        search_card = ModernCard(
+            elevation=DesignTokens.ELEVATIONS['card'],
+            size_hint_y=None,
+            height=dp(220),
+            md_bg_color=DesignTokens.COLORS['card'],
+            padding=[DesignTokens.SPACING['lg'], DesignTokens.SPACING['md']]
+        )
+
+        search_layout = MDBoxLayout(
+            orientation='vertical',
+            spacing=DesignTokens.SPACING['md'],
+            size_hint_y=None,
+            height=dp(200)
+        )
+
+        # Search header
+        search_header = MDBoxLayout(
+            orientation='horizontal',
+            size_hint_y=None,
+            height=dp(48),
+            spacing=DesignTokens.SPACING['sm']
+        )
+
+        search_header.add_widget(MDIconButton(
+            icon='magnify',
+            theme_icon_color="Custom",
+            icon_color=DesignTokens.COLORS['primary'],
+            size_hint=(None, None),
+            size=(dp(32), dp(32))
+        ))
+
+        search_header.add_widget(MDLabel(
+            text=language_manager.get_text('search'),
+            font_style="H6",
+            theme_text_color="Primary",
+            halign="left",
+            valign="middle"
+        ))
+
+        search_layout.add_widget(search_header)
+
+        # Search input
+        self.search_input = MDTextField(
+            hint_text=language_manager.get_text('search_properties_owners'),
+            helper_text=language_manager.get_text('search_hint'),
+            helper_text_mode="on_focus",
+            icon_right="magnify",
+            size_hint_y=None,
+            height=dp(56)
+        )
+        self.search_input.bind(text=self.on_search_text_change)
+        search_layout.add_widget(self.search_input)
+
+        # Search buttons
+        search_buttons = MDBoxLayout(
+            spacing=DesignTokens.SPACING['md'],
+            size_hint_y=None,
+            height=dp(48)
+        )
+
+        search_btn = MDRaisedButton(
+            text=language_manager.get_text('search'),
+            md_bg_color=DesignTokens.COLORS['primary'],
+            size_hint=(None, None),
+            height=dp(40),
+            width=dp(100),
+            on_release=self.perform_search
+        )
+        search_buttons.add_widget(search_btn)
+
+        clear_btn = MDFlatButton(
+            text=language_manager.get_text('clear'),
+            size_hint=(None, None),
+            height=dp(40),
+            width=dp(80),
+            on_release=self.clear_search
+        )
+        search_buttons.add_widget(clear_btn)
+
+        search_buttons.add_widget(MDLabel(size_hint_x=1))  # Spacer
+
+        search_layout.add_widget(search_buttons)
+        search_card.add_widget(search_layout)
+        combined_layout.add_widget(search_card)
+
+        # Advanced Filters Section
+        filters_card = ModernCard(
+            elevation=DesignTokens.ELEVATIONS['card'],
+            size_hint_y=None,
+            height=dp(380),
+            md_bg_color=DesignTokens.COLORS['card'],
+            padding=[DesignTokens.SPACING['lg'], DesignTokens.SPACING['md']]
+        )
+
+        filters_layout = MDBoxLayout(
+            orientation='vertical',
+            spacing=DesignTokens.SPACING['md'],
+            size_hint_y=None,
+            height=dp(360)
+        )
+
+        # Filters header
+        filters_header = MDBoxLayout(
+            orientation='horizontal',
+            size_hint_y=None,
+            height=dp(48),
+            spacing=DesignTokens.SPACING['sm']
+        )
+
+        filters_header.add_widget(MDIconButton(
+            icon='filter-variant',
+            theme_icon_color="Custom",
+            icon_color=DesignTokens.COLORS['primary'],
+            size_hint=(None, None),
+            size=(dp(32), dp(32))
+        ))
+
+        filters_header.add_widget(MDLabel(
+            text=language_manager.get_text('advanced_filters'),
+            font_style="H6",
+            theme_text_color="Primary",
+            halign="left",
+            valign="middle"
+        ))
+
+        filters_layout.add_widget(filters_header)
+
+        # Property Type Filter
+        type_section = MDBoxLayout(
+            orientation='vertical',
+            spacing=DesignTokens.SPACING['sm'],
+            size_hint_y=None,
+            height=dp(80)
+        )
+
+        type_section.add_widget(MDLabel(
+            text=language_manager.get_text('property_type'),
+            theme_text_color="Primary",
+            font_style="Subtitle1",
+            size_hint_y=None,
+            height=dp(24)
+        ))
+
+        self.type_chips_layout = MDBoxLayout(
+            spacing=DesignTokens.SPACING['sm'],
+            size_hint_y=None,
+            height=dp(40)
+        )
+
+        property_types = ['Apartment', 'House', 'Commercial', 'Land']
+        for prop_type in property_types:
+            chip = MDChip(
+                text=prop_type,
+                type="filter",
+                on_release=lambda x, pt=prop_type: self.toggle_filter_chip(x, 'type', pt),
+                size_hint=(None, None),
+                height=dp(32)
+            )
+            self.type_chips_layout.add_widget(chip)
+
+        type_section.add_widget(self.type_chips_layout)
+        filters_layout.add_widget(type_section)
+
+        # Status Filter
+        status_section = MDBoxLayout(
+            orientation='vertical',
+            spacing=DesignTokens.SPACING['sm'],
+            size_hint_y=None,
+            height=dp(80)
+        )
+
+        status_section.add_widget(MDLabel(
+            text=language_manager.get_text('status'),
+            theme_text_color="Primary",
+            font_style="Subtitle1",
+            size_hint_y=None,
+            height=dp(24)
+        ))
+
+        self.status_chips_layout = MDBoxLayout(
+            spacing=DesignTokens.SPACING['sm'],
+            size_hint_y=None,
+            height=dp(40)
+        )
+
+        statuses = ['Available', 'Occupied', 'Maintenance']
+        for status in statuses:
+            chip = MDChip(
+                text=status,
+                type="filter",
+                on_release=lambda x, s=status: self.toggle_filter_chip(x, 'status', s),
+                size_hint=(None, None),
+                height=dp(32)
+            )
+            self.status_chips_layout.add_widget(chip)
+
+        status_section.add_widget(self.status_chips_layout)
+        filters_layout.add_widget(status_section)
+
+        # Price Range Filter
+        price_section = MDBoxLayout(
+            orientation='vertical',
+            spacing=DesignTokens.SPACING['sm'],
+            size_hint_y=None,
+            height=dp(100)
+        )
+
+        price_section.add_widget(MDLabel(
+            text=language_manager.get_text('price_range'),
+            theme_text_color="Primary",
+            font_style="Subtitle1",
+            size_hint_y=None,
+            height=dp(24)
+        ))
+
+        price_inputs = MDBoxLayout(
+            spacing=DesignTokens.SPACING['md'],
+            size_hint_y=None,
+            height=dp(56)
+        )
+
+        self.min_price_input = MDTextField(
+            hint_text=language_manager.get_text('min_price'),
+            input_filter="float",
+            size_hint_x=None,
+            width=dp(140),
+            height=dp(48)
+        )
+        price_inputs.add_widget(self.min_price_input)
+
+        price_inputs.add_widget(MDLabel(
+            text="-",
+            size_hint_x=None,
+            width=dp(20),
+            halign="center"
+        ))
+
+        self.max_price_input = MDTextField(
+            hint_text=language_manager.get_text('max_price'),
+            input_filter="float",
+            size_hint_x=None,
+            width=dp(140),
+            height=dp(48)
+        )
+        price_inputs.add_widget(self.max_price_input)
+
+        price_section.add_widget(price_inputs)
+        filters_layout.add_widget(price_section)
+
+        # Apply Filters Button
+        apply_btn = MDRaisedButton(
+            text=language_manager.get_text('apply_filters'),
+            md_bg_color=DesignTokens.COLORS['secondary'],
+            size_hint=(None, None),
+            height=dp(48),
+            width=dp(160),
+            pos_hint={"center_x": 0.5},
+            on_release=self.apply_filters
+        )
+        filters_layout.add_widget(apply_btn)
+
+        filters_card.add_widget(filters_layout)
+        combined_layout.add_widget(filters_card)
+
+        combined_container.add_widget(combined_layout)
+        return combined_container
 
     def load_initial_data(self):
         """Load initial data for the screen and ensure containers/content are visually responsive"""
@@ -807,10 +1099,8 @@ class EnhancedSearchScreen(MDScreen):
                 on_release=lambda x, r=result: self.on_result_selected(r)
             )
 
-            self.results_list.add_widget(list_item)
-
-        # Update results count
-        self.results_card.title = f"{language_manager.get_text('search_results')} ({len(results)})"
+            self.results_list.add_widget(list_item)        # Update results count
+        self.results_title_label.text = f"{language_manager.get_text('search_results')} ({len(results)})"
 
     def toggle_filter_chip(self, chip, filter_type, value):
         """Toggle filter chip selection"""
