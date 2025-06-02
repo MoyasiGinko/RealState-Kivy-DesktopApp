@@ -20,6 +20,9 @@ from kivy.metrics import dp
 from kivy.clock import Clock
 from kivy.animation import Animation
 import logging
+from typing import Dict, Any, Optional
+import json
+import datetime
 
 from app.views.modern_components import (
     ModernCard, EnhancedStatsCard, DesignTokens
@@ -39,9 +42,15 @@ class EnhancedOwnersScreen(MDScreen):
         self.db = db_manager
         self.current_owner = None
         self.owners_data = []
+        self.integration_layer = None  # Will be set by main application
 
         self.build_ui()
         self.load_owners()
+
+    def set_integration_layer(self, integration_layer):
+        """Set the integration layer for advanced functionality"""
+        self.integration_layer = integration_layer
+        logger.info("Integration layer connected to Enhanced Owners Screen")
 
     def build_ui(self):
         """Build the enhanced owners management UI"""
@@ -80,6 +89,8 @@ class EnhancedOwnersScreen(MDScreen):
             title=language_manager.get_text('manage_property_owners'),
             left_action_items=[["arrow-left", lambda x: self.go_back()]],
             right_action_items=[
+                ["export", lambda x: self.export_owners()],
+                ["import", lambda x: self.import_owners()],
                 ["refresh", lambda x: self.refresh_data()],
                 ["magnify", lambda x: self.toggle_search()]
             ],
@@ -123,7 +134,9 @@ class EnhancedOwnersScreen(MDScreen):
         )
 
         # Left side - Form
-        self.build_form_section(content_card)        # Divider
+        self.build_form_section(content_card)
+
+        # Divider
         from kivy.uix.widget import Widget
         divider = Widget(
             size_hint_x=None,
@@ -413,7 +426,7 @@ class EnhancedOwnersScreen(MDScreen):
             logger.error(f"Error selecting owner: {e}")
 
     def save_owner(self, instance=None):
-        """Save new owner"""
+        """Save new owner with integration layer support"""
         try:
             if not self.validate_form():
                 return
@@ -428,6 +441,14 @@ class EnhancedOwnersScreen(MDScreen):
 
             owner_code = self.db.add_owner(owner_name, owner_phone, notes)
             if owner_code:
+                # Log activity through integration layer if available
+                if self.integration_layer:
+                    self.integration_layer.log_activity(
+                        action="create_owner",
+                        details=f"Created owner: {owner_name} (Code: {owner_code})",
+                        category="owner_management"
+                    )
+
                 self.show_snackbar(language_manager.get_text('owner_saved_successfully'))
                 self.clear_form()
                 self.load_owners()
@@ -439,7 +460,7 @@ class EnhancedOwnersScreen(MDScreen):
             self.show_snackbar(language_manager.get_text('error_saving_owner'))
 
     def update_owner(self, instance=None):
-        """Update existing owner"""
+        """Update existing owner with integration layer support"""
         try:
             if not self.current_owner or not self.validate_form():
                 return
@@ -454,6 +475,14 @@ class EnhancedOwnersScreen(MDScreen):
                 return
 
             if self.db.update_owner(owner_code, owner_name, owner_phone, notes):
+                # Log activity through integration layer if available
+                if self.integration_layer:
+                    self.integration_layer.log_activity(
+                        action="update_owner",
+                        details=f"Updated owner: {owner_name} (Code: {owner_code})",
+                        category="owner_management"
+                    )
+
                 self.show_snackbar(language_manager.get_text('owner_updated_successfully'))
                 self.clear_form()
                 self.load_owners()
@@ -477,18 +506,27 @@ class EnhancedOwnersScreen(MDScreen):
         dialog.open()
 
     def delete_owner(self, instance=None):
-        """Delete selected owner"""
+        """Delete selected owner with integration layer support"""
         try:
             if not self.current_owner:
                 return
 
             owner_code = self.current_owner['Ownercode']
+            owner_name = self.current_owner['ownername']
 
             if not self.db:
                 self.show_snackbar(language_manager.get_text('database_error'))
                 return
 
             if self.db.delete_owner(owner_code):
+                # Log activity through integration layer if available
+                if self.integration_layer:
+                    self.integration_layer.log_activity(
+                        action="delete_owner",
+                        details=f"Deleted owner: {owner_name} (Code: {owner_code})",
+                        category="owner_management"
+                    )
+
                 self.show_snackbar(language_manager.get_text('owner_deleted_successfully'))
                 self.clear_form()
                 self.load_owners()
@@ -544,6 +582,102 @@ class EnhancedOwnersScreen(MDScreen):
         """Refresh owners data"""
         self.load_owners()
         self.show_snackbar(language_manager.get_text('data_refreshed'))
+
+    def export_owners(self, instance=None):
+        """Export owners data with integration layer support"""
+        try:
+            if self.integration_layer:
+                # Use integration layer for enhanced export with activity tracking
+                success = self.integration_layer.export_owners_data(
+                    search_criteria=self._get_current_search_criteria(),
+                    include_properties=True
+                )
+                if success:
+                    self.show_snackbar("Owners data exported successfully")
+                else:
+                    self.show_snackbar("Failed to export owners data")
+            else:
+                # Fallback to basic export
+                self._basic_export_owners()
+
+        except Exception as e:
+            logger.error(f"Error exporting owners: {e}")
+            self.show_snackbar("Error occurred during export")
+
+    def import_owners(self, instance=None):
+        """Import owners data with integration layer support"""
+        try:
+            if self.integration_layer:
+                # Use integration layer for enhanced import with validation
+                success = self.integration_layer.import_owners_data()
+                if success:
+                    self.load_owners()  # Refresh the display
+                    self.show_snackbar("Owners data imported successfully")
+                else:
+                    self.show_snackbar("Failed to import owners data")
+            else:
+                # Fallback to basic import
+                self._basic_import_owners()
+
+        except Exception as e:
+            logger.error(f"Error importing owners: {e}")
+            self.show_snackbar("Error occurred during import")
+
+    def _get_current_search_criteria(self) -> Dict[str, Any]:
+        """Get current search and filter criteria"""
+        criteria = {}
+
+        # Get search text if any
+        if hasattr(self, 'search_field') and self.search_field.text.strip():
+            criteria['search_text'] = self.search_field.text.strip()
+
+        # Add timestamp for export tracking
+        criteria['export_timestamp'] = datetime.datetime.now().isoformat()
+        criteria['total_owners'] = len(self.owners_data)
+
+        return criteria
+
+    def _basic_export_owners(self):
+        """Basic export functionality when integration layer is not available"""
+        try:
+            # Export current owners data to JSON
+            export_data = {
+                'export_date': datetime.datetime.now().isoformat(),
+                'total_owners': len(self.owners_data),
+                'owners': []
+            }
+
+            for owner in self.owners_data:
+                owner_code, owner_name, owner_phone, note = owner
+                export_data['owners'].append({
+                    'owner_code': owner_code,
+                    'owner_name': owner_name,
+                    'owner_phone': owner_phone,
+                    'note': note
+                })
+
+            # Save to file (basic implementation)
+            import os
+            export_path = os.path.join(os.getcwd(), f"owners_export_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
+            with open(export_path, 'w', encoding='utf-8') as f:
+                json.dump(export_data, f, ensure_ascii=False, indent=2)
+
+            self.show_snackbar(f"Owners exported to: {export_path}")
+
+        except Exception as e:
+            logger.error(f"Error in basic export: {e}")
+            self.show_snackbar("Error occurred during basic export")
+
+    def _basic_import_owners(self):
+        """Basic import functionality when integration layer is not available"""
+        try:
+            # This would typically open a file dialog
+            # For now, just show a message that advanced import requires integration layer
+            self.show_snackbar("Advanced import requires integration layer. Please use full system.")
+
+        except Exception as e:
+            logger.error(f"Error in basic import: {e}")
+            self.show_snackbar("Error occurred during basic import")
 
     def show_snackbar(self, message):
         """Show snackbar message"""

@@ -29,7 +29,7 @@ from datetime import datetime, timedelta
 import json
 
 from app.views.modern_components import (
-    ModernCard, EnhancedStatsCard, DesignTokens
+    ModernCard, EnhancedStatsCard, DesignTokens, ModernSnackbar
 )
 from app.database import DatabaseManager
 from app.language_manager import language_manager
@@ -1235,7 +1235,6 @@ class EnhancedSearchScreen(MDScreen):
     def show_snackbar(self, message):
         """Show snackbar message"""
         try:
-            snackbar = Snackbar(text=message, duration=3)
-            snackbar.open()
+            ModernSnackbar.show_info(message)
         except Exception as e:
             logger.error(f"Error showing snackbar: {e}")

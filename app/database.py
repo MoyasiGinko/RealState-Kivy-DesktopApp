@@ -48,6 +48,9 @@ class DatabaseManager:
                 )
             ''')
 
+            # Handle schema migrations for existing tables
+            self._handle_schema_migrations(cursor)
+
             # Create Maincode table for reference data
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS Maincode (
@@ -96,19 +99,60 @@ class DatabaseManager:
                     upload_date TEXT DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (Companyco) REFERENCES Realstatspecification(Companyco)
                 )
-            ''')
-
-            # Insert default reference data if not exists
+            ''')            # Insert default reference data if not exists
             self._insert_default_data(cursor)
 
             conn.commit()
             logger.info("Database tables created successfully")
-
         except Exception as e:
             logger.error(f"Error initializing database: {e}")
             conn.rollback()
         finally:
             conn.close()
+
+    def _handle_schema_migrations(self, cursor):
+        """Handle database schema migrations for existing tables"""
+        try:
+            # Check if created_date column exists in Owners table
+            cursor.execute("PRAGMA table_info(Owners)")
+            columns = [row[1] for row in cursor.fetchall()]
+
+            if 'created_date' not in columns:
+                logger.info("Adding created_date column to Owners table...")
+                # SQLite doesn't support CURRENT_TIMESTAMP in ALTER TABLE with DEFAULT
+                # So we add the column without default, then update existing rows
+                cursor.execute('''
+                    ALTER TABLE Owners
+                    ADD COLUMN created_date TEXT
+                ''')
+                # Update existing rows with current timestamp
+                cursor.execute('''
+                    UPDATE Owners
+                    SET created_date = datetime('now')
+                    WHERE created_date IS NULL
+                ''')
+                logger.info("Successfully added created_date column to Owners table")
+
+            # Check if created_date column exists in Realstatspecification table
+            cursor.execute("PRAGMA table_info(Realstatspecification)")
+            columns = [row[1] for row in cursor.fetchall()]
+
+            if 'created_date' not in columns:
+                logger.info("Adding created_date column to Realstatspecification table...")
+                cursor.execute('''
+                    ALTER TABLE Realstatspecification
+                    ADD COLUMN created_date TEXT
+                ''')
+                # Update existing rows with current timestamp
+                cursor.execute('''
+                    UPDATE Realstatspecification
+                    SET created_date = datetime('now')
+                    WHERE created_date IS NULL
+                ''')
+                logger.info("Successfully added created_date column to Realstatspecification table")
+
+        except Exception as e:
+            logger.error(f"Error in schema migration: {e}")
 
     def _insert_default_data(self, cursor):
         """Insert default reference data using translation keys"""
@@ -482,8 +526,7 @@ class DatabaseManager:
                 'province_code': '"Province-code "',
                 'region_code': '"Region-code"',
                 'address': '"Property-address"',
-                'owner_code': 'Ownercode',
-                'description': 'Descriptions'
+                'owner_code': 'Ownercode',                'description': 'Descriptions'
             }
 
             for key, db_field in field_mapping.items():
@@ -526,8 +569,14 @@ class DatabaseManager:
         cursor = conn.cursor()
 
         try:
-            # First delete associated photos
-            cursor.execute('DELETE FROM realstatephotos WHERE Companyco = ?', (company_code,))
+            # First get the realstatecode for this property to delete photos
+            cursor.execute('SELECT realstatecode FROM Realstatspecification WHERE Companyco = ?', (company_code,))
+            result = cursor.fetchone()
+
+            if result:
+                realstatecode = result[0]
+                # Delete associated photos using realstatecode
+                cursor.execute('DELETE FROM realstatephotos WHERE realstatecode = ?', (realstatecode,))
 
             # Then delete the property
             cursor.execute('DELETE FROM Realstatspecification WHERE Companyco = ?', (company_code,))
@@ -1004,3 +1053,78 @@ class DatabaseManager:
             'available_properties': self.get_available_properties_count()
         }
         return stats
+
+    def _handle_schema_migrations(self, cursor):
+        """Handle schema migrations for existing tables"""
+
+        # Check and add missing columns to Owners table
+        cursor.execute("PRAGMA table_info(Owners)")
+        columns = [column[1] for column in cursor.fetchall()]
+
+        # Add created_date column if it doesn't exist
+        if 'created_date' not in columns:
+            cursor.execute('''
+                ALTER TABLE Owners
+                ADD COLUMN created_date TEXT DEFAULT CURRENT_TIMESTAMP
+            ''')
+            logger.info("Added created_date column to Owners table")
+
+        # Check and add missing columns to Realstatspecification table
+        cursor.execute("PRAGMA table_info(Realstatspecification)")
+        columns = [column[1] for column in cursor.fetchall()]
+
+        # Add description column if it doesn't exist
+        if 'Descriptions' not in columns:
+            cursor.execute('''
+                ALTER TABLE Realstatspecification
+                ADD COLUMN Descriptions TEXT
+            ''')
+            logger.info("Added Descriptions column to Realstatspecification table")
+
+        # Add missing foreign key constraint on Ownercode column
+        # Execute statements individually to avoid "You can only execute one statement at a time" error
+        cursor.execute('PRAGMA foreign_keys = OFF')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS Realstatspecification_temp (
+                Companyco TEXT PRIMARY KEY,
+                realstatecode TEXT,
+                Rstatetcode TEXT,
+                Yearmake TEXT,
+                "Buildtcode " TEXT,
+                "Property-area" NUMERIC,
+                "Unitm-code" TEXT,
+                "Property-facade" NUMERIC,
+                "Property-depth" NUMERIC,
+                "N-of-bedrooms" INTEGER,
+                "N-of bathrooms" INTEGER,
+                "Property-corner" TEXT,
+                "Offer-Type-Code" TEXT,
+                "Province-code " TEXT,
+                "Region-code" TEXT,
+                "Property-address" TEXT,
+                Photosituation TEXT,
+                Ownercode TEXT,
+                Descriptions TEXT,
+                created_date TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (Ownercode) REFERENCES Owners(Ownercode)
+            )
+        ''')
+        cursor.execute('''
+            INSERT INTO Realstatspecification_temp (
+                Companyco, realstatecode, Rstatetcode, Yearmake, "Buildtcode ",
+                "Property-area", "Unitm-code", "Property-facade", "Property-depth",
+                "N-of-bedrooms", "N-of bathrooms", "Property-corner",
+                "Offer-Type-Code", "Province-code ", "Region-code",
+                "Property-address", Photosituation, Ownercode, Descriptions
+            )
+            SELECT
+                Companyco, realstatecode, Rstatetcode, Yearmake, "Buildtcode ",
+                "Property-area", "Unitm-code", "Property-facade", "Property-depth",
+                "N-of-bedrooms", "N-of bathrooms", "Property-corner",
+                "Offer-Type-Code", "Province-code ", "Region-code",
+                "Property-address", Photosituation, Ownercode, Descriptions
+            FROM Realstatspecification
+        ''')
+        cursor.execute('DROP TABLE Realstatspecification')
+        cursor.execute('ALTER TABLE Realstatspecification_temp RENAME TO Realstatspecification')
+        cursor.execute('PRAGMA foreign_keys = ON')
+        logger.info("Updated Realstatspecification table schema")

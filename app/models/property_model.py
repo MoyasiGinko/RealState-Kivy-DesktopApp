@@ -6,8 +6,6 @@ Handles all property-related database operations and business logic
 """
 
 from typing import Dict, List, Optional
-import uuid
-import os
 import logging
 from datetime import datetime
 
@@ -21,7 +19,7 @@ class PropertyModel(BaseModel):
 
     def __init__(self, db_manager):
         super().__init__(db_manager)
-        self.table_name = 'Maincode'
+        self.table_name = 'Realstatspecification'
 
     def get_all(self) -> List[Dict]:
         """Get all properties with owner information"""
@@ -30,12 +28,15 @@ class PropertyModel(BaseModel):
             cursor = conn.cursor()
 
             cursor.execute("""
-                SELECT m.Maincode, m.Ownercode, o.ownername, m.location, m.area,
-                       m.propertytype, m.price, m.status, m.photos, m.Note,
-                       m.created_date, m.updated_date
-                FROM Maincode m
-                LEFT JOIN Owners o ON m.Ownercode = o.Ownercode
-                ORDER BY m.created_date DESC
+                SELECT r.Companyco, r.realstatecode, r.Rstatetcode, r.Yearmake,
+                       r."Buildtcode ", r."Property-area", r."Unitm-code",
+                       r."Property-facade", r."Property-depth", r."N-of-bedrooms",
+                       r."N-of bathrooms", r."Property-corner", r."Offer-Type-Code",
+                       r."Province-code ", r."Region-code", r."Property-address",
+                       r.Photosituation, r.Ownercode, r.Descriptions, o.ownername
+                FROM Realstatspecification r
+                LEFT JOIN Owners o ON r.Ownercode = o.Ownercode
+                ORDER BY r.Companyco DESC
             """)
 
             columns = [description[0] for description in cursor.description]
@@ -52,20 +53,23 @@ class PropertyModel(BaseModel):
             logger.error(f"Error getting all properties: {e}")
             return []
 
-    def get_by_id(self, maincode: str) -> Optional[Dict]:
-        """Get property by maincode"""
+    def get_by_id(self, company_code: str) -> Optional[Dict]:
+        """Get property by company code"""
         try:
             conn = self.db_manager.get_connection()
             cursor = conn.cursor()
 
             cursor.execute("""
-                SELECT m.Maincode, m.Ownercode, o.ownername, m.location, m.area,
-                       m.propertytype, m.price, m.status, m.photos, m.Note,
-                       m.created_date, m.updated_date
-                FROM Maincode m
-                LEFT JOIN Owners o ON m.Ownercode = o.Ownercode
-                WHERE m.Maincode = ?
-            """, (maincode,))
+                SELECT r.Companyco, r.realstatecode, r.Rstatetcode, r.Yearmake,
+                       r."Buildtcode ", r."Property-area", r."Unitm-code",
+                       r."Property-facade", r."Property-depth", r."N-of-bedrooms",
+                       r."N-of bathrooms", r."Property-corner", r."Offer-Type-Code",
+                       r."Province-code ", r."Region-code", r."Property-address",
+                       r.Photosituation, r.Ownercode, r.Descriptions, o.ownername
+                FROM Realstatspecification r
+                LEFT JOIN Owners o ON r.Ownercode = o.Ownercode
+                WHERE r.Companyco = ?
+            """, (company_code,))
 
             row = cursor.fetchone()
             if row:
@@ -78,7 +82,7 @@ class PropertyModel(BaseModel):
             return None
 
         except Exception as e:
-            logger.error(f"Error getting property {maincode}: {e}")
+            logger.error(f"Error getting property {company_code}: {e}")
             return None
 
     def create(self, data: Dict) -> bool:
@@ -90,43 +94,20 @@ class PropertyModel(BaseModel):
                 logger.error(f"Invalid property data: {error_msg}")
                 return False
 
-            # Generate maincode if not provided
-            maincode = data.get('Maincode') or self._generate_maincode()
-
-            conn = self.db_manager.get_connection()
-            cursor = conn.cursor()
-
-            cursor.execute("""
-                INSERT INTO Maincode (Maincode, Ownercode, location, area, propertytype,
-                                     price, status, photos, Note, created_date, updated_date)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                maincode,
-                data.get('Ownercode', ''),
-                data.get('location', ''),
-                data.get('area', ''),
-                data.get('propertytype', ''),
-                data.get('price', 0),
-                data.get('status', 'Available'),
-                data.get('photos', ''),
-                data.get('Note', ''),
-                datetime.now().isoformat(),
-                datetime.now().isoformat()
-            ))
-
-            conn.commit()
-            conn.close()
-
-            # Notify observers
-            self.notify_observers('property_created', {'Maincode': maincode})
-            logger.info(f"Property created successfully: {maincode}")
-            return True
+            # Use database manager's add_property method
+            company_code = self.db_manager.add_property(data)
+            if company_code:
+                logger.info(f"Property created with company code: {company_code}")
+                return True
+            else:
+                logger.error("Failed to create property")
+                return False
 
         except Exception as e:
             logger.error(f"Error creating property: {e}")
             return False
 
-    def update(self, maincode: str, data: Dict) -> bool:
+    def update(self, company_code: str, data: Dict) -> bool:
         """Update existing property"""
         try:
             # Validate data
@@ -135,151 +116,147 @@ class PropertyModel(BaseModel):
                 logger.error(f"Invalid property data: {error_msg}")
                 return False
 
-            conn = self.db_manager.get_connection()
-            cursor = conn.cursor()
-
-            cursor.execute("""
-                UPDATE Maincode
-                SET Ownercode = ?, location = ?, area = ?, propertytype = ?,
-                    price = ?, status = ?, photos = ?, Note = ?, updated_date = ?
-                WHERE Maincode = ?
-            """, (
-                data.get('Ownercode', ''),
-                data.get('location', ''),
-                data.get('area', ''),
-                data.get('propertytype', ''),
-                data.get('price', 0),
-                data.get('status', 'Available'),
-                data.get('photos', ''),
-                data.get('Note', ''),
-                datetime.now().isoformat(),
-                maincode
-            ))
-
-            conn.commit()
-            conn.close()
-
-            # Notify observers
-            self.notify_observers('property_updated', {'Maincode': maincode})
-            logger.info(f"Property updated successfully: {maincode}")
-            return True
-
-        except Exception as e:
-            logger.error(f"Error updating property {maincode}: {e}")
-            return False
-
-    def delete(self, maincode: str) -> bool:
-        """Delete property"""
-        try:
-            # Get property data before deletion for cleanup
-            property_data = self.get_by_id(maincode)
-
-            conn = self.db_manager.get_connection()
-            cursor = conn.cursor()
-
-            cursor.execute("DELETE FROM Maincode WHERE Maincode = ?", (maincode,))
-
-            if cursor.rowcount > 0:
-                conn.commit()
-                conn.close()
-
-                # Clean up photos if they exist
-                if property_data and property_data.get('photos'):
-                    self._cleanup_photos(property_data['photos'])
-
-                # Notify observers
-                self.notify_observers('property_deleted', {'Maincode': maincode})
-                logger.info(f"Property deleted successfully: {maincode}")
+            # Use database manager's update_property method
+            success = self.db_manager.update_property(company_code, data)
+            if success:
+                logger.info(f"Property {company_code} updated successfully")
                 return True
             else:
-                conn.close()
-                logger.warning(f"Property not found for deletion: {maincode}")
+                logger.error(f"Failed to update property {company_code}")
                 return False
 
         except Exception as e:
-            logger.error(f"Error deleting property {maincode}: {e}")
+            logger.error(f"Error updating property {company_code}: {e}")
+            return False
+
+    def delete(self, company_code: str) -> bool:
+        """Delete property"""
+        try:
+            # Use database manager's delete_property method
+            success = self.db_manager.delete_property(company_code)
+            if success:
+                logger.info(f"Property {company_code} deleted successfully")
+                return True
+            else:
+                logger.error(f"Failed to delete property {company_code}")
+                return False
+
+        except Exception as e:
+            logger.error(f"Error deleting property {company_code}: {e}")
             return False
 
     def search(self, filters: Dict) -> List[Dict]:
-        """Search properties with various filters"""
+        """Search properties with filters"""
         try:
-            conn = self.db_manager.get_connection()
-            cursor = conn.cursor()
-
-            # Build dynamic query based on filters
-            where_conditions = []
-            params = []
-
-            if filters.get('location'):
-                where_conditions.append("m.location LIKE ?")
-                params.append(f"%{filters['location']}%")
-
-            if filters.get('propertytype'):
-                where_conditions.append("m.propertytype = ?")
-                params.append(filters['propertytype'])
-
-            if filters.get('status'):
-                where_conditions.append("m.status = ?")
-                params.append(filters['status'])
-
-            if filters.get('min_price'):
-                where_conditions.append("m.price >= ?")
-                params.append(filters['min_price'])
-
-            if filters.get('max_price'):
-                where_conditions.append("m.price <= ?")
-                params.append(filters['max_price'])
-
-            if filters.get('owner_name'):
-                where_conditions.append("o.ownername LIKE ?")
-                params.append(f"%{filters['owner_name']}%")
-
-            where_clause = ""
-            if where_conditions:
-                where_clause = "WHERE " + " AND ".join(where_conditions)
-
-            query = f"""
-                SELECT m.Maincode, m.Ownercode, o.ownername, m.location, m.area,
-                       m.propertytype, m.price, m.status, m.photos, m.Note,
-                       m.created_date, m.updated_date
-                FROM Maincode m
-                LEFT JOIN Owners o ON m.Ownercode = o.Ownercode
-                {where_clause}
-                ORDER BY m.created_date DESC
-            """
-
-            cursor.execute(query, params)
-
-            columns = [description[0] for description in cursor.description]
-            results = []
-
-            for row in cursor.fetchall():
-                property_dict = dict(zip(columns, row))
-                results.append(property_dict)
-
-            conn.close()
-            return results
+            # Use database manager's get_properties method with filters
+            properties = self.db_manager.get_properties(filters)
+            logger.info(f"Found {len(properties)} properties matching filters")
+            return properties
 
         except Exception as e:
             logger.error(f"Error searching properties: {e}")
             return []
 
-    def get_by_owner(self, owner_code: str) -> List[Dict]:
-        """Get all properties for a specific owner"""
+    def advanced_search(self, criteria: Dict) -> List[Dict]:
+        """Perform advanced search with multiple criteria"""
         try:
             conn = self.db_manager.get_connection()
             cursor = conn.cursor()
 
-            cursor.execute("""
-                SELECT m.Maincode, m.Ownercode, o.ownername, m.location, m.area,
-                       m.propertytype, m.price, m.status, m.photos, m.Note,
-                       m.created_date, m.updated_date
-                FROM Maincode m
-                LEFT JOIN Owners o ON m.Ownercode = o.Ownercode
-                WHERE m.Ownercode = ?
-                ORDER BY m.created_date DESC
-            """, (owner_code,))
+            # Build dynamic query based on criteria
+            base_query = """
+                SELECT r.Companyco, r.realstatecode, r.Rstatetcode, r.Yearmake,
+                       r."Buildtcode ", r."Property-area", r."Unitm-code",
+                       r."Property-facade", r."Property-depth", r."N-of-bedrooms",
+                       r."N-of bathrooms", r."Property-corner", r."Offer-Type-Code",
+                       r."Province-code ", r."Region-code", r."Property-address",
+                       r.Photosituation, r.Ownercode, r.Descriptions, o.ownername,
+                       pt.Description as property_type_desc,
+                       bt.Description as build_type_desc,                ot.name as offer_type_desc
+                FROM Realstatspecification r
+                LEFT JOIN Owners o ON r.Ownercode = o.Ownercode
+                LEFT JOIN Maincode pt ON r.Rstatetcode = pt.code AND pt.recty = '03'
+                LEFT JOIN Maincode bt ON r."Buildtcode " = bt.code AND bt.recty = '04'
+                LEFT JOIN Maincode ot ON r."Offer-Type-Code" = ot.code AND ot.recty = '06'
+                WHERE 1=1
+            """
 
+            params = []
+
+            # Add search conditions based on criteria
+            if criteria.get('search_term'):
+                base_query += """ AND (
+                    r.realstatecode LIKE ? OR
+                    o.ownername LIKE ? OR
+                    r."Property-address" LIKE ? OR
+                    r.Descriptions LIKE ?
+                )"""
+                search_term = f"%{criteria['search_term']}%"
+                params.extend([search_term, search_term, search_term, search_term])
+
+            if criteria.get('property_type'):
+                base_query += " AND r.Rstatetcode = ?"
+                params.append(criteria['property_type'])
+
+            if criteria.get('build_type'):
+                base_query += " AND r.\"Buildtcode \" = ?"
+                params.append(criteria['build_type'])
+
+            if criteria.get('offer_type'):
+                base_query += " AND r.\"Offer-Type-Code\" = ?"
+                params.append(criteria['offer_type'])
+
+            if criteria.get('province'):
+                base_query += " AND r.\"Province-code \" = ?"
+                params.append(criteria['province'])
+
+            if criteria.get('region'):
+                base_query += " AND r.\"Region-code\" = ?"
+                params.append(criteria['region'])
+
+            if criteria.get('min_area'):
+                base_query += " AND r.\"Property-area\" >= ?"
+                params.append(float(criteria['min_area']))
+
+            if criteria.get('max_area'):
+                base_query += " AND r.\"Property-area\" <= ?"
+                params.append(float(criteria['max_area']))
+
+            if criteria.get('min_bedrooms'):
+                base_query += " AND r.\"N-of-bedrooms\" >= ?"
+                params.append(int(criteria['min_bedrooms']))
+
+            if criteria.get('max_bedrooms'):
+                base_query += " AND r.\"N-of-bedrooms\" <= ?"
+                params.append(int(criteria['max_bedrooms']))
+
+            if criteria.get('min_bathrooms'):
+                base_query += " AND r.\"N-of bathrooms\" >= ?"
+                params.append(int(criteria['min_bathrooms']))
+
+            if criteria.get('max_bathrooms'):
+                base_query += " AND r.\"N-of bathrooms\" <= ?"
+                params.append(int(criteria['max_bathrooms']))
+
+            if criteria.get('is_corner') is not None:
+                base_query += " AND r.\"Property-corner\" = ?"
+                params.append(1 if criteria['is_corner'] else 0)
+
+            if criteria.get('year_from'):
+                base_query += " AND r.Yearmake >= ?"
+                params.append(criteria['year_from'])
+
+            if criteria.get('year_to'):
+                base_query += " AND r.Yearmake <= ?"
+                params.append(criteria['year_to'])
+
+            if criteria.get('owner_name'):
+                base_query += " AND o.ownername LIKE ?"
+                params.append(f"%{criteria['owner_name']}%")
+
+            base_query += " ORDER BY r.Companyco DESC"
+
+            cursor.execute(base_query, params)
             columns = [description[0] for description in cursor.description]
             results = []
 
@@ -288,105 +265,211 @@ class PropertyModel(BaseModel):
                 results.append(property_dict)
 
             conn.close()
+            logger.info(f"Advanced search found {len(results)} properties")
             return results
 
         except Exception as e:
-            logger.error(f"Error getting properties for owner {owner_code}: {e}")
+            logger.error(f"Error in advanced search: {e}")
             return []
 
-    def get_statistics(self) -> Dict:
-        """Get property statistics"""
+    def get_property_summary(self, company_code: str) -> Optional[Dict]:
+        """Get property summary with all related information"""
         try:
             conn = self.db_manager.get_connection()
             cursor = conn.cursor()
 
-            stats = {}
-
-            # Total properties
-            cursor.execute("SELECT COUNT(*) FROM Maincode")
-            stats['total_properties'] = cursor.fetchone()[0]
-
-            # Properties by status
             cursor.execute("""
-                SELECT status, COUNT(*)
-                FROM Maincode
-                GROUP BY status
-            """)
-            stats['by_status'] = dict(cursor.fetchall())
+                SELECT r.*, o.ownername, o.ownerphone,
+                       pt.Description as property_type_desc,
+                       bt.Description as build_type_desc,
+                       ot.Description as offer_type_desc,                       pr.name as province_desc,
+                       reg.name as region_desc
+                FROM Realstatspecification r
+                LEFT JOIN Owners o ON r.Ownercode = o.Ownercode
+                LEFT JOIN Maincode pt ON r.Rstatetcode = pt.code AND pt.recty = '03'
+                LEFT JOIN Maincode bt ON r."Buildtcode " = bt.code AND bt.recty = '04'
+                LEFT JOIN Maincode ot ON r."Offer-Type-Code" = ot.code AND ot.recty = '06'
+                LEFT JOIN Maincode pr ON r."Province-code " = pr.code AND pr.recty = '01'
+                LEFT JOIN Maincode reg ON r."Region-code" = reg.code AND reg.recty = '02'
+                WHERE r.Companyco = ?
+            """, (company_code,))
 
-            # Properties by type
-            cursor.execute("""
-                SELECT propertytype, COUNT(*)
-                FROM Maincode
-                GROUP BY propertytype
-            """)
-            stats['by_type'] = dict(cursor.fetchall())
+            row = cursor.fetchone()
+            if row:
+                columns = [description[0] for description in cursor.description]
+                property_dict = dict(zip(columns, row))
 
-            # Average price
-            cursor.execute("SELECT AVG(price) FROM Maincode WHERE price > 0")
-            avg_price = cursor.fetchone()[0]
-            stats['average_price'] = avg_price if avg_price else 0
+                # Get photos
+                photos = self.get_photos(company_code)
+                property_dict['photos'] = photos
 
-            # Total value
-            cursor.execute("SELECT SUM(price) FROM Maincode")
-            total_value = cursor.fetchone()[0]
-            stats['total_value'] = total_value if total_value else 0
+                conn.close()
+                return property_dict
 
             conn.close()
+            return None
+
+        except Exception as e:
+            logger.error(f"Error getting property summary for {company_code}: {e}")
+            return None
+
+    def export_properties(self, properties: List[Dict], format_type: str = 'csv') -> Optional[str]:
+        """Export properties to file"""
+        try:
+            import csv
+            import json
+            from datetime import datetime
+            import os
+
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+            if format_type.lower() == 'csv':
+                filename = f"properties_export_{timestamp}.csv"
+
+                if properties:
+                    with open(filename, 'w', newline='', encoding='utf-8') as csvfile:
+                        fieldnames = properties[0].keys()
+                        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                        writer.writeheader()
+                        for property_data in properties:
+                            writer.writerow(property_data)
+
+                    logger.info(f"Properties exported to CSV: {filename}")
+                    return os.path.abspath(filename)
+
+            elif format_type.lower() == 'json':
+                filename = f"properties_export_{timestamp}.json"
+
+                with open(filename, 'w', encoding='utf-8') as jsonfile:
+                    json.dump(properties, jsonfile, indent=2, ensure_ascii=False, default=str)
+
+                logger.info(f"Properties exported to JSON: {filename}")
+                return os.path.abspath(filename)
+
+            else:
+                logger.error(f"Unsupported export format: {format_type}")
+                return None
+
+        except Exception as e:
+            logger.error(f"Error exporting properties: {e}")
+            return None
+
+    def get_photos(self, company_code: str) -> List[Dict]:
+        """Get property photos"""
+        try:
+            photos = self.db_manager.get_property_photos(company_code)
+            logger.info(f"Found {len(photos)} photos for property {company_code}")
+            return photos
+
+        except Exception as e:
+            logger.error(f"Error getting photos for property {company_code}: {e}")
+            return []
+
+    def add_photo(self, company_code: str, photo_path: str, photo_name: str) -> bool:
+        """Add photo to property"""
+        try:
+            success = self.db_manager.add_property_photo(company_code, photo_path, photo_name)
+            if success:
+                logger.info(f"Photo added to property {company_code}: {photo_name}")
+                return True
+            else:
+                logger.error(f"Failed to add photo to property {company_code}")
+                return False
+
+        except Exception as e:
+            logger.error(f"Error adding photo to property {company_code}: {e}")
+            return False
+
+    def delete_photo(self, photo_name: str) -> bool:
+        """Delete property photo"""
+        try:
+            success = self.db_manager.delete_property_photo(photo_name)
+            if success:
+                logger.info(f"Photo deleted: {photo_name}")
+                return True
+            else:
+                logger.error(f"Failed to delete photo: {photo_name}")
+                return False
+
+        except Exception as e:
+            logger.error(f"Error deleting photo {photo_name}: {e}")
+            return False
+
+    def get_reference_data(self, category: str) -> List[tuple]:
+        """Get reference data by category"""
+        try:
+            data = self.db_manager.get_reference_data(category)
+            logger.info(f"Found {len(data)} items for category {category}")
+            return data
+
+        except Exception as e:
+            logger.error(f"Error getting reference data for category {category}: {e}")
+            return []
+
+    def get_property_types(self) -> List[tuple]:
+        """Get all property types"""
+        return self.get_reference_data('03')
+
+    def get_build_types(self) -> List[tuple]:
+        """Get all build types"""
+        return self.get_reference_data('04')
+
+    def get_offer_types(self) -> List[tuple]:
+        """Get all offer types"""
+        return self.get_reference_data('06')
+
+    def get_provinces(self) -> List[tuple]:
+        """Get all provinces"""
+        return self.db_manager.get_provinces()
+
+    def validate_data(self, data: Dict) -> tuple[bool, str]:
+        """Validate property data"""
+        required_fields = ['property_type', 'area', 'address', 'owner_code']
+
+        for field in required_fields:
+            if not data.get(field):
+                return False, f"Missing required field: {field}"
+
+        # Validate numeric fields
+        if data.get('area') and not isinstance(data['area'], (int, float)):
+            try:
+                float(data['area'])
+            except (ValueError, TypeError):
+                return False, "Area must be a valid number"
+
+        if data.get('facade') and data['facade']:
+            try:
+                float(data['facade'])
+            except (ValueError, TypeError):
+                return False, "Facade must be a valid number"
+
+        if data.get('depth') and data['depth']:
+            try:
+                float(data['depth'])
+            except (ValueError, TypeError):
+                return False, "Depth must be a valid number"
+
+        # Validate integer fields
+        if data.get('bedrooms') and data['bedrooms']:
+            try:
+                int(data['bedrooms'])
+            except (ValueError, TypeError):
+                return False, "Bedrooms must be a valid number"
+
+        if data.get('bathrooms') and data['bathrooms']:
+            try:
+                int(data['bathrooms'])
+            except (ValueError, TypeError):
+                return False, "Bathrooms must be a valid number"
+
+        return True, ""
+
+    def get_statistics(self) -> Dict:
+        """Get property statistics"""
+        try:
+            stats = self.db_manager.get_statistics()
             return stats
 
         except Exception as e:
             logger.error(f"Error getting property statistics: {e}")
             return {}
-
-    def validate_data(self, data: Dict) -> tuple[bool, str]:
-        """Validate property data"""
-        if not data.get('location', '').strip():
-            return False, "Location is required"
-
-        if not data.get('Ownercode', '').strip():
-            return False, "Owner is required"
-
-        # Validate price is a valid number
-        try:
-            price = float(data.get('price', 0))
-            if price < 0:
-                return False, "Price cannot be negative"
-        except (ValueError, TypeError):
-            return False, "Invalid price format"
-
-        # Validate area is a valid number
-        try:
-            area = float(data.get('area', 0))
-            if area <= 0:
-                return False, "Area must be positive"
-        except (ValueError, TypeError):
-            return False, "Invalid area format"
-
-        return True, ""
-
-    def _generate_maincode(self) -> str:
-        """Generate unique property code"""
-        return f"PROP-{uuid.uuid4().hex[:8].upper()}"
-
-    def _cleanup_photos(self, photos_string: str):
-        """Clean up photo files when property is deleted"""
-        try:
-            if not photos_string:
-                return
-
-            photo_paths = photos_string.split(';')
-            for photo_path in photo_paths:
-                if photo_path and os.path.exists(photo_path):
-                    os.remove(photo_path)
-                    logger.info(f"Deleted photo file: {photo_path}")
-
-                # Also delete thumbnail if exists
-                if photo_path:
-                    thumbnail_path = photo_path.replace('property_photos', 'property_photos/thumbnails')
-                    if os.path.exists(thumbnail_path):
-                        os.remove(thumbnail_path)
-                        logger.info(f"Deleted thumbnail: {thumbnail_path}")
-
-        except Exception as e:
-            logger.error(f"Error cleaning up photos: {e}")

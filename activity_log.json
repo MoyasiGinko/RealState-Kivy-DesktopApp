@@ -1,0 +1,870 @@
+[
+    {
+        "timestamp": "2025-06-02T09:04:57.527765",
+        "action_type": "system",
+        "description": "dashboard_viewed",
+        "details": "Dashboard statistics accessed with 2 properties",
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:57.500415",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:57.487519",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:51.201770",
+        "action_type": "system",
+        "description": "dashboard_viewed",
+        "details": "Dashboard statistics accessed with 2 properties",
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:51.167066",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:51.164732",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:48.826126",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:48.823805",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:48.800397",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:48.797950",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:48.764709",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:48.761781",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:48.738012",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:48.727343",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:48.502076",
+        "action_type": "system",
+        "description": "dashboard_viewed",
+        "details": "Dashboard statistics accessed with 2 properties",
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:48.479216",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:48.476827",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:48.188825",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:48.186018",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:48.163067",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:48.160731",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:48.136091",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:48.133578",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:48.112573",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:48.101498",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:47.118164",
+        "action_type": "system",
+        "description": "dashboard_viewed",
+        "details": "Dashboard statistics accessed with 2 properties",
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:47.095860",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:47.082921",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:46.963854",
+        "action_type": "system_startup",
+        "description": {
+            "timestamp": "now"
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:32.149360",
+        "action_type": "system",
+        "description": "dashboard_viewed",
+        "details": "Dashboard statistics accessed with 2 properties",
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:32.125163",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:32.122813",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:30.133057",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:30.130755",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:30.109143",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:30.105903",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:30.082102",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:30.079277",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:30.058209",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:30.045758",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:29.776847",
+        "action_type": "system",
+        "description": "dashboard_viewed",
+        "details": "Dashboard statistics accessed with 2 properties",
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:29.753481",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:29.750153",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:29.427181",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:29.424158",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:29.391330",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:29.388828",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:29.365559",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:29.363123",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:29.342211",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:29.329452",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:28.383088",
+        "action_type": "system",
+        "description": "dashboard_viewed",
+        "details": "Dashboard statistics accessed with 2 properties",
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:28.360383",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:28.347816",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:28.223870",
+        "action_type": "system_startup",
+        "description": {
+            "timestamp": "now"
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:16.149645",
+        "action_type": "system",
+        "description": "dashboard_viewed",
+        "details": "Dashboard statistics accessed with 2 properties",
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:16.127222",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:16.124736",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:13.485266",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:13.482758",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:13.459393",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:13.456956",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:13.434569",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:13.432307",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:13.409122",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:13.398543",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:13.169630",
+        "action_type": "system",
+        "description": "dashboard_viewed",
+        "details": "Dashboard statistics accessed with 2 properties",
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:13.146275",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:13.143636",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:12.852398",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:12.850031",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:12.828700",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:12.826228",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:12.803004",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:12.800720",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:12.776585",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:12.761506",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:11.830650",
+        "action_type": "system",
+        "description": "dashboard_viewed",
+        "details": "Dashboard statistics accessed with 2 properties",
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:11.806843",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:11.792170",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T09:04:11.625277",
+        "action_type": "system_startup",
+        "description": {
+            "timestamp": "now"
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T08:05:52.332359",
+        "action_type": "system_shutdown",
+        "description": {
+            "timestamp": "now"
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T08:05:45.448391",
+        "action_type": "system",
+        "description": "dashboard_viewed",
+        "details": "Dashboard statistics accessed with 2 properties",
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T08:05:45.423661",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T08:05:45.409929",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T08:05:15.443712",
+        "action_type": "system",
+        "description": "dashboard_viewed",
+        "details": "Dashboard statistics accessed with 2 properties",
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T08:05:15.417283",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T08:05:15.403172",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T08:05:12.945358",
+        "action_type": "system",
+        "description": "dashboard_viewed",
+        "details": "Dashboard statistics accessed with 2 properties",
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T08:05:12.918647",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T08:05:12.906400",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T08:04:51.183398",
+        "action_type": "system",
+        "description": "dashboard_viewed",
+        "details": "Dashboard statistics accessed with 2 properties",
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T08:04:51.126740",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T08:04:51.114505",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T08:04:45.433575",
+        "action_type": "system",
+        "description": "dashboard_viewed",
+        "details": "Dashboard statistics accessed with 2 properties",
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T08:04:45.407141",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T08:04:45.387973",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T08:04:31.182317",
+        "action_type": "system",
+        "description": "dashboard_viewed",
+        "details": "Dashboard statistics accessed with 2 properties",
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T08:04:31.156157",
+        "action_type": "owners_loaded",
+        "description": {
+            "count": 8
+        },
+        "details": {},
+        "user": "System"
+    },
+    {
+        "timestamp": "2025-06-02T08:04:31.143962",
+        "action_type": "properties_loaded",
+        "description": {
+            "count": 2
+        },
+        "details": {},
+        "user": "System"
+    }
+]

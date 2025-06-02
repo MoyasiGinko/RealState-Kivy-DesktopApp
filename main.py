@@ -50,11 +50,15 @@ from app.language_manager import language_manager
 from app.views.enhanced_search import EnhancedSearchScreen
 from app.utils import RTLLabel, BilingualLabel, BilingualButton, LanguageSwitcher
 from app.controllers.app_controller import AppController
+from app.controllers.main_controller import MainController
+from app.controllers.integration_layer import IntegrationLayer
 
 # Import enhanced components
 from app.views.enhanced_dashboard import EnhancedDashboardScreen
 from app.views.enhanced_owners import EnhancedOwnersScreen
 from app.views.enhanced_properties import EnhancedPropertiesScreen
+from app.views.enhanced_settings import EnhancedSettingsScreen
+from app.views.recent_activity_screen import RecentActivityScreen
 
 # Configure logging
 logging.basicConfig(
@@ -216,6 +220,7 @@ class RealEstateApp(MDApp):
         self.db = None
         self.screen_manager = None
         self.app_controller = None
+        self.main_controller = None
 
     def build(self):
         """Build the application"""
@@ -227,6 +232,13 @@ class RealEstateApp(MDApp):
 
             # Initialize MVC architecture
             self.app_controller = AppController(self.db)
+              # Initialize main controller system
+            self.main_controller = MainController(self.db)
+            logger.info("Main controller system initialized")
+
+            # Create integration layer
+            self.integration_layer = IntegrationLayer(self.main_controller)
+            logger.info("Integration layer created")
 
             # Create screen manager
             self.screen_manager = ScreenManager()
@@ -270,20 +282,27 @@ class RealEstateApp(MDApp):
         try:
             # Welcome screen (entry point)
             welcome_screen = WelcomeScreen()
-            self.screen_manager.add_widget(welcome_screen)
-
-            # Enhanced Dashboard (main hub) - Use enhanced version as primary
+            self.screen_manager.add_widget(welcome_screen)            # Enhanced Dashboard (main hub) - Use enhanced version as primary
             enhanced_dashboard = EnhancedDashboardScreen(self.db, name='enhanced_dashboard')
+            enhanced_dashboard.set_integration_layer(self.integration_layer)
             self.screen_manager.add_widget(enhanced_dashboard)            # Feature screens - controllers will be set up when navigating
             enhanced_owners = EnhancedOwnersScreen(self.db, name='enhanced_owners')
-            self.screen_manager.add_widget(enhanced_owners)
-
-            # Enhanced properties screen with modern components
+            enhanced_owners.set_integration_layer(self.integration_layer)
+            self.screen_manager.add_widget(enhanced_owners)            # Enhanced properties screen with modern components
             enhanced_properties_screen = EnhancedPropertiesScreen(self.db, name='enhanced_properties')
+            enhanced_properties_screen.set_integration_layer(self.integration_layer)
             self.screen_manager.add_widget(enhanced_properties_screen)
 
             search_screen = EnhancedSearchScreen(self.db, name='enhanced_search')
-            self.screen_manager.add_widget(search_screen)
+            self.screen_manager.add_widget(search_screen)            # Enhanced settings screen
+            enhanced_settings = EnhancedSettingsScreen(self.db, name='enhanced_settings')
+            enhanced_settings.set_integration_layer(self.integration_layer)
+            self.screen_manager.add_widget(enhanced_settings)
+
+            # Recent Activity screen (Dashboard Item #6)
+            recent_activity_screen = RecentActivityScreen(self.db, name='recent_activity')
+            recent_activity_screen.set_integration_layer(self.integration_layer)
+            self.screen_manager.add_widget(recent_activity_screen)
 
             logger.info("All screens added successfully")
 
@@ -310,6 +329,14 @@ class RealEstateApp(MDApp):
     def on_stop(self):
         """Called when the application is stopped"""
         logger.info("Application stopped")
+
+        # Cleanup controllers
+        if self.main_controller:
+            self.main_controller.shutdown()
+
+        if self.app_controller:
+            self.app_controller.cleanup()
+
         if self.db:
             self.db.close_connection()
 

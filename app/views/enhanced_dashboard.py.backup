@@ -452,7 +452,9 @@ class EnhancedDashboardScreen(MDScreen):
         """Show system health status dialog"""
         try:
             if self.integration_layer:
-                health_status = self.integration_layer.get_system_health_status()                # Create health status dialog
+                health_status = self.integration_layer.get_system_health_status()
+
+                # Create health status dialog
                 # Implementation would depend on your dialog preferences
                 logger.info(f"System health: {health_status.get('overall_health', 'unknown')}")
 
@@ -460,9 +462,7 @@ class EnhancedDashboardScreen(MDScreen):
                 logger.warning("Integration layer not available for health check")
 
         except Exception as e:
-            logger.error(f"Error showing system health: {e}")
-
-    def navigate_to(self, screen_name):
+            logger.error(f"Error showing system health: {e}")    def navigate_to(self, screen_name):
         """Navigate to specific screen"""
         if hasattr(self, 'manager') and self.manager:
             self.manager.current = screen_name

@@ -107,7 +107,10 @@ class DesignTokens:
 class ModernCard(MDCard):
     """Enhanced Material Design card with consistent design tokens"""
 
-    def __init__(self, variant='default', **kwargs):
+    def __init__(self, variant='default', title=None, **kwargs):
+        # Remove title from kwargs as MDCard doesn't support it
+        kwargs.pop('title', None)
+
         # Apply design tokens based on variant
         if variant == 'stats':
             kwargs.setdefault('md_bg_color', DesignTokens.COLORS['surface'])
@@ -504,12 +507,20 @@ class ModernSnackbar:
     @staticmethod
     def show_message(text: str, duration: float = 3):
         """Show a snackbar message"""
+        from kivymd.uix.label import MDLabel
+
         snackbar = Snackbar(
-            text=text,
             duration=duration,
             snackbar_x="10dp",
             snackbar_y="10dp",
             size_hint_x=(1 - 20/100)  # 20dp margins
+        )
+        snackbar.add_widget(
+            MDLabel(
+                text=text,
+                theme_text_color="Custom",
+                text_color=(1, 1, 1, 1)
+            )
         )
         snackbar.open()
 
@@ -771,6 +782,13 @@ class ModernNavigationCard(ModernCard):
 
     def __init__(self, title: str, subtitle: str, icon: str,
                  action: Callable = None, color_scheme: str = 'primary', **kwargs):
+        # Remove custom properties that MDCard doesn't support
+        kwargs.pop('title', None)
+        kwargs.pop('subtitle', None)
+        kwargs.pop('icon', None)
+        kwargs.pop('action', None)
+        kwargs.pop('color_scheme', None)
+
         super().__init__(**kwargs)
 
         color_schemes = {
@@ -936,12 +954,10 @@ class ModernProgressCard(ModernCard):
             font_style="H6",
             adaptive_height=True
         )
-        self.add_widget(title_label)
-
-        # Progress bar
+        self.add_widget(title_label)        # Progress bar
         self.progress_bar = MDProgressBar(
             value=progress,
-            color=DesignTokens.COLORS['primary']
+            md_bg_color=DesignTokens.COLORS['primary']
         )
         self.add_widget(self.progress_bar)
 
@@ -1069,6 +1085,13 @@ class ModernListItem(MDCard):
 
     def __init__(self, title=None, subtitle=None, icon=None, trailing_icon=None,
                  on_tap=None, **kwargs):
+        # Remove any invalid properties that MDCard doesn't support
+        kwargs.pop("title", None)
+        kwargs.pop("subtitle", None)
+        kwargs.pop("icon", None)
+        kwargs.pop("trailing_icon", None)
+        kwargs.pop("on_tap", None)
+
         # Pop custom keys from kwargs if present (for **dict usage)
         if title is None:
             title = kwargs.pop("title", "")
@@ -1143,36 +1166,37 @@ class ModernListItem(MDCard):
         self.add_widget(layout)
 
 
-class ModernGridView(MDScrollView):
+class ModernGridView(MDGridLayout):
     """Modern grid view for displaying cards in a grid"""
 
     def __init__(self, cols=2, spacing=None, **kwargs):
+        # Remove scroll-related kwargs since we're now a GridLayout
+        scroll_kwargs = ['do_scroll_x', 'do_scroll_y', 'scroll_type', 'bar_width', 'bar_color']
+        for key in scroll_kwargs:
+            kwargs.pop(key, None)
+
         super().__init__(**kwargs)
 
         if spacing is None:
             spacing = DesignTokens.SPACING['medium']
 
-        self.grid = MDGridLayout(
-            cols=cols,
-            adaptive_height=True,
-            spacing=spacing,
-            size_hint_y=None
-        )
-        self.grid.bind(minimum_height=self.grid.setter('height'))
-
-        self.add_widget(self.grid)
+        self.cols = cols
+        self.adaptive_height = True
+        self.spacing = spacing
+        self.size_hint_y = None
+        self.bind(minimum_height=self.setter('height'))
 
     def add_item(self, widget):
         """Add item to grid"""
-        self.grid.add_widget(widget)
+        self.add_widget(widget)
 
     def clear_items(self):
         """Clear all items from grid"""
-        self.grid.clear_widgets()
+        self.clear_widgets()
 
     def set_cols(self, cols):
         """Set number of columns"""
-        self.grid.cols = cols
+        self.cols = cols
 
 
 class ModernFormCard(MDCard):
